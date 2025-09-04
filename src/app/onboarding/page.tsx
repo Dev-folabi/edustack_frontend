@@ -104,9 +104,13 @@ export default function OnboardingPage() {
     setSubmitting(true);
     
     try {
-      await initializeSystem(formData);
-      showToast({ title: "Setup Complete", message: "System initialized successfully! You can now log in.", type: "success" });
-      router.push('/login');
+      const result = await initializeSystem(formData);
+      if (result && result.superAdmin) {
+        showToast({ title: "Account Created", message: "Please check your email for a verification code.", type: "success" });
+        router.push(`/verify-email?userId=${result.superAdmin.id}`);
+      } else {
+        throw new Error("Could not retrieve user ID after setup.");
+      }
     } catch (error: any) {
       console.error('Error initializing system:', error);
       showToast({ title: "Setup Failed", message: error.message || 'Failed to initialize system', type: "error" });

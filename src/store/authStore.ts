@@ -90,8 +90,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       set({ isLoading: true });
       const response = await authService.initializeSystem(data);
-      if (response.success) {
-        set({ isOnboarded: true, isLoading: false });
+      if (response.success && response.data) {
+        // Don't set isOnboarded to true until email is verified.
+        // The checkOnboardingStatus will still report false.
+        set({ isLoading: false });
+        return response.data; // Return the data which includes the superAdmin object
       } else {
         throw new Error(response.message || 'System initialization failed');
       }

@@ -6,6 +6,8 @@ import { useAuthStore } from "../../store/authStore";
 import { useToast } from "../../components/ui/Toast";
 import { Loader, ButtonLoader } from "../../components/ui/Loader";
 import Link from "next/link";
+import { ApiError } from "../../utils/api";
+import { authService } from "../../services/authService";
 
 const LoginPage: React.FC = () => {
   const router = useRouter();
@@ -68,11 +70,29 @@ const LoginPage: React.FC = () => {
       });
       router.push("/admin/dashboard");
     } catch (error: any) {
-      showToast({
-        title: "Login Failed",
-        type: "error",
-        message: error.message || "Invalid credentials",
-      });
+      if (error instanceof ApiError && error.message.includes('not verified') && error.data?.userId) {
+        const { userId } = error.data;
+        showToast({
+          title: "Verification Required",
+          type: "info",
+          message: "Your email is not verified. A new verification code has been sent to your email.",
+        });
+        // Resend OTP and redirect to verification page
+        try {
+          // We can use the email from the form to trigger the resend.
+          // The userId is needed for the redirect URL.
+          await authService.resendOTP({ email: formData.emailOrUsername });
+          router.push(`/verify-email?userId=${userId}`);
+        } catch (resendError) {
+          console.error("Failed to resend OTP:", resendError);
+        }
+      } else {
+        showToast({
+          title: "Login Failed",
+          type: "error",
+          message: error.message || "Invalid credentials",
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }

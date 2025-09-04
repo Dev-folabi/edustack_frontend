@@ -113,7 +113,7 @@ export const authService = {
       schoolAddress: data.schoolAddress,
       schoolPhone: data.schoolPhone,
     };
-    return apiClient.post('/system/initialize', backendData);
+    return apiClient.post('/auth/initialize', backendData);
   },
   
   // Login
@@ -130,12 +130,17 @@ export const authService = {
   
   // Get classes by school, which includes sections
   getClasses: (schoolId: string) => apiClient.get(`/class?schoolId=${schoolId}`),
-  
+
   // Email verification
-  verifyEmail: (email: string, otp: string) => apiClient.post('/auth/verify-email-otp', { email, otp }),
+  verifyEmail: (userId: string, otp: string) => apiClient.post('/auth/verify-email-otp', { userId, otp }),
   
   // Resend OTP
-  resendOTP: (email: string) => apiClient.post('/auth/resend-otp', { email }),
+  resendOTP: (identifier: { userId?: string; email?: string }) => {
+    const payload = identifier.userId
+      ? { id: identifier.userId, type: 'email_verification' }
+      : { email: identifier.email, type: 'email_verification' };
+    return apiClient.post('/auth/resend-otp', payload);
+  },
 };
 
 export type { OnboardingData, StaffSignupData, StudentSignupData, School, Class, Section };
