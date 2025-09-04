@@ -14,10 +14,7 @@ export default function Header({ isLoggedIn }: HeaderProps) {
 
   const navItems = [
     { name: "Home", href: "#home" },
-    { name: "About", href: "#about" },
-    { name: "Programs", href: "#programs" },
-    { name: "Activities", href: "#activities" },
-    { name: "Gallery", href: "#gallery" },
+    { name: "About", href: "/about" },
     { name: "Contact", href: "#contact" },
   ];
 

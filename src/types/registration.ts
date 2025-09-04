@@ -41,7 +41,7 @@ export interface StaffRegistration {
   phone: string[];
   address: string;
   schoolId: string;
-  role: 'admin' | 'teacher' | 'accountant' | 'librarian';
+  role: 'teacher' | 'accountant' | 'librarian';
   designation: string;
   dob: string;
   salary: number;
