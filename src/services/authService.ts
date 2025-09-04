@@ -126,13 +126,10 @@ export const authService = {
   studentSignup: (data: StudentSignupData) => apiClient.post('/auth/student-signup', data),
   
   // Get schools (for dropdowns)
-  getSchools: () => apiClient.get('/school'),
+  getSchools: () => apiClient.get('/school/all'),
   
-  // Get classes by school
-  getClasses: (schoolId: string) => apiClient.get(`/school/${schoolId}/classes`),
-  
-  // Get sections by class
-  getSections: (classId: string) => apiClient.get(`/class/${classId}/sections`),
+  // Get classes by school, which includes sections
+  getClasses: (schoolId: string) => apiClient.get(`/class?schoolId=${schoolId}`),
   
   // Email verification
   verifyEmail: (email: string, otp: string) => apiClient.post('/auth/verify-email-otp', { email, otp }),
