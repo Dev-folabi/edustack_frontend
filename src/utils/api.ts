@@ -1,5 +1,16 @@
 import { config } from './config';
 
+// Custom error class to include additional data from API responses
+export class ApiError extends Error {
+  data: any;
+
+  constructor(message: string, data: any = null) {
+    super(message);
+    this.name = 'ApiError';
+    this.data = data;
+  }
+}
+
 interface ApiResponse<T = any> {
   success: boolean;
   message: string;
@@ -26,7 +37,7 @@ class ApiClient {
     const data = await response.json();
     
     if (!response.ok) {
-      throw new Error(data.message || 'An error occurred');
+      throw new ApiError(data.message || 'An error occurred', data.data);
     }
     
     return data;
@@ -72,11 +83,3 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient();
-
-// Specific API functions
-export const authApi = {
-  checkOnboardingStatus: () => apiClient.get('/system/onboarding/status'),
-  initializeSystem: (data: any) => apiClient.post('/system/initialize', data),
-  login: (credentials: any) => apiClient.post('/auth/login', credentials),
-  register: (userData: any) => apiClient.post('/auth/register', userData),
-};

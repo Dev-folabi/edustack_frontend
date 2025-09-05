@@ -1,17 +1,17 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "../../store/authStore";
 import { useToast } from "../../components/ui/Toast";
 import { Loader, ButtonLoader } from "../../components/ui/Loader";
 import Link from "next/link";
+import { ApiError } from "../../utils/api";
+import { authService } from "../../services/authService";
 
 const LoginPage: React.FC = () => {
   const router = useRouter();
-  const { login, checkOnboardingStatus, isLoading, setLoading } =
-    useAuthStore();
+  const { login, checkOnboardingStatus } = useAuthStore();
   const { showToast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -25,8 +25,8 @@ const LoginPage: React.FC = () => {
   useEffect(() => {
     const checkSystemStatus = async () => {
       try {
-        const isOnboarded = await checkOnboardingStatus();
-        if (!isOnboarded) {
+        const onboard = await checkOnboardingStatus();
+        if (!onboard.isOnboarded) {
           router.push("/onboarding");
           return;
         }
@@ -49,7 +49,11 @@ const LoginPage: React.FC = () => {
     e.preventDefault();
 
     if (!formData.emailOrUsername || !formData.password) {
-      showToast("Validation Error", "error", "Please fill in all fields");
+      showToast({
+        title: "Validation Error",
+        type: "error",
+        message: "Please fill in all fields",
+      });
       return;
     }
 
@@ -57,14 +61,39 @@ const LoginPage: React.FC = () => {
 
     try {
       await login(formData.emailOrUsername, formData.password);
-      showToast("Login Successful", "success", "Welcome back!");
+      showToast({
+        title: "Login Successful",
+        type: "success",
+        message: "Welcome back!",
+      });
       router.push("/admin/dashboard");
-    } catch (error: any) {
-      showToast(
-        "Login Failed",
-        "error",
-        error.message || "Invalid credentials"
-      );
+    } catch (error) {
+      if (
+        error instanceof ApiError &&
+        error.message.includes("not verified") &&
+        error.data?.userId
+      ) {
+        const { userId } = error.data;
+        showToast({
+          title: "Verification Required",
+          type: "info",
+          message:
+            "Your email is not verified. A new verification code has been sent to your email.",
+        });
+        // Resend OTP and redirect to verification page
+        try {
+          await authService.resendOTP({ email: formData.emailOrUsername });
+          router.push(`/verify-email?userId=${userId}`);
+        } catch (resendError) {
+          console.error("Failed to resend OTP:", resendError);
+        }
+      } else {
+        showToast({
+          title: "Login Failed",
+          type: "error",
+          message: error instanceof Error ? error.message : "Invalid credentials",
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -75,74 +104,36 @@ const LoginPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
-      {/* Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000" />
-        <div className="absolute top-40 left-40 w-80 h-80 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000" />
-      </div>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="max-w-md w-full space-y-8">
+        <div className="text-center">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Welcome Back
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Sign in to your EduStack account
+          </p>
+        </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="relative z-10 w-full max-w-md"
-      >
-        {/* Login Card */}
-        <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-8 shadow-2xl">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-              className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4"
-            >
-              <span className="text-2xl font-bold text-white">E</span>
-            </motion.div>
-            <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
-            <p className="text-white/70">Sign in to your EduStack account</p>
-          </div>
-
-          {/* Login Form */}
+        <div className="bg-white p-8 rounded-lg shadow-md">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email/Username Field */}
             <div>
-              <label className="block text-sm font-medium text-white/80 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Email or Username
               </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  name="emailOrUsername"
-                  value={formData.emailOrUsername}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="Enter your email or username"
-                  required
-                />
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                  <svg
-                    className="h-5 w-5 text-white/40"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                </div>
-              </div>
+              <input
+                type="text"
+                name="emailOrUsername"
+                value={formData.emailOrUsername}
+                onChange={handleInputChange}
+                className="input"
+                placeholder="Enter your email or username"
+                required
+              />
             </div>
 
-            {/* Password Field */}
             <div>
-              <label className="block text-sm font-medium text-white/80 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Password
               </label>
               <div className="relative">
@@ -151,61 +142,47 @@ const LoginPage: React.FC = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="input"
                   placeholder="Enter your password"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-white/40 hover:text-white/60 transition-colors"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                 >
-                  {showPassword ? (
-                    <svg
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"
-                      />
-                    </svg>
-                  ) : (
-                    <svg
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
+                  {/* Basic Show/Hide Icon */}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    {showPassword ? (
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
                         d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                       />
+                    ) : (
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242"
                       />
-                    </svg>
-                  )}
+                    )}
+                  </svg>
                 </button>
               </div>
             </div>
 
-            {/* Submit Button */}
-            <motion.button
+            <button
               type="submit"
               disabled={isSubmitting}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold py-3 px-6 rounded-xl hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              className="w-full btn-primary disabled:opacity-50 flex items-center justify-center"
             >
               {isSubmitting ? (
                 <>
@@ -215,20 +192,20 @@ const LoginPage: React.FC = () => {
               ) : (
                 "Sign In"
               )}
-            </motion.button>
+            </button>
           </form>
-
-          {/* Footer Links */}
-          <div className="mt-6 text-center space-y-2">
-            <Link
-              href="/register"
-              className="text-white/70 hover:text-white transition-colors text-sm"
-            >
-              Don&apos;t have an account? Register here
-            </Link>
-          </div>
         </div>
-      </motion.div>
+
+        <p className="mt-4 text-center text-sm text-gray-600">
+          Don&apos;t have an account?{" "}
+          <Link
+            href="/register"
+            className="font-medium text-sky-600 hover:text-sky-500"
+          >
+            Register here
+          </Link>
+        </p>
+      </div>
     </div>
   );
 };
