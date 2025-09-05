@@ -152,29 +152,6 @@ interface OnboardingStatusResponse {
   onboardingProgress?: number;
 }
 
-// Types for Academic Sessions
-interface Term {
-  id: string;
-  name: string;
-  start_date: string;
-  end_date: string;
-  isActive: boolean;
-}
-
-interface Session {
-  id: string;
-  name: string;
-  start_date: string;
-  end_date: string;
-  isActive: boolean;
-  terms: Term[];
-}
-
-interface SessionsResponse {
-  totalItems: number;
-  data: Session[];
-}
-
 interface InitializationResponse {
   superAdmin: {
     id: string;
@@ -245,9 +222,6 @@ export const authService = {
     return apiClient.post("/auth/resend-otp", payload);
   },
 
-  // Get all academic sessions
-  getSessions: (): Promise<ApiResponse<SessionsResponse>> =>
-    apiClient.get("/academic-session/all"),
 };
 
 export type {
@@ -262,8 +236,4 @@ export type {
   UserSchool,
   OnboardingStatusResponse,
   InitializationResponse,
-  // New session types
-  Term,
-  Session,
-  SessionsResponse,
 };

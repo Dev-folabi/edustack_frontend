@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import { authService } from "@/services/authService";
-import type { Session } from "@/services/authService";
+import { sessionService } from "@/services/sessionService"; // Updated import
+import type { Session } from "@/services/sessionService";
 
 interface SessionState {
   sessions: Session[];
@@ -10,7 +10,7 @@ interface SessionState {
   setSelectedSession: (session: Session) => void;
 }
 
-export const useSessionStore = create<SessionState>((set, get) => ({
+export const useSessionStore = create<SessionState>((set) => ({
   sessions: [],
   selectedSession: null,
   isLoading: false,
@@ -18,9 +18,10 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   fetchSessions: async () => {
     try {
       set({ isLoading: true });
-      const response = await authService.getSessions();
+      const response = await sessionService.getSessions();
+      // The API response has the array directly in the `data` property
       if (response.success && response.data) {
-        const sessions = response.data.data;
+        const sessions = response.data; // Corrected data access
         // Find the active session to set as default
         const activeSession = sessions.find(s => s.isActive) || sessions[0] || null;
         set({
