@@ -123,14 +123,26 @@ interface ClassesResponse {
   data: Class[];
 }
 
+// Types for the new login response structure
+interface UserSchool {
+  schoolId: string;
+  role: "super_admin" | "school_admin" | "teacher" | "staff";
+}
+
+interface UserData {
+  id: string;
+  email: string;
+  username: string;
+  isSuperAdmin: boolean;
+  hasVerifiedEmail: boolean;
+}
+
 interface LoginResponse {
-  userData: {
-    id: string;
-    username: string;
-    email: string;
-    role: string;
-    isSuperAdmin?: boolean;
-  };
+  userData: UserData;
+  userSchools: UserSchool[];
+  staff: any | null;
+  student: any | null;
+  parent: any | null;
   token: string;
 }
 
@@ -138,6 +150,29 @@ interface OnboardingStatusResponse {
   isOnboarded: boolean;
   currentStep?: number;
   onboardingProgress?: number;
+}
+
+// Types for Academic Sessions
+interface Term {
+  id: string;
+  name: string;
+  start_date: string;
+  end_date: string;
+  isActive: boolean;
+}
+
+interface Session {
+  id: string;
+  name: string;
+  start_date: string;
+  end_date: string;
+  isActive: boolean;
+  terms: Term[];
+}
+
+interface SessionsResponse {
+  totalItems: number;
+  data: Session[];
 }
 
 interface InitializationResponse {
@@ -209,6 +244,10 @@ export const authService = {
       : { email: identifier.email, type: "email_verification" };
     return apiClient.post("/auth/resend-otp", payload);
   },
+
+  // Get all academic sessions
+  getSessions: (): Promise<ApiResponse<SessionsResponse>> =>
+    apiClient.get("/academic-session/all"),
 };
 
 export type {
@@ -219,6 +258,12 @@ export type {
   Class,
   Section,
   LoginResponse,
+  UserData,
+  UserSchool,
   OnboardingStatusResponse,
   InitializationResponse,
+  // New session types
+  Term,
+  Session,
+  SessionsResponse,
 };

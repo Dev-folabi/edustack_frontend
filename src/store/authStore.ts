@@ -6,19 +6,17 @@ import {
   type Class,
   type Section,
   type InitializationResponse,
+  type UserData,
+  type UserSchool,
 } from "@/services/authService";
 
-interface User {
-  id: string;
-  username: string;
-  email: string;
-  role: string;
-  isSuperAdmin?: boolean;
-}
-
 interface AuthState {
-  user: User | null;
+  user: UserData | null;
   token: string | null;
+  userSchools: UserSchool[] | null;
+  staff: any | null;
+  student: any | null;
+  parent: any | null;
   isLoading: boolean;
   isOnboarded: boolean;
   schools: School[];
@@ -43,6 +41,10 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   token: null,
+  userSchools: null,
+  staff: null,
+  student: null,
+  parent: null,
   isLoading: false,
   isOnboarded: false,
   schools: [],
@@ -55,10 +57,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const response = await authService.login({ emailOrUsername, password });
 
       if (response.success && response.data) {
-        const { userData, token } = response.data;
+        const { userData, token, userSchools, staff, student, parent } =
+          response.data;
         set({
           user: userData,
           token,
+          userSchools,
+          staff,
+          student,
+          parent,
           isLoading: false,
         });
 
