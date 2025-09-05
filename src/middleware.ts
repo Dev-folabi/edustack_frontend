@@ -4,13 +4,11 @@ import type { NextRequest } from 'next/server';
 async function isSystemOnboarded(request: NextRequest): Promise<boolean> {
   try {
     const response = await fetch(new URL('/api/system/onboarding/status', request.url), {
-      headers: {
-        'Cookie': request.headers.get('cookie') || '',
-      },
+      headers: { 'Cookie': request.headers.get('cookie') || '' },
     });
     if (response.ok) {
       const data = await response.json();
-      return data.isOnboarded === true;
+      return data.data.isOnboarded === true;
     }
     return false;
   } catch (error) {
@@ -27,7 +25,7 @@ export async function middleware(request: NextRequest) {
   const onboarded = await isSystemOnboarded(request);
 
   if (!onboarded) {
-    if (!pathname.startsWith('/onboarding')) {
+    if (pathname !== '/onboarding' && !pathname.startsWith('/_next')) {
       return NextResponse.redirect(new URL('/onboarding', request.url));
     }
     return NextResponse.next();
@@ -39,22 +37,16 @@ export async function middleware(request: NextRequest) {
 
   // Authentication Check
   const publicPaths = ['/', '/login', '/register', '/verify-email', '/about'];
-  // A more precise check for public paths
-  const isPublicPath = publicPaths.includes(pathname) || pathname.startsWith('/about');
+  const isPublicPath = publicPaths.includes(pathname);
 
-
-  if (token) {
-    if (pathname.startsWith('/login') || pathname.startsWith('/register')) {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
-    return NextResponse.next();
+  // If the path is protected and there's no token, redirect to login
+  if (!isPublicPath && !token) {
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  if (!token) {
-    if (isPublicPath) {
-      return NextResponse.next();
-    }
-    return NextResponse.redirect(new URL('/login', request.url));
+  // If the user is logged in and tries to access login/register, redirect to dashboard
+  if (token && (pathname.startsWith('/login') || pathname.startsWith('/register'))) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   return NextResponse.next();
