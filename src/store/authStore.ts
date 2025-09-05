@@ -22,10 +22,12 @@ interface AuthState {
   schools: School[];
   classes: Class[];
   sections: Section[];
+  isLoggedIn: boolean; // Add computed property
 
   // Actions
   login: (emailOrUsername: string, password: string) => Promise<void>;
   logout: () => void;
+  initializeAuth: () => void; // Add initialization method
   checkOnboardingStatus: () => Promise<{
     isOnboarded: boolean;
     currentStep?: number;
@@ -50,6 +52,46 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   schools: [],
   classes: [],
   sections: [],
+  get isLoggedIn() {
+    return !!get().user && !!get().token;
+  },
+
+  // Initialize auth state from localStorage
+  initializeAuth: () => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('token');
+      const userData = localStorage.getItem('userData');
+      const userSchools = localStorage.getItem('userSchools');
+      const staff = localStorage.getItem('staff');
+      const student = localStorage.getItem('student');
+      const parent = localStorage.getItem('parent');
+      
+      if (token && userData) {
+        try {
+          set({
+            token,
+            user: JSON.parse(userData),
+            userSchools: userSchools ? JSON.parse(userSchools) : null,
+            staff: staff ? JSON.parse(staff) : null,
+            student: student ? JSON.parse(student) : null,
+            parent: parent ? JSON.parse(parent) : null,
+          });
+          
+          // Set cookie for middleware
+          document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 60 * 60}`; // 7 days
+        } catch (error) {
+          console.error('Error parsing stored auth data:', error);
+          // Clear corrupted data
+          localStorage.removeItem('token');
+          localStorage.removeItem('userData');
+          localStorage.removeItem('userSchools');
+          localStorage.removeItem('staff');
+          localStorage.removeItem('student');
+          localStorage.removeItem('parent');
+        }
+      }
+    }
+  },
 
   login: async (emailOrUsername: string, password: string) => {
     try {
@@ -59,6 +101,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (response.success && response.data) {
         const { userData, token, userSchools, staff, student, parent } =
           response.data;
+        
         set({
           user: userData,
           token,
@@ -69,8 +112,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           isLoading: false,
         });
 
-        // Store token in localStorage
+        // Store in localStorage
         localStorage.setItem("token", token);
+        localStorage.setItem("userData", JSON.stringify(userData));
+        if (userSchools) localStorage.setItem("userSchools", JSON.stringify(userSchools));
+        if (staff) localStorage.setItem("staff", JSON.stringify(staff));
+        if (student) localStorage.setItem("student", JSON.stringify(student));
+        if (parent) localStorage.setItem("parent", JSON.stringify(parent));
+        
+        // Set cookie for middleware
+        document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 60 * 60}`; // 7 days
       } else {
         throw new Error(response.message || "Login failed");
       }
@@ -81,8 +132,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: () => {
-    set({ user: null, token: null });
+    set({ 
+      user: null, 
+      token: null, 
+      userSchools: null, 
+      staff: null, 
+      student: null, 
+      parent: null 
+    });
+    
+    // Clear localStorage
     localStorage.removeItem("token");
+    localStorage.removeItem("userData");
+    localStorage.removeItem("userSchools");
+    localStorage.removeItem("staff");
+    localStorage.removeItem("student");
+    localStorage.removeItem("parent");
+    
+    // Clear cookie
+    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
   },
 
   checkOnboardingStatus: async () => {

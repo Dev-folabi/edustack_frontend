@@ -150,7 +150,7 @@ const LoginPage: React.FC = () => {
         </Card>
 
         <p className="mt-4 text-center text-sm text-gray-600">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link href="/register" className="font-medium text-sky-600 hover:text-sky-500">
             Register here
           </Link>

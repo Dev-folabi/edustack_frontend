@@ -24,7 +24,26 @@ async function getOnboardingStatus(request: NextRequest): Promise<boolean | null
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const token = request.cookies.get('token')?.value;
+  let token = request.cookies.get('token')?.value;
+  
+  // Check if we need to sync token from localStorage to cookies
+  // This handles cases where localStorage has token but cookie doesn't (e.g., after page refresh)
+  if (!token) {
+    // Try to get token from request headers (if set by client-side)
+    const authHeader = request.headers.get('authorization');
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+      // Set cookie for future requests
+      const response = NextResponse.next();
+      response.cookies.set('token', token, {
+        path: '/',
+        maxAge: 7 * 24 * 60 * 60, // 7 days
+        httpOnly: false, // Allow client-side access
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax'
+      });
+    }
+  }
 
   // 1. Onboarding Check for specific routes
   // Only redirect from login/register if we can confirm the system is NOT onboarded.

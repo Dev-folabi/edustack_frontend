@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { DASHBOARD_ROUTES } from '@/constants/routes';
+import { COLORS } from '@/constants/colors';
 
 const superAdminLinks = [
   { href: DASHBOARD_ROUTES.MULTI_SCHOOL_DASHBOARD, label: 'Dashboard' },
@@ -43,9 +44,12 @@ const Sidebar = () => {
                   href={link.href}
                   className={`flex items-center p-2 rounded-md transition-colors ${
                     isActive
-                      ? 'bg-sky-500 text-white'
+                      ? 'text-white'
                       : 'text-gray-400 hover:bg-gray-800 hover:text-white'
                   }`}
+                  style={{
+                    backgroundColor: isActive ? COLORS.primary[500] : 'transparent'
+                  }}
                 >
                   {link.label}
                 </Link>

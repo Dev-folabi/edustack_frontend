@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { SCHOOL_INFO } from "@/constants/colors";
+import { COLORS, SCHOOL_INFO } from "@/constants/colors";
 
 export default function HeroSection() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -55,7 +55,7 @@ export default function HeroSection() {
             <div
               className="w-full h-full bg-cover bg-center"
               style={{
-                backgroundImage: `linear-gradient(rgba(14, 165, 233, 0.7), rgba(14, 165, 233, 0.7)), url(${slide.image})`,
+                backgroundImage: `linear-gradient(${COLORS.primary[500]}B3, ${COLORS.primary[500]}B3), url(${slide.image})`,
               }}
             />
           </div>
@@ -78,13 +78,23 @@ export default function HeroSection() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link
               href="/register"
-              className="px-8 py-4 bg-white text-blue-600 rounded-full font-semibold text-lg hover:bg-gray-100 transition-all duration-300 hover:scale-105 shadow-lg"
+              className="px-8 py-4 bg-white rounded-full font-semibold text-lg hover:bg-gray-100 transition-all duration-300 hover:scale-105 shadow-lg"
+              style={{ color: COLORS.primary[600] }}
             >
               Apply Now
             </Link>
             <Link
               href="#about"
-              className="px-8 py-4 border-2 border-white text-white rounded-full font-semibold text-lg hover:bg-white hover:text-blue-600 transition-all duration-300"
+              className="px-8 py-4 border-2 border-white text-white rounded-full font-semibold text-lg hover:bg-white transition-all duration-300"
+              style={{
+                '--hover-text-color': COLORS.primary[600]
+              } as React.CSSProperties}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = COLORS.primary[600];
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'white';
+              }}
             >
               Learn More
             </Link>
