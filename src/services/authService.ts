@@ -123,14 +123,26 @@ interface ClassesResponse {
   data: Class[];
 }
 
+// Types for the new login response structure
+interface UserSchool {
+  schoolId: string;
+  role: "super_admin" | "school_admin" | "teacher" | "staff";
+}
+
+interface UserData {
+  id: string;
+  email: string;
+  username: string;
+  isSuperAdmin: boolean;
+  hasVerifiedEmail: boolean;
+}
+
 interface LoginResponse {
-  userData: {
-    id: string;
-    username: string;
-    email: string;
-    role: string;
-    isSuperAdmin?: boolean;
-  };
+  userData: UserData;
+  userSchools: UserSchool[];
+  staff: any | null;
+  student: any | null;
+  parent: any | null;
   token: string;
 }
 
@@ -209,6 +221,7 @@ export const authService = {
       : { email: identifier.email, type: "email_verification" };
     return apiClient.post("/auth/resend-otp", payload);
   },
+
 };
 
 export type {
@@ -219,6 +232,8 @@ export type {
   Class,
   Section,
   LoginResponse,
+  UserData,
+  UserSchool,
   OnboardingStatusResponse,
   InitializationResponse,
 };

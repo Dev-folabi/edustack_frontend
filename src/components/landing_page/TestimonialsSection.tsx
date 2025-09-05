@@ -96,13 +96,16 @@ export default function TestimonialsSection() {
                 key={index}
                 className={`w-3 h-3 rounded-full transition-all duration-300 ${
                   index === currentTestimonial
-                    ? "bg-blue-500"
+                    ? "bg-gray-300 hover:bg-gray-400"
                     : "bg-gray-300 hover:bg-gray-400"
                 }`}
+                style={{
+                  backgroundColor: index === currentTestimonial ? COLORS.primary[500] : undefined
+                }}
                 onClick={() => setCurrentTestimonial(index)}
               />
             ))}
-          </div>
+          </div> 
         </div>
       </div>
     </section>

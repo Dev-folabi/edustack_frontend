@@ -53,7 +53,16 @@ export default function Header({ isLoggedIn }: HeaderProps) {
               <a
                 key={item.name}
                 href={item.href}
-                className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium"
+                className="font-medium transition-colors duration-200"
+                style={{ 
+                  color: COLORS.gray[700] 
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = COLORS.primary[600];
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = COLORS.gray[700];
+                }}
               >
                 {item.name}
               </a>
@@ -74,7 +83,14 @@ export default function Header({ isLoggedIn }: HeaderProps) {
               <>
                 <Link
                   href="/login"
-                  className="px-4 py-2 text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200"
+                  className="px-4 py-2 font-medium transition-colors duration-200"
+                  style={{ color: COLORS.gray[700] }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = COLORS.primary[600];
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = COLORS.gray[700];
+                  }}
                 >
                   Login
                 </Link>
@@ -96,23 +112,26 @@ export default function Header({ isLoggedIn }: HeaderProps) {
           >
             <div className="w-6 h-6 flex flex-col justify-center items-center">
               <span
-                className={`bg-gray-700 block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm ${
+                className={`block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm ${
                   isMobileMenuOpen
                     ? "rotate-45 translate-y-1"
                     : "-translate-y-0.5"
                 }`}
+                style={{ backgroundColor: COLORS.gray[700] }}
               ></span>
               <span
-                className={`bg-gray-700 block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm my-0.5 ${
+                className={`block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm my-0.5 ${
                   isMobileMenuOpen ? "opacity-0" : "opacity-100"
                 }`}
+                style={{ backgroundColor: COLORS.gray[700] }}
               ></span>
               <span
-                className={`bg-gray-700 block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm ${
+                className={`block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm ${
                   isMobileMenuOpen
                     ? "-rotate-45 -translate-y-1"
                     : "translate-y-0.5"
                 }`}
+                style={{ backgroundColor: COLORS.gray[700] }}
               ></span>
             </div>
           </button>
@@ -126,7 +145,8 @@ export default function Header({ isLoggedIn }: HeaderProps) {
                 <a
                   key={item.name}
                   href={item.href}
-                  className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium"
+                  className="font-medium transition-colors duration-200"
+                  style={{ color: COLORS.gray[700] }}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {item.name}
@@ -145,7 +165,8 @@ export default function Header({ isLoggedIn }: HeaderProps) {
                   <div className="space-y-2">
                     <Link
                       href="/login"
-                      className="block w-full text-center px-4 py-2 text-gray-700 font-medium"
+                      className="block w-full text-center px-4 py-2 font-medium"
+                      style={{ color: COLORS.gray[700] }}
                     >
                       Login
                     </Link>
