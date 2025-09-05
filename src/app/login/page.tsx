@@ -25,15 +25,13 @@ const LoginPage: React.FC = () => {
   useEffect(() => {
     const checkSystemStatus = async () => {
       try {
-        const isOnboarded = await checkOnboardingStatus();
-        if (!isOnboarded) {
+        const onboard = await checkOnboardingStatus();
+        if (!onboard.isOnboarded) {
           router.push("/onboarding");
           return;
         }
       } catch (error) {
         console.error("Error checking onboarding status:", error);
-        // Allow login page to render even if check fails,
-        // backend will ultimately block login if not onboarded.
       } finally {
         setIsCheckingOnboarding(false);
       }
@@ -69,18 +67,21 @@ const LoginPage: React.FC = () => {
         message: "Welcome back!",
       });
       router.push("/admin/dashboard");
-    } catch (error: any) {
-      if (error instanceof ApiError && error.message.includes('not verified') && error.data?.userId) {
+    } catch (error) {
+      if (
+        error instanceof ApiError &&
+        error.message.includes("not verified") &&
+        error.data?.userId
+      ) {
         const { userId } = error.data;
         showToast({
           title: "Verification Required",
           type: "info",
-          message: "Your email is not verified. A new verification code has been sent to your email.",
+          message:
+            "Your email is not verified. A new verification code has been sent to your email.",
         });
         // Resend OTP and redirect to verification page
         try {
-          // We can use the email from the form to trigger the resend.
-          // The userId is needed for the redirect URL.
           await authService.resendOTP({ email: formData.emailOrUsername });
           router.push(`/verify-email?userId=${userId}`);
         } catch (resendError) {
@@ -90,7 +91,7 @@ const LoginPage: React.FC = () => {
         showToast({
           title: "Login Failed",
           type: "error",
-          message: error.message || "Invalid credentials",
+          message: error instanceof Error ? error.message : "Invalid credentials",
         });
       }
     } finally {
@@ -151,11 +152,27 @@ const LoginPage: React.FC = () => {
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                 >
                   {/* Basic Show/Hide Icon */}
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
                     {showPassword ? (
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
                     ) : (
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242"
+                      />
                     )}
                   </svg>
                 </button>
@@ -181,7 +198,10 @@ const LoginPage: React.FC = () => {
 
         <p className="mt-4 text-center text-sm text-gray-600">
           Don&apos;t have an account?{" "}
-          <Link href="/register" className="font-medium text-sky-600 hover:text-sky-500">
+          <Link
+            href="/register"
+            className="font-medium text-sky-600 hover:text-sky-500"
+          >
             Register here
           </Link>
         </p>

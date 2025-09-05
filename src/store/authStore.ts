@@ -1,5 +1,12 @@
-import { create } from 'zustand';
-import { authService, type OnboardingData, type School, type Class, type Section } from '@/services/authService';
+import { create } from "zustand";
+import {
+  authService,
+  type OnboardingData,
+  type School,
+  type Class,
+  type Section,
+  type InitializationResponse,
+} from "@/services/authService";
 
 interface User {
   id: string;
@@ -17,12 +24,16 @@ interface AuthState {
   schools: School[];
   classes: Class[];
   sections: Section[];
-  
+
   // Actions
   login: (emailOrUsername: string, password: string) => Promise<void>;
   logout: () => void;
-  checkOnboardingStatus: () => Promise<{ isOnboarded: boolean; currentStep?: number; onboardingProgress?: number }>;
-  initializeSystem: (data: OnboardingData) => Promise<void>;
+  checkOnboardingStatus: () => Promise<{
+    isOnboarded: boolean;
+    currentStep?: number;
+    onboardingProgress?: number;
+  }>;
+  initializeSystem: (data: OnboardingData) => Promise<InitializationResponse>;
   loadSchools: () => Promise<void>;
   loadClasses: (schoolId: string) => Promise<void>;
   loadSections: (classId: string) => Promise<void>;
@@ -42,21 +53,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       set({ isLoading: true });
       const response = await authService.login({ emailOrUsername, password });
-      
+
       if (response.success && response.data) {
         const { userData, token } = response.data;
-        set({ 
-          user: userData, 
+        set({
+          user: userData,
           token,
-          isLoading: false 
+          isLoading: false,
         });
-        
+
         // Store token in localStorage
-        localStorage.setItem('token', token);
+        localStorage.setItem("token", token);
       } else {
-        throw new Error(response.message || 'Login failed');
+        throw new Error(response.message || "Login failed");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({ isLoading: false });
       throw error;
     }
@@ -64,7 +75,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   logout: () => {
     set({ user: null, token: null });
-    localStorage.removeItem('token');
+    localStorage.removeItem("token");
   },
 
   checkOnboardingStatus: async () => {
@@ -76,12 +87,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         return {
           isOnboarded,
           currentStep: response.data.currentStep,
-          onboardingProgress: response.data.onboardingProgress
+          onboardingProgress: response.data.onboardingProgress,
         };
       }
       return { isOnboarded: false };
     } catch (error) {
-      console.error('Error checking onboarding status:', error);
+      console.error("Error checking onboarding status:", error);
       return { isOnboarded: false };
     }
   },
@@ -91,14 +102,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ isLoading: true });
       const response = await authService.initializeSystem(data);
       if (response.success && response.data) {
-        // Don't set isOnboarded to true until email is verified.
-        // The checkOnboardingStatus will still report false.
         set({ isLoading: false });
-        return response.data; // Return the data which includes the superAdmin object
+        return response.data;
       } else {
-        throw new Error(response.message || 'System initialization failed');
+        throw new Error(response.message || "System initialization failed");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({ isLoading: false });
       throw error;
     }
@@ -108,10 +117,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const response = await authService.getSchools();
       if (response.success && response.data) {
-        set({ schools: response.data });
+        set({ schools: response.data.data });
       }
-    } catch (error) {
-      console.error('Error loading schools:', error);
+    } catch (error: unknown) {
+      console.error("Error loading schools:", error);
     }
   },
 
@@ -119,10 +128,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const response = await authService.getClasses(schoolId);
       if (response.success && response.data) {
-        set({ classes: response.data, sections: [] });
+        set({ classes: response.data.data, sections: [] });
       }
-    } catch (error) {
-      console.error('Error loading classes:', error);
+    } catch (error: unknown) {
+      console.error("Error loading classes:", error);
     }
   },
 
@@ -132,8 +141,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (response.success && response.data) {
         set({ sections: response.data });
       }
-    } catch (error) {
-      console.error('Error loading sections:', error);
+    } catch (error: unknown) {
+      console.error("Error loading sections:", error);
     }
   },
 

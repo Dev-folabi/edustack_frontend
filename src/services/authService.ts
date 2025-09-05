@@ -1,4 +1,4 @@
-import { apiClient } from '../utils/api';
+import { apiClient } from "../utils/api";
 
 interface LoginCredentials {
   emailOrUsername: string;
@@ -13,12 +13,12 @@ interface StaffSignupData {
   phone: string[];
   address: string;
   schoolId: string;
-  role: 'teacher' | 'accountant' | 'librarian';
+  role: "teacher" | "accountant" | "librarian";
   designation: string;
   dob: string;
   salary: number;
   joining_date: string;
-  gender: 'male' | 'female';
+  gender: "male" | "female";
   photo_url?: string;
   isActive: boolean;
   qualification: string;
@@ -34,11 +34,11 @@ interface StudentSignupData {
   classId: string;
   sectionId: string;
   name: string;
-  gender: 'male' | 'female';
+  gender: "male" | "female";
   dob: string;
   phone: string;
   address: string;
-  admission_date: string;
+  admission_date?: string;
   religion?: string;
   blood_group?: string;
   father_name?: string;
@@ -58,52 +58,111 @@ interface StudentSignupData {
   guardian_phone?: string[];
   guardian_email?: string;
   guardian_username?: string;
-  guardian_password?: string;
+  guardian_emailOrUsername?: string;
+  guardian_password: string;
 }
 
 // Updated to match backend expectations
 interface OnboardingData {
-  adminName: string;          // Maps to superAdminUsername in backend
-  adminEmail: string;         // Maps to superAdminEmail in backend  
-  adminUsername: string;      // Maps to superAdminUsername in backend
-  adminPassword: string;      // Maps to superAdminPassword in backend
+  adminName: string;
+  adminEmail: string;
+  adminUsername: string;
+  adminPassword: string;
   schoolName: string;
   schoolAddress: string;
-  schoolPhone: string;
+  schoolPhone: string[];
   schoolEmail: string;
-  schoolWebsite?: string;     // Optional field
-  appName?: string;           // Optional field
-  allowRegistration?: boolean;
-  sessionTimeout?: number;
-  maxFileSize?: number;
-  enableEmailNotifications?: boolean;
 }
 
 interface School {
   id: string;
   name: string;
   email: string;
+  phone: string[];
   address: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface Class {
   id: string;
   name: string;
-  schoolId: string;
+  createdAt: string;
+  updatedAt: string;
+  schoolClasses: {
+    id: string;
+    classId: string;
+    schoolId: string;
+    createdAt: string;
+    updatedAt: string;
+  }[];
+  sections: Section[];
 }
 
 interface Section {
   id: string;
   name: string;
   classId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Add these response interfaces
+interface ApiResponse<T> {
+  success: boolean;
+  message?: string;
+  data?: T;
+}
+
+interface SchoolsResponse {
+  data: School[];
+}
+
+interface ClassesResponse {
+  data: Class[];
+}
+
+interface LoginResponse {
+  userData: {
+    id: string;
+    username: string;
+    email: string;
+    role: string;
+    isSuperAdmin?: boolean;
+  };
+  token: string;
+}
+
+interface OnboardingStatusResponse {
+  isOnboarded: boolean;
+  currentStep?: number;
+  onboardingProgress?: number;
+}
+
+interface InitializationResponse {
+  superAdmin: {
+    id: string;
+    username: string;
+    email: string;
+    role: string;
+  };
+  school: {
+    id: string;
+    name: string;
+    email: string;
+    address: string;
+    phone: string[];
+  };
 }
 
 export const authService = {
-  // Check if system is onboarded
-  checkOnboardingStatus: () => apiClient.get('/system/onboarding/check'),
-  
-  // Initialize system (onboarding) - transform data to match backend
-  initializeSystem: (data: OnboardingData) => {
+  // System onboarding check
+  checkOnboardingStatus: (): Promise<ApiResponse<OnboardingStatusResponse>> => 
+    apiClient.get("/system/onboarding/check"),
+
+  // System initialization
+  initializeSystem: (data: OnboardingData): Promise<ApiResponse<InitializationResponse>> => {
     const backendData = {
       superAdminUsername: data.adminUsername,
       superAdminEmail: data.adminEmail,
@@ -113,34 +172,53 @@ export const authService = {
       schoolAddress: data.schoolAddress,
       schoolPhone: data.schoolPhone,
     };
-    return apiClient.post('/auth/initialize', backendData);
+    return apiClient.post("/auth/initialize", backendData);
   },
-  
+
   // Login
-  login: (credentials: LoginCredentials) => apiClient.post('/auth/login', credentials),
-  
+  login: (credentials: LoginCredentials): Promise<ApiResponse<LoginResponse>> =>
+    apiClient.post("/auth/login", credentials),
+
   // Staff signup
-  staffSignup: (data: StaffSignupData) => apiClient.post('/auth/staff-signup', data),
-  
+  staffSignup: (data: StaffSignupData) =>
+    apiClient.post("/auth/staff-signup", data),
+
   // Student signup
-  studentSignup: (data: StudentSignupData) => apiClient.post('/auth/student-signup', data),
-  
+  studentSignup: (data: StudentSignupData) =>
+    apiClient.post("/auth/student-signup", data),
+
   // Get schools (for dropdowns)
-  getSchools: () => apiClient.get('/school/all'),
-  
+  getSchools: (): Promise<ApiResponse<SchoolsResponse>> => apiClient.get("/school/all"),
+
   // Get classes by school, which includes sections
-  getClasses: (schoolId: string) => apiClient.get(`/class?schoolId=${schoolId}`),
+  getClasses: (schoolId: string): Promise<ApiResponse<ClassesResponse>> =>
+    apiClient.get(`/class?schoolId=${schoolId}`),
+
+  // Add missing getSections method
+  getSections: (classId: string): Promise<ApiResponse<Section[]>> =>
+    apiClient.get(`/section?classId=${classId}`),
 
   // Email verification
-  verifyEmail: (userId: string, otp: string) => apiClient.post('/auth/verify-email-otp', { userId, otp }),
-  
+  verifyEmail: (userId: string, otp: string) =>
+    apiClient.post("/auth/verify-email-otp", { userId, otp }),
+
   // Resend OTP
   resendOTP: (identifier: { userId?: string; email?: string }) => {
     const payload = identifier.userId
-      ? { id: identifier.userId, type: 'email_verification' }
-      : { email: identifier.email, type: 'email_verification' };
-    return apiClient.post('/auth/resend-otp', payload);
+      ? { id: identifier.userId, type: "email_verification" }
+      : { email: identifier.email, type: "email_verification" };
+    return apiClient.post("/auth/resend-otp", payload);
   },
 };
 
-export type { OnboardingData, StaffSignupData, StudentSignupData, School, Class, Section };
+export type {
+  OnboardingData,
+  StaffSignupData,
+  StudentSignupData,
+  School,
+  Class,
+  Section,
+  LoginResponse,
+  OnboardingStatusResponse,
+  InitializationResponse,
+};
