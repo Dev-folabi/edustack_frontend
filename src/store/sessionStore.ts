@@ -19,11 +19,9 @@ export const useSessionStore = create<SessionState>((set) => ({
     try {
       set({ isLoading: true });
       const response = await sessionService.getSessions();
-      // The API response has the array directly in the `data` property
-      if (response.success && response.data) {
-        const sessions = response.data; // Corrected data access
-        // Find the active session to set as default
-        const activeSession = sessions.find(s => s.isActive) || sessions[0] || null;
+      if (response.success && response.data && response.data.data) {
+        const sessions = response.data.data;
+        const activeSession = sessions.find((s: Session) => s.isActive) || sessions[0] || null;
         set({
           sessions,
           selectedSession: activeSession,
