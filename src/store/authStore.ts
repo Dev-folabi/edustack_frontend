@@ -142,15 +142,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     });
     
     // Clear localStorage
-    localStorage.removeItem("token");
-    localStorage.removeItem("userData");
-    localStorage.removeItem("userSchools");
-    localStorage.removeItem("staff");
-    localStorage.removeItem("student");
-    localStorage.removeItem("parent");
-    
-    // Clear cookie
-    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem("token");
+      localStorage.removeItem("userData");
+      localStorage.removeItem("userSchools");
+      localStorage.removeItem("staff");
+      localStorage.removeItem("student");
+      localStorage.removeItem("parent");
+
+      // Clear cookie
+      document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+
+      // Hard redirect to login page
+      window.location.href = '/login';
+    }
   },
 
   checkOnboardingStatus: async () => {
@@ -165,10 +170,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           onboardingProgress: response.data.onboardingProgress,
         };
       }
-      return { isOnboarded: false };
+      // If the API call was not successful, throw an error
+      throw new Error(response.message || "Failed to check onboarding status.");
     } catch (error) {
       console.error("Error checking onboarding status:", error);
-      return { isOnboarded: false };
+      // Re-throw the error to be caught by the calling component
+      throw error;
     }
   },
 

@@ -54,7 +54,6 @@ const UserProfile = () => {
 
     const handleLogout = () => {
         logout();
-        router.push('/login');
     };
 
     if (!user) return null;

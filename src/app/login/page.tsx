@@ -6,21 +6,30 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Link from "next/link";
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
-
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useAuthStore } from "../../store/authStore";
 import { useToast } from "../../components/ui/Toast";
 import { Loader } from "../../components/ui/Loader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import { ApiError } from "../../utils/api";
 import { authService } from "../../services/authService";
 import { DASHBOARD_ROUTES } from "@/constants/routes";
+import { COLORS } from "@/constants/colors";
 
 const formSchema = z.object({
-  emailOrUsername: z.string().min(1, { message: "Email or Username is required." }),
+  emailOrUsername: z
+    .string()
+    .min(1, { message: "Email or Username is required." }),
   password: z.string().min(1, { message: "Password is required." }),
 });
 
@@ -63,9 +72,13 @@ const LoginPage: React.FC = () => {
         type: "success",
         message: "Welcome back!",
       });
-      router.push(DASHBOARD_ROUTES.MULTI_SCHOOL_DASHBOARD); // Corrected redirect
+      router.push(DASHBOARD_ROUTES.MULTI_SCHOOL_DASHBOARD);
     } catch (error) {
-      if (error instanceof ApiError && error.message.includes("not verified") && error.data?.userId) {
+      if (
+        error instanceof ApiError &&
+        error.message.includes("not verified") &&
+        error.data?.userId
+      ) {
         const { userId } = error.data;
         showToast({
           title: "Verification Required",
@@ -73,7 +86,7 @@ const LoginPage: React.FC = () => {
           message: "A new verification code has been sent to your email.",
         });
         try {
-          await authService.resendOTP({ email: values.emailOrUsername });
+          await authService.resendOTP(userId);
           router.push(`/verify-email?userId=${userId}`);
         } catch (resendError) {
           console.error("Failed to resend OTP:", resendError);
@@ -82,7 +95,8 @@ const LoginPage: React.FC = () => {
         showToast({
           title: "Login Failed",
           type: "error",
-          message: error instanceof Error ? error.message : "Invalid credentials",
+          message:
+            error instanceof Error ? error.message : "Invalid credentials",
         });
       }
     }
@@ -93,14 +107,18 @@ const LoginPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: COLORS.background.accent }}>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-extrabold text-gray-900">Welcome Back</h2>
-          <p className="mt-2 text-sm text-gray-600">Sign in to your EduStack account</p>
+          <h2 className="text-3xl font-extrabold" style={{ color: COLORS.primary[700] }}>
+            Welcome Back
+          </h2>
+          <p className="mt-2 text-sm" style={{ color: COLORS.gray[600] }}>
+            Sign in to your EduStack account
+          </p>
         </div>
 
-        <Card className="p-8">
+        <Card className="p-8" style={{ backgroundColor: COLORS.background.primary, borderColor: COLORS.gray[200] }}>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
@@ -108,9 +126,17 @@ const LoginPage: React.FC = () => {
                 name="emailOrUsername"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email or Username</FormLabel>
+                    <FormLabel style={{ color: COLORS.gray[700] }}>Email or Username</FormLabel>
                     <FormControl>
-                      <Input placeholder="you@example.com" {...field} />
+                      <Input 
+                        placeholder="you@example.com" 
+                        {...field} 
+                        style={{ 
+                          borderColor: COLORS.gray[300],
+                          color: COLORS.gray[900]
+                        }}
+                        className="focus:ring-2 focus:border-transparent"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -121,18 +147,24 @@ const LoginPage: React.FC = () => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel style={{ color: COLORS.gray[700] }}>Password</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
                           type={showPassword ? "text" : "password"}
                           placeholder="••••••••"
                           {...field}
+                          style={{ 
+                            borderColor: COLORS.gray[300],
+                            color: COLORS.gray[900]
+                          }}
+                          className="focus:ring-2 focus:border-transparent pr-10"
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
                           className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                          style={{ color: COLORS.gray[500] }}
                         >
                           {showPassword ? <FaEyeSlash /> : <FaEye />}
                         </button>
@@ -142,16 +174,44 @@ const LoginPage: React.FC = () => {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button 
+                type="submit" 
+                className="w-full font-medium transition-all duration-200 hover:shadow-lg" 
+                disabled={isLoading}
+                style={{ 
+                  backgroundColor: COLORS.primary[500],
+                  color: 'white'
+                }}
+                onMouseEnter={(e) => {
+                  if (!isLoading) {
+                    e.currentTarget.style.backgroundColor = COLORS.primary[600];
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isLoading) {
+                    e.currentTarget.style.backgroundColor = COLORS.primary[500];
+                  }
+                }}
+              >
                 {isLoading ? "Signing In..." : "Sign In"}
               </Button>
             </form>
           </Form>
         </Card>
 
-        <p className="mt-4 text-center text-sm text-gray-600">
+        <p className="mt-4 text-center text-sm" style={{ color: COLORS.gray[600] }}>
           Don&apos;t have an account?{" "}
-          <Link href="/register" className="font-medium text-sky-600 hover:text-sky-500">
+          <Link
+            href="/register"
+            className="font-medium transition-colors duration-200"
+            style={{ color: COLORS.primary[600] }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = COLORS.primary[500];
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = COLORS.primary[600];
+            }}
+          >
             Register here
           </Link>
         </p>
