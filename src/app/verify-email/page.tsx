@@ -56,7 +56,8 @@ const VerifyEmailContent: React.FC = () => {
       showToast({
         type: "error",
         title: "Verification Failed",
-        message: error instanceof Error ? error.message : "An unknown error occurred.",
+        message:
+          error instanceof Error ? error.message : "An unknown error occurred.",
       });
     } finally {
       setIsVerifying(false);
@@ -68,7 +69,7 @@ const VerifyEmailContent: React.FC = () => {
 
     setIsResending(true);
     try {
-      await authService.resendOTP({ userId });
+      await authService.resendOTP(userId);
       showToast({
         type: "success",
         title: "OTP Resent",
@@ -78,7 +79,8 @@ const VerifyEmailContent: React.FC = () => {
       showToast({
         type: "error",
         title: "Failed to Resend",
-        message: error instanceof Error ? error.message : "An unknown error occurred.",
+        message:
+          error instanceof Error ? error.message : "An unknown error occurred.",
       });
     } finally {
       setIsResending(false);
@@ -93,8 +95,8 @@ const VerifyEmailContent: React.FC = () => {
             Verify Your Email
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            We&apos;ve sent a 6-digit code to your email address. Please enter it
-            below.
+            We&apos;ve sent a 6-digit code to your email address. Please enter
+            it below.
           </p>
         </div>
 

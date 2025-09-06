@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { useToast } from '@/components/ui/Toast'; // Assuming Toast exists from previous steps
+import { useToast } from '@/components/ui/Toast';
 import { schoolService } from '@/services/schoolService';
 import { DASHBOARD_ROUTES } from '@/constants/routes';
 

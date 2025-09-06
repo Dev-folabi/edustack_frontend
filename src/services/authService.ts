@@ -170,11 +170,13 @@ interface InitializationResponse {
 
 export const authService = {
   // System onboarding check
-  checkOnboardingStatus: (): Promise<ApiResponse<OnboardingStatusResponse>> => 
+  checkOnboardingStatus: (): Promise<ApiResponse<OnboardingStatusResponse>> =>
     apiClient.get("/system/onboarding/check"),
 
   // System initialization
-  initializeSystem: (data: OnboardingData): Promise<ApiResponse<InitializationResponse>> => {
+  initializeSystem: (
+    data: OnboardingData
+  ): Promise<ApiResponse<InitializationResponse>> => {
     const backendData = {
       superAdminUsername: data.adminUsername,
       superAdminEmail: data.adminEmail,
@@ -200,7 +202,8 @@ export const authService = {
     apiClient.post("/auth/student-signup", data),
 
   // Get schools (for dropdowns)
-  getSchools: (): Promise<ApiResponse<SchoolsResponse>> => apiClient.get("/school/all"),
+  getSchools: (): Promise<ApiResponse<SchoolsResponse>> =>
+    apiClient.get("/school/all"),
 
   // Get classes by school, which includes sections
   getClasses: (schoolId: string): Promise<ApiResponse<ClassesResponse>> =>
@@ -215,13 +218,10 @@ export const authService = {
     apiClient.post("/auth/verify-email-otp", { userId, otp }),
 
   // Resend OTP
-  resendOTP: (identifier: { userId?: string; email?: string }) => {
-    const payload = identifier.userId
-      ? { id: identifier.userId, type: "email_verification" }
-      : { email: identifier.email, type: "email_verification" };
+  resendOTP: (id: string) => {
+    const payload = { id: id, type: "email_verification" };
     return apiClient.post("/auth/resend-otp", payload);
   },
-
 };
 
 export type {

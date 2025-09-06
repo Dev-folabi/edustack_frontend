@@ -6,21 +6,29 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Link from "next/link";
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
-
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useAuthStore } from "../../store/authStore";
 import { useToast } from "../../components/ui/Toast";
 import { Loader } from "../../components/ui/Loader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import { ApiError } from "../../utils/api";
 import { authService } from "../../services/authService";
 import { DASHBOARD_ROUTES } from "@/constants/routes";
 
 const formSchema = z.object({
-  emailOrUsername: z.string().min(1, { message: "Email or Username is required." }),
+  emailOrUsername: z
+    .string()
+    .min(1, { message: "Email or Username is required." }),
   password: z.string().min(1, { message: "Password is required." }),
 });
 
@@ -63,9 +71,13 @@ const LoginPage: React.FC = () => {
         type: "success",
         message: "Welcome back!",
       });
-      router.push(DASHBOARD_ROUTES.MULTI_SCHOOL_DASHBOARD); // Corrected redirect
+      router.push(DASHBOARD_ROUTES.MULTI_SCHOOL_DASHBOARD);
     } catch (error) {
-      if (error instanceof ApiError && error.message.includes("not verified") && error.data?.userId) {
+      if (
+        error instanceof ApiError &&
+        error.message.includes("not verified") &&
+        error.data?.userId
+      ) {
         const { userId } = error.data;
         showToast({
           title: "Verification Required",
@@ -73,7 +85,7 @@ const LoginPage: React.FC = () => {
           message: "A new verification code has been sent to your email.",
         });
         try {
-          await authService.resendOTP({ email: values.emailOrUsername });
+          await authService.resendOTP(userId);
           router.push(`/verify-email?userId=${userId}`);
         } catch (resendError) {
           console.error("Failed to resend OTP:", resendError);
@@ -82,7 +94,8 @@ const LoginPage: React.FC = () => {
         showToast({
           title: "Login Failed",
           type: "error",
-          message: error instanceof Error ? error.message : "Invalid credentials",
+          message:
+            error instanceof Error ? error.message : "Invalid credentials",
         });
       }
     }
@@ -96,8 +109,12 @@ const LoginPage: React.FC = () => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-extrabold text-gray-900">Welcome Back</h2>
-          <p className="mt-2 text-sm text-gray-600">Sign in to your EduStack account</p>
+          <h2 className="text-3xl font-extrabold text-gray-900">
+            Welcome Back
+          </h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Sign in to your EduStack account
+          </p>
         </div>
 
         <Card className="p-8">
@@ -151,7 +168,10 @@ const LoginPage: React.FC = () => {
 
         <p className="mt-4 text-center text-sm text-gray-600">
           Don&apos;t have an account?{" "}
-          <Link href="/register" className="font-medium text-sky-600 hover:text-sky-500">
+          <Link
+            href="/register"
+            className="font-medium text-sky-600 hover:text-sky-500"
+          >
             Register here
           </Link>
         </p>
