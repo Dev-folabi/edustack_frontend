@@ -6,8 +6,14 @@ import { useAuthStore } from '@/store/authStore';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { FaUserCircle } from 'react-icons/fa';
+import { FaUserCircle, FaBars } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
+import SchoolSelector from './SchoolSelector';
+
+interface HeaderProps {
+  onMobileMenuClick: () => void;
+  sidebarCollapsed: boolean;
+}
 
 const SessionSelector = () => {
   const { sessions, selectedSession, fetchSessions, setSelectedSession, isLoading } = useSessionStore();
@@ -17,7 +23,7 @@ const SessionSelector = () => {
   }, [fetchSessions]);
 
   if (isLoading) {
-    return <div>Loading Sessions...</div>;
+    return <div className="text-sm text-gray-500">Loading Sessions...</div>;
   }
 
   if (!selectedSession) {
@@ -34,7 +40,7 @@ const SessionSelector = () => {
         }
       }}
     >
-      <SelectTrigger className="w-[180px]">
+      <SelectTrigger className="w-[140px] md:w-[180px]">
         <SelectValue placeholder="Select a session" />
       </SelectTrigger>
       <SelectContent>
@@ -62,7 +68,7 @@ const UserProfile = () => {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <FaUserCircle className="h-8 w-8" />
+                    <FaUserCircle className="h-6 w-6 md:h-8 md:w-8" />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
@@ -84,9 +90,7 @@ const UserProfile = () => {
     );
 }
 
-import SchoolSelector from './SchoolSelector';
-
-const Header = () => {
+const Header: React.FC<HeaderProps> = ({ onMobileMenuClick, sidebarCollapsed }) => {
   const { loadSchools } = useAuthStore();
 
   useEffect(() => {
@@ -94,10 +98,26 @@ const Header = () => {
   }, [loadSchools]);
 
   return (
-    <header className="bg-white shadow-sm p-4 border-b flex justify-between items-center">
-      <div>{/* Logo can go here */}</div>
-      <div className="flex items-center space-x-4">
-        <SchoolSelector />
+    <header className="bg-white shadow-sm p-3 md:p-4 border-b flex justify-between items-center sticky top-0 z-30">
+      <div className="flex items-center space-x-3">
+        {/* Mobile menu button */}
+        <button
+          onClick={onMobileMenuClick}
+          className="md:hidden p-2 rounded-md hover:bg-gray-100 transition-colors"
+        >
+          <FaBars className="h-5 w-5" />
+        </button>
+        
+        {/* Logo/Title for mobile when sidebar is hidden */}
+        <div className="md:hidden">
+          <h1 className="text-lg font-semibold text-gray-800">EduStack</h1>
+        </div>
+      </div>
+      
+      <div className="flex items-center space-x-2 md:space-x-4">
+        <div className="hidden sm:block">
+          <SchoolSelector />
+        </div>
         <SessionSelector />
         <UserProfile />
       </div>
