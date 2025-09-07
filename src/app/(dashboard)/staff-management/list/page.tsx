@@ -1,8 +1,5 @@
 "use client";
 
-import withAuth from '@/components/withAuth';
-import { UserRole } from '@/constants/roles';
-
 const StaffListPage = () => {
   return (
     <div className="container mx-auto p-4">
@@ -12,4 +9,4 @@ const StaffListPage = () => {
   );
 };
 
-export default withAuth(StaffListPage, [UserRole.ADMIN]);
+export default StaffListPage;

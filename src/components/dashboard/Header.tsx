@@ -6,7 +6,7 @@ import { useAuthStore } from '@/store/authStore';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { FaUserCircle } from 'react-icons/fa';
+import { FaUserCircle, FaBars } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 
 const SessionSelector = () => {
@@ -87,7 +87,7 @@ const UserProfile = () => {
 import SchoolSelector from './SchoolSelector';
 
 const Header = () => {
-  const { loadSchools } = useAuthStore();
+  const { loadSchools, toggleSidebar } = useAuthStore();
 
   useEffect(() => {
     loadSchools();
@@ -95,9 +95,13 @@ const Header = () => {
 
   return (
     <header className="bg-white shadow-sm p-4 border-b flex justify-between items-center">
-      <div>{/* Logo can go here */}</div>
       <div className="flex items-center space-x-4">
+        <Button variant="ghost" size="icon" onClick={toggleSidebar} className="md:hidden">
+            <FaBars />
+        </Button>
         <SchoolSelector />
+      </div>
+      <div className="flex items-center space-x-4">
         <SessionSelector />
         <UserProfile />
       </div>

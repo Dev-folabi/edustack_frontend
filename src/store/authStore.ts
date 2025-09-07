@@ -9,27 +9,33 @@ import {
   type UserData,
   type UserSchool,
 } from "@/services/authService";
+import { UserRole } from "@/constants/roles";
 
 interface AuthState {
   user: UserData | null;
   token: string | null;
   userSchools: UserSchool[] | null;
   selectedSchool: UserSchool | null;
+  currentRole: UserRole | null;
   staff: any | null;
   student: any | null;
   parent: any | null;
   isLoading: boolean;
   isOnboarded: boolean;
+  isInitialized: boolean;
   schools: School[];
   classes: Class[];
   sections: Section[];
   isLoggedIn: boolean; // Add computed property
+
+  isSidebarCollapsed: boolean;
 
   // Actions
   login: (emailOrUsername: string, password: string) => Promise<void>;
   logout: () => void;
   initializeAuth: () => void; // Add initialization method
   setSelectedSchool: (school: UserSchool) => void;
+  toggleSidebar: () => void;
   checkOnboardingStatus: () => Promise<{
     isOnboarded: boolean;
     currentStep?: number;
@@ -47,11 +53,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   token: null,
   userSchools: null,
   selectedSchool: null,
+  currentRole: null,
   staff: null,
   student: null,
   parent: null,
   isLoading: false,
   isOnboarded: false,
+  isInitialized: false,
+  isSidebarCollapsed: false,
   schools: [],
   classes: [],
   sections: [],
@@ -62,39 +71,36 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   // Initialize auth state from localStorage
   initializeAuth: () => {
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('token');
-      const userData = localStorage.getItem('userData');
-      const userSchools = localStorage.getItem('userSchools');
-      const selectedSchool = localStorage.getItem('selectedSchool');
-      const staff = localStorage.getItem('staff');
-      const student = localStorage.getItem('student');
-      const parent = localStorage.getItem('parent');
+      try {
+        const token = localStorage.getItem('token');
+        const userData = localStorage.getItem('userData');
+        const userSchools = localStorage.getItem('userSchools');
+        const selectedSchool = localStorage.getItem('selectedSchool');
+        const currentRole = localStorage.getItem('currentRole');
+        const staff = localStorage.getItem('staff');
+        const student = localStorage.getItem('student');
+        const parent = localStorage.getItem('parent');
 
-      if (token && userData) {
-        try {
-          set({
-            token,
-            user: JSON.parse(userData),
-            userSchools: userSchools ? JSON.parse(userSchools) : null,
-            selectedSchool: selectedSchool ? JSON.parse(selectedSchool) : null,
-            staff: staff ? JSON.parse(staff) : null,
-            student: student ? JSON.parse(student) : null,
-            parent: parent ? JSON.parse(parent) : null,
-          });
-
-          // Set cookie for middleware
-          document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 60 * 60}`; // 7 days
-        } catch (error) {
-          console.error('Error parsing stored auth data:', error);
-          // Clear corrupted data
-          localStorage.removeItem('token');
-          localStorage.removeItem('userData');
-          localStorage.removeItem('userSchools');
-          localStorage.removeItem('selectedSchool');
-          localStorage.removeItem('staff');
-          localStorage.removeItem('student');
-          localStorage.removeItem('parent');
+        if (token && userData) {
+            set({
+              token,
+              user: JSON.parse(userData),
+              userSchools: userSchools ? JSON.parse(userSchools) : null,
+              selectedSchool: selectedSchool ? JSON.parse(selectedSchool) : null,
+              currentRole: currentRole ? JSON.parse(currentRole) : null,
+              staff: staff ? JSON.parse(staff) : null,
+              student: student ? JSON.parse(student) : null,
+              parent: parent ? JSON.parse(parent) : null,
+            });
+            document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 60 * 60}`;
         }
+      } catch (error) {
+        console.error('Error initializing auth state from localStorage:', error);
+        // If parsing fails, clear out potentially corrupted data
+        localStorage.clear();
+      } finally {
+        // Always mark as initialized
+        set({ isInitialized: true });
       }
     }
   },
@@ -109,12 +115,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           response.data;
 
         const selectedSchool = userSchools && userSchools.length > 0 ? userSchools[0] : null;
+        const currentRole = selectedSchool ? (selectedSchool.role as UserRole) : null;
 
         set({
           user: userData,
           token,
           userSchools,
           selectedSchool,
+          currentRole,
           staff,
           student,
           parent,
@@ -126,6 +134,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         localStorage.setItem("userData", JSON.stringify(userData));
         if (userSchools) localStorage.setItem("userSchools", JSON.stringify(userSchools));
         if (selectedSchool) localStorage.setItem("selectedSchool", JSON.stringify(selectedSchool));
+        if (currentRole) localStorage.setItem("currentRole", JSON.stringify(currentRole));
         if (staff) localStorage.setItem("staff", JSON.stringify(staff));
         if (student) localStorage.setItem("student", JSON.stringify(student));
         if (parent) localStorage.setItem("parent", JSON.stringify(parent));
@@ -147,6 +156,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       token: null,
       userSchools: null,
       selectedSchool: null,
+      currentRole: null,
       staff: null,
       student: null,
       parent: null,
@@ -158,6 +168,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       localStorage.removeItem("userData");
       localStorage.removeItem("userSchools");
       localStorage.removeItem("selectedSchool");
+      localStorage.removeItem("currentRole");
       localStorage.removeItem("staff");
       localStorage.removeItem("student");
       localStorage.removeItem("parent");
@@ -171,10 +182,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   setSelectedSchool: (school: UserSchool) => {
-    set({ selectedSchool: school });
+    const newRole = school.role as UserRole;
+    set({ selectedSchool: school, currentRole: newRole });
     if (typeof window !== 'undefined') {
       localStorage.setItem("selectedSchool", JSON.stringify(school));
+      localStorage.setItem("currentRole", JSON.stringify(newRole));
     }
+  },
+
+  toggleSidebar: () => {
+    set((state) => ({ isSidebarCollapsed: !state.isSidebarCollapsed }));
   },
 
   checkOnboardingStatus: async () => {

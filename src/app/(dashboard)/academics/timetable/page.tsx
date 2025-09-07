@@ -1,8 +1,7 @@
 "use client";
 
-import withAuth from '@/components/withAuth';
-import { STAFF_ROLES, UserRole } from '@/constants/roles';
 import { usePermissions } from '@/utils/permissions';
+import { UserRole } from '@/constants/roles';
 
 const TimetablePage = () => {
   const { hasRole } = usePermissions();
@@ -27,4 +26,4 @@ const TimetablePage = () => {
   );
 };
 
-export default withAuth(TimetablePage, [...STAFF_ROLES, UserRole.STUDENT, UserRole.PARENT]);
+export default TimetablePage;

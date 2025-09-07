@@ -1,8 +1,5 @@
 "use client";
 
-import withAuth from '@/components/withAuth';
-import { STAFF_ROLES } from '@/constants/roles';
-
 const SubjectsPage = () => {
   return (
     <div className="container mx-auto p-4">
@@ -12,4 +9,4 @@ const SubjectsPage = () => {
   );
 };
 
-export default withAuth(SubjectsPage, STAFF_ROLES);
+export default SubjectsPage;

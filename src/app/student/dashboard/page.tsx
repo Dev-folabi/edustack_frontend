@@ -1,8 +1,5 @@
 "use client";
 
-import withAuth from '@/components/withAuth';
-import { UserRole } from '@/constants/roles';
-
 const StudentDashboardPage = () => {
   return (
     <div>
@@ -12,4 +9,4 @@ const StudentDashboardPage = () => {
   );
 };
 
-export default withAuth(StudentDashboardPage, [UserRole.STUDENT, UserRole.PARENT]);
+export default StudentDashboardPage;

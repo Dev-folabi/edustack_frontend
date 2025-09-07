@@ -1,8 +1,5 @@
 "use client";
 
-import withAuth from '@/components/withAuth';
-import { UserRole } from '@/constants/roles';
-
 const StudentNotificationsPage = () => {
   return (
     <div>
@@ -12,4 +9,4 @@ const StudentNotificationsPage = () => {
   );
 };
 
-export default withAuth(StudentNotificationsPage, [UserRole.STUDENT, UserRole.PARENT]);
+export default StudentNotificationsPage;

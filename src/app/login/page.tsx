@@ -73,17 +73,9 @@ const LoginPage: React.FC = () => {
         message: "Welcome back!",
       });
 
-      // Get the latest state from the store to decide on redirection
-      const authState = useAuthStore.getState();
-
-      if (authState.user?.isSuperAdmin || authState.staff) {
-        router.push(DASHBOARD_ROUTES.MULTI_SCHOOL_DASHBOARD);
-      } else if (authState.student || authState.parent) {
-        router.push(DASHBOARD_ROUTES.STUDENT_DASHBOARD);
-      } else {
-        // Fallback to the main dashboard
-        router.push(DASHBOARD_ROUTES.MULTI_SCHOOL_DASHBOARD);
-      }
+      // The redirection is now handled by the DashboardGuard based on the user's role.
+      // We just need to redirect to a generic dashboard path.
+      router.push(DASHBOARD_ROUTES.MULTI_SCHOOL_DASHBOARD);
     } catch (error) {
       if (
         error instanceof ApiError &&

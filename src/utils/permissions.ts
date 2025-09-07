@@ -14,14 +14,6 @@ export const isSuperAdmin = (): boolean => {
  * Gets the current user's role for the currently selected school.
  * @returns {UserRole | null} - The user's role for the selected school, or null if not available.
  */
-export const getCurrentSchoolRole = (): UserRole | null => {
-  const { userSchools, selectedSchool } = useAuthStore.getState();
-  if (!selectedSchool || !userSchools) {
-    return null;
-  }
-  const schoolRole = userSchools.find(us => us.schoolId === selectedSchool.schoolId);
-  return schoolRole ? (schoolRole.role as UserRole) : null;
-};
 
 /**
  * Checks if the current user has a specific role in the selected school.
@@ -33,7 +25,7 @@ export const hasRole = (role: UserRole): boolean => {
   if (isSuperAdmin()) {
     return true;
   }
-  const currentRole = getCurrentSchoolRole();
+  const { currentRole } = useAuthStore.getState();
   return currentRole === role;
 };
 
@@ -43,7 +35,7 @@ export const hasRole = (role: UserRole): boolean => {
  * @returns {boolean} - True if the user is a staff member, false otherwise.
  */
 export const isStaff = (): boolean => {
-  const currentRole = getCurrentSchoolRole();
+  const { currentRole } = useAuthStore.getState();
   if (!currentRole) {
     return false;
   }
@@ -55,30 +47,26 @@ export const isStaff = (): boolean => {
  * This is useful for components that need to check multiple permissions.
  */
 export const usePermissions = () => {
-  const { user, selectedSchool } = useAuthStore();
+  const { user, currentRole } = useAuthStore();
 
-  const superAdmin = user?.isSuperAdmin === true;
+  const isSuperAdmin = user?.isSuperAdmin === true;
 
-  const currentRole = selectedSchool
-    ? (user?.userSchools?.find(us => us.schoolId === selectedSchool.schoolId)?.role as UserRole | null)
-    : null;
-
-  const checkRole = (role: UserRole): boolean => {
-    if (superAdmin) return true;
+  const hasRole = (role: UserRole): boolean => {
+    if (isSuperAdmin) return true;
     return currentRole === role;
   };
 
-  const staff = currentRole ? STAFF_ROLES.includes(currentRole) : false;
+  const isStaff = currentRole ? STAFF_ROLES.includes(currentRole) : false;
 
   return {
-    isSuperAdmin: superAdmin,
+    isSuperAdmin,
     currentRole,
-    hasRole: checkRole,
-    isStaff: staff,
+    hasRole,
+    isStaff,
     // Add more specific role checks if needed for convenience
-    isAdmin: checkRole(UserRole.ADMIN),
-    isTeacher: checkRole(UserRole.TEACHER),
-    isFinance: checkRole(UserRole.FINANCE),
-    isLibrarian: checkRole(UserRole.LIBRARIAN),
+    isAdmin: hasRole(UserRole.ADMIN),
+    isTeacher: hasRole(UserRole.TEACHER),
+    isFinance: hasRole(UserRole.FINANCE),
+    isLibrarian: hasRole(UserRole.LIBRARIAN),
   };
 };

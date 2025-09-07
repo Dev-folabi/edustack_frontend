@@ -9,8 +9,6 @@ import { sessionService } from '@/services/sessionService';
 import { Session } from '@/store/sessionStore';
 import { DASHBOARD_ROUTES } from '@/constants/routes';
 import { Loader } from '@/components/ui/Loader';
-import withAuth from '@/components/withAuth';
-import { UserRole } from '@/constants/roles';
 
 const ManageSessionPage = () => {
   const params = useParams();
@@ -59,4 +57,4 @@ const ManageSessionPage = () => {
   );
 };
 
-export default withAuth(ManageSessionPage, [UserRole.SUPER_ADMIN]);
+export default ManageSessionPage;

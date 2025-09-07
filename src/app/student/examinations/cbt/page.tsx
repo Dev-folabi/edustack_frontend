@@ -1,8 +1,5 @@
 "use client";
 
-import withAuth from '@/components/withAuth';
-import { UserRole } from '@/constants/roles';
-
 const CBTPage = () => {
   return (
     <div>
@@ -12,4 +9,4 @@ const CBTPage = () => {
   );
 };
 
-export default withAuth(CBTPage, [UserRole.STUDENT, UserRole.PARENT]);
+export default CBTPage;

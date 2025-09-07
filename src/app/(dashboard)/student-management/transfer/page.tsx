@@ -1,8 +1,5 @@
 "use client";
 
-import withAuth from '@/components/withAuth';
-import { UserRole } from '@/constants/roles';
-
 const StudentTransferPage = () => {
   return (
     <div className="container mx-auto p-4">
@@ -12,4 +9,4 @@ const StudentTransferPage = () => {
   );
 };
 
-export default withAuth(StudentTransferPage, [UserRole.ADMIN]);
+export default StudentTransferPage;
