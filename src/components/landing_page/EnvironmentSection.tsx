@@ -107,9 +107,13 @@ export default function EnvironmentSection() {
                   key={index}
                   className={`w-full text-left p-4 rounded-lg transition-all duration-200 ${
                     index === currentSlide
-                      ? "bg-blue-50 border-l-4 border-blue-500"
+                      ? "border-l-4"
                       : "hover:bg-gray-50"
                   }`}
+                  style={{
+                    backgroundColor: index === currentSlide ? `${COLORS.primary[50]}` : undefined,
+                    borderLeftColor: index === currentSlide ? COLORS.primary[500] : undefined
+                  }}
                   onClick={() => setCurrentSlide(index)}
                 >
                   <div

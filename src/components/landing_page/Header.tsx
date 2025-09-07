@@ -1,22 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { COLORS, SCHOOL_INFO } from "@/constants/colors";
 import Image from "next/image";
+import { useAuthStore } from "@/store/authStore";
+import { DASHBOARD_ROUTES } from "@/constants/routes";
 
-interface HeaderProps {
-  isLoggedIn: boolean;
-}
-
-export default function Header({ isLoggedIn }: HeaderProps) {
+export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { isLoggedIn, userSchools } = useAuthStore();
 
   const navItems = [
     { name: "Home", href: "#home" },
     { name: "About", href: "/about" },
     { name: "Contact", href: "#contact" },
   ];
+
+  const getDashboardUrl = () => {
+    if (!userSchools || userSchools.length === 0) {
+      return DASHBOARD_ROUTES.NOT_AUTHORIZED;
+    }
+    const role = userSchools[0].role; // Use the role from the first school
+    if (role === 'admin' || role === 'staff' || role === 'super_admin') {
+      return DASHBOARD_ROUTES.MULTI_SCHOOL_DASHBOARD;
+    }
+    if (role === 'student' || role === 'parent') {
+      return DASHBOARD_ROUTES.STUDENT_DASHBOARD;
+    }
+    return DASHBOARD_ROUTES.NOT_AUTHORIZED;
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-lg">
@@ -53,7 +66,16 @@ export default function Header({ isLoggedIn }: HeaderProps) {
               <a
                 key={item.name}
                 href={item.href}
-                className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium"
+                className="font-medium transition-colors duration-200"
+                style={{ 
+                  color: COLORS.gray[700] 
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = COLORS.primary[600];
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = COLORS.gray[700];
+                }}
               >
                 {item.name}
               </a>
@@ -64,7 +86,7 @@ export default function Header({ isLoggedIn }: HeaderProps) {
           <div className="hidden md:flex items-center space-x-4">
             {isLoggedIn ? (
               <Link
-                href="/dashboard"
+                href={getDashboardUrl()}
                 className="px-6 py-2 rounded-full text-white font-medium transition-all duration-200 hover:shadow-lg"
                 style={{ backgroundColor: COLORS.primary[500] }}
               >
@@ -74,7 +96,14 @@ export default function Header({ isLoggedIn }: HeaderProps) {
               <>
                 <Link
                   href="/login"
-                  className="px-4 py-2 text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200"
+                  className="px-4 py-2 font-medium transition-colors duration-200"
+                  style={{ color: COLORS.gray[700] }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = COLORS.primary[600];
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = COLORS.gray[700];
+                  }}
                 >
                   Login
                 </Link>
@@ -96,23 +125,26 @@ export default function Header({ isLoggedIn }: HeaderProps) {
           >
             <div className="w-6 h-6 flex flex-col justify-center items-center">
               <span
-                className={`bg-gray-700 block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm ${
+                className={`block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm ${
                   isMobileMenuOpen
                     ? "rotate-45 translate-y-1"
                     : "-translate-y-0.5"
                 }`}
+                style={{ backgroundColor: COLORS.gray[700] }}
               ></span>
               <span
-                className={`bg-gray-700 block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm my-0.5 ${
+                className={`block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm my-0.5 ${
                   isMobileMenuOpen ? "opacity-0" : "opacity-100"
                 }`}
+                style={{ backgroundColor: COLORS.gray[700] }}
               ></span>
               <span
-                className={`bg-gray-700 block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm ${
+                className={`block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm ${
                   isMobileMenuOpen
                     ? "-rotate-45 -translate-y-1"
                     : "translate-y-0.5"
                 }`}
+                style={{ backgroundColor: COLORS.gray[700] }}
               ></span>
             </div>
           </button>
@@ -126,7 +158,8 @@ export default function Header({ isLoggedIn }: HeaderProps) {
                 <a
                   key={item.name}
                   href={item.href}
-                  className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium"
+                  className="font-medium transition-colors duration-200"
+                  style={{ color: COLORS.gray[700] }}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {item.name}
@@ -135,7 +168,7 @@ export default function Header({ isLoggedIn }: HeaderProps) {
               <div className="pt-4 border-t border-gray-200">
                 {isLoggedIn ? (
                   <Link
-                    href="/dashboard"
+                    href={getDashboardUrl()}
                     className="block w-full text-center px-6 py-2 rounded-full text-white font-medium"
                     style={{ backgroundColor: COLORS.primary[500] }}
                   >
@@ -145,7 +178,8 @@ export default function Header({ isLoggedIn }: HeaderProps) {
                   <div className="space-y-2">
                     <Link
                       href="/login"
-                      className="block w-full text-center px-4 py-2 text-gray-700 font-medium"
+                      className="block w-full text-center px-4 py-2 font-medium"
+                      style={{ color: COLORS.gray[700] }}
                     >
                       Login
                     </Link>
