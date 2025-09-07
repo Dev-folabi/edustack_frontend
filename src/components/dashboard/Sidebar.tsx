@@ -20,7 +20,8 @@ const Sidebar = () => {
     );
   };
 
-  const userHasAccess = (roles: any[], isLinkStaff: boolean | undefined) => {
+  const userHasAccess = (roles: any[], isLinkStaff: boolean | undefined, allAuthenticated: boolean | undefined) => {
+    if (allAuthenticated) return true; // Accessible to all authenticated users
     if (isSuperAdmin) return true;
     if (isLinkStaff && isStaff) return true;
     if (!currentRole) return false;
@@ -35,7 +36,7 @@ const Sidebar = () => {
       <nav>
         <ul>
           {sidebarConfig
-            .filter(category => userHasAccess(category.roles, category.isStaff))
+            .filter(category => userHasAccess(category.roles, category.isStaff, category.allAuthenticated))
             .map((category) => (
             <li key={category.title} className="mb-2">
               <button
@@ -48,7 +49,7 @@ const Sidebar = () => {
               {openCategories.includes(category.title) && (
                 <ul className="pl-4 mt-2">
                   {category.links
-                    .filter(link => userHasAccess(link.roles, link.isStaff))
+                    .filter(link => userHasAccess(link.roles, link.isStaff, link.allAuthenticated))
                     .map((link) => {
                     const isActive = pathname === link.href;
                     const LinkIcon = link.icon as IconType;

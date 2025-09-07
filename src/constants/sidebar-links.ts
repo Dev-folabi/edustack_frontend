@@ -1,6 +1,6 @@
 import {
   FaTachometerAlt, FaSchool, FaBook, FaUsers, FaUserGraduate,
-  FaUserTie, FaClipboardList, FaFileInvoiceDollar, FaCog, FaEnvelope
+  FaUserTie, FaClipboardList, FaFileInvoiceDollar, FaCog, FaEnvelope, FaUserCircle
 } from 'react-icons/fa';
 import { UserRole } from './roles';
 import { DASHBOARD_ROUTES } from './routes';
@@ -12,6 +12,7 @@ export interface SidebarLink {
   icon: IconType;
   roles: UserRole[];
   isStaff?: boolean;
+  allAuthenticated?: boolean;
 }
 
 export interface SidebarCategory {
@@ -19,6 +20,7 @@ export interface SidebarCategory {
   links: SidebarLink[];
   roles: UserRole[];
   isStaff?: boolean;
+  allAuthenticated?: boolean;
 }
 
 export const sidebarConfig: SidebarCategory[] = [
@@ -241,6 +243,27 @@ export const sidebarConfig: SidebarCategory[] = [
         label: 'View Notifications',
         icon: FaEnvelope,
         roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN],
+      },
+    ],
+  },
+  {
+    title: 'General',
+    allAuthenticated: true,
+    roles: [],
+    links: [
+      {
+        href: DASHBOARD_ROUTES.PROFILE,
+        label: 'Profile',
+        icon: FaUserCircle,
+        allAuthenticated: true,
+        roles: [],
+      },
+      {
+        href: DASHBOARD_ROUTES.SETTINGS,
+        label: 'Settings',
+        icon: FaCog,
+        allAuthenticated: true,
+        roles: [],
       },
     ],
   },
