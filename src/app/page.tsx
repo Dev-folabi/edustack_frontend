@@ -16,11 +16,7 @@ import ContactSection from "@/components/landing_page/ContactSection";
 import Footer from "@/components/landing_page/Footer";
 
 export default function Home() {
-  const { isLoggedIn, initializeAuth } = useAuthStore();
-
-  useEffect(() => {
-    initializeAuth();
-  }, [initializeAuth]);
+  const { isLoggedIn } = useAuthStore();
 
   return (
     <div className="min-h-screen bg-white">
