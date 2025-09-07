@@ -1,44 +1,42 @@
 "use client";
 
-import React from 'react';
-import { useAuthStore } from '@/store/authStore';
+import React, { useEffect } from 'react';
+import { useSchoolStore } from '@/store/schoolStore';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const SchoolSelector = () => {
-  const { userSchools, selectedSchool, setSelectedSchool, schools } = useAuthStore();
+  const { schools, selectedSchool, fetchSchools, setSelectedSchool, isLoading } = useSchoolStore();
 
-  if (!userSchools || userSchools.length === 0) {
-    return null;
+  useEffect(() => {
+    fetchSchools();
+  }, [fetchSchools]);
+
+  if (isLoading) {
+    return <Skeleton className="h-10 w-[180px]" />;
   }
 
   if (!selectedSchool) {
-      return null;
+    return null;
   }
-
-  const getSchoolName = (schoolId: string) => {
-    const school = schools.find(s => s.id === schoolId);
-    return school ? school.name : schoolId;
-  };
 
   return (
     <Select
-      value={selectedSchool.schoolId}
+      value={selectedSchool.id}
       onValueChange={(schoolId) => {
-        const school = userSchools.find(s => s.schoolId === schoolId);
+        const school = schools.find(s => s.id === schoolId);
         if (school) {
           setSelectedSchool(school);
         }
       }}
     >
       <SelectTrigger className="w-[180px]">
-        <SelectValue placeholder="Select a school">
-          {getSchoolName(selectedSchool.schoolId)}
-        </SelectValue>
+        <SelectValue placeholder="Select a school" />
       </SelectTrigger>
       <SelectContent>
-        {userSchools.map((userSchool) => (
-          <SelectItem key={userSchool.schoolId} value={userSchool.schoolId}>
-            {getSchoolName(userSchool.schoolId)}
+        {schools.map((school) => (
+          <SelectItem key={school.id} value={school.id}>
+            {school.name}
           </SelectItem>
         ))}
       </SelectContent>

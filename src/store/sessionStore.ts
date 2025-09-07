@@ -20,7 +20,7 @@ export const useSessionStore = create<SessionState>((set) => ({
     try {
       set({ isLoading: true });
       const response = await sessionService.getSessions();
-      if (response.success && response.data && response.data.data) {
+      if (response.success && response.data) {
         const sessions = response.data.data;
         const activeSession = sessions.find((s: Session) => s.isActive) || sessions[0] || null;
         set({

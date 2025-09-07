@@ -12,8 +12,33 @@ export interface CreateSchoolData {
   isActive?: boolean;
 }
 
+// Interface for the API response for a list of schools
+interface SchoolsResponse {
+  data: {
+    data: School[];
+  };
+}
+
+// Interface for a single staff member
+export interface Staff {
+    id: string;
+    name: string;
+    email: string;
+    user: {
+        id: string;
+        username: string;
+    }
+}
+
+// Interface for the API response for a list of staff
+interface StaffResponse {
+    data: {
+        data: Staff[];
+    };
+}
+
 // Interface for updating a school, all fields are optional
-export type UpdateSchoolData = Partial<CreateSchoolData>;
+export type UpdateSchoolData = Partial<CreateSchoolData> & { adminId?: string };
 
 // The API response for a single school might be wrapped in a data object
 interface SchoolResponse {
@@ -21,6 +46,11 @@ interface SchoolResponse {
 }
 
 export const schoolService = {
+  // Get all schools
+  getSchools: (): Promise<any> => {
+    return apiClient.get<SchoolsResponse>("/school/all");
+  },
+
   // Create a new school
   createSchool: (data: CreateSchoolData): Promise<any> => {
     return apiClient.post<SchoolResponse>("/school", data);
@@ -35,4 +65,9 @@ export const schoolService = {
   deleteSchool: (schoolId: string): Promise<any> => {
     return apiClient.delete(`/school/${schoolId}`);
   },
+
+  // Get staff by school ID
+  getStaffBySchool: (schoolId: string): Promise<any> => {
+    return apiClient.get<StaffResponse>(`/staff/school/${schoolId}`);
+  }
 };

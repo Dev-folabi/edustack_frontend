@@ -59,10 +59,10 @@ const CreateSchoolPage = () => {
         type: 'success',
       });
       router.push(DASHBOARD_ROUTES.SCHOOL_MANAGEMENT);
-    } catch (error) {
+    } catch (error : any) {
       showToast({
         title: 'Error',
-        message: 'Failed to create school. Please try again.',
+        message: error.message,
         type: 'error',
       });
       console.error('Create school error:', error);
