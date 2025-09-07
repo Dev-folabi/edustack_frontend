@@ -2,23 +2,26 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useSessionStore, Session } from '@/store/sessionStore';
+import { useSessionStore, Session, Term } from '@/store/sessionStore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { FaPlus, FaTrash } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaEdit, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { DASHBOARD_ROUTES } from '@/constants/routes';
 import { sessionService } from '@/services/sessionService';
 import { useToast } from '@/components/ui/Toast';
 import withAuth from '@/components/withAuth';
 import { UserRole } from '@/constants/roles';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const SessionsDashboardPage = () => {
   const { sessions, fetchSessions, isLoading } = useSessionStore();
   const { showToast } = useToast();
   const [sessionToDelete, setSessionToDelete] = useState<Session | null>(null);
+  const [expandedSessions, setExpandedSessions] = useState<Record<string, boolean>>({});
+  const [sessionTerms, setSessionTerms] = useState<Record<string, Term[]>>({});
+  const [termsLoading, setTermsLoading] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fetchSessions();
@@ -26,15 +29,21 @@ const SessionsDashboardPage = () => {
 
   const { activeSession, otherSessions } = useMemo(() => {
     const active = sessions.find(s => s.isActive);
-    const others = sessions.filter(s => !s.isActive);
+    const others = sessions.filter(s => !s.isActive).sort((a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime());
     return { activeSession: active, otherSessions: others };
   }, [sessions]);
 
-  const handleToggleActive = async (session: Session) => {
+  const handleToggleActive = async (sessionToToggle: Session) => {
+    const currentlyActive = sessions.find(s => s.isActive && s.id !== sessionToToggle.id);
+
     try {
-      await sessionService.updateSession(session.id, { isActive: !session.isActive });
-      showToast({ title: 'Success', message: `Session status updated.`, type: 'success' });
-      fetchSessions(); // Refresh the list
+      if (currentlyActive) {
+        await sessionService.updateSession(currentlyActive.id, { isActive: false });
+      }
+      await sessionService.updateSession(sessionToToggle.id, { isActive: !sessionToToggle.isActive });
+
+      showToast({ title: 'Success', message: 'Active session updated successfully.', type: 'success' });
+      fetchSessions();
     } catch (error) {
       showToast({ title: 'Error', message: 'Failed to update session status.', type: 'error' });
     }
@@ -45,91 +54,120 @@ const SessionsDashboardPage = () => {
     try {
       await sessionService.deleteSession(sessionToDelete.id);
       showToast({ title: 'Success', message: 'Session deleted successfully.', type: 'success' });
-      fetchSessions(); // Refresh the list
+      fetchSessions();
       setSessionToDelete(null);
     } catch (error) {
       showToast({ title: 'Error', message: 'Failed to delete session.', type: 'error' });
     }
   };
 
+  const handleToggleExpand = async (sessionId: string) => {
+    const isExpanded = expandedSessions[sessionId];
+    if (!isExpanded && !sessionTerms[sessionId]) {
+      setTermsLoading(prev => ({...prev, [sessionId]: true}));
+      try {
+        const response = await sessionService.getTermsForSession(sessionId);
+        setSessionTerms(prev => ({ ...prev, [sessionId]: response.data.data }));
+      } catch (error) {
+        showToast({ title: 'Error', message: 'Failed to fetch terms for the session.', type: 'error' });
+      } finally {
+        setTermsLoading(prev => ({...prev, [sessionId]: false}));
+      }
+    }
+    setExpandedSessions(prev => ({ ...prev, [sessionId]: !isExpanded }));
+  };
+
+  const SessionCard = ({ session }: { session: Session }) => {
+    const isExpanded = expandedSessions[session.id];
+    const terms = sessionTerms[session.id] || [];
+    const isLoadingTerms = termsLoading[session.id];
+
+    return (
+      <Card className={`mb-4 ${session.isActive ? 'bg-[var(--primary-50)] border-[var(--primary-200)]' : ''}`}>
+        <CardHeader className="flex flex-row justify-between items-start">
+          <div>
+            <CardTitle className="text-2xl">{session.name}</CardTitle>
+            <CardDescription>
+              {new Date(session.start_date).toLocaleDateString()} - {new Date(session.end_date).toLocaleDateString()}
+            </CardDescription>
+          </div>
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <Switch
+                  id={`active-switch-${session.id}`}
+                  checked={session.isActive}
+                  onCheckedChange={() => handleToggleActive(session)}
+                  aria-label="Toggle Active Status"
+              />
+              <label htmlFor={`active-switch-${session.id}`} className="text-sm font-medium">Active</label>
+            </div>
+            <Link href={`${DASHBOARD_ROUTES.SESSIONS}/${session.id}/manage`}>
+              <Button variant="outline" size="sm"><FaEdit className="mr-2" /> Edit</Button>
+            </Link>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" size="sm" onClick={() => setSessionToDelete(session)}>
+                <FaTrash className="mr-2" /> Delete
+              </Button>
+            </AlertDialogTrigger>
+            <Button variant="ghost" size="sm" onClick={() => handleToggleExpand(session.id)}>
+              {isExpanded ? <FaChevronUp /> : <FaChevronDown />}
+            </Button>
+          </div>
+        </CardHeader>
+        {isExpanded && (
+          <CardContent>
+            <h4 className="font-semibold mb-2">Terms</h4>
+            {isLoadingTerms ? <p>Loading terms...</p> : (
+              <ul className="list-disc pl-5 space-y-1">
+                {terms.length > 0 ? terms.map(term => (
+                  <li key={term.id}>{term.name} ({new Date(term.start_date).toLocaleDateString()} - {new Date(term.end_date).toLocaleDateString()})</li>
+                )) : <li>No terms found for this session.</li>}
+              </ul>
+            )}
+          </CardContent>
+        )}
+      </Card>
+    );
+  };
+
+  if (isLoading) {
+    return (
+        <div>
+            <div className="flex justify-between items-center mb-6">
+                <Skeleton className="h-10 w-1/4" />
+                <Skeleton className="h-10 w-48" />
+            </div>
+            <Skeleton className="h-48 w-full mb-4" />
+            <Skeleton className="h-32 w-full" />
+        </div>
+    )
+  }
+
   return (
     <AlertDialog>
       <div>
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Sessions & Terms</h1>
-          <Link href={`${DASHBOARD_ROUTES.SESSIONS_TERMS}/create`}>
+          <Link href={`${DASHBOARD_ROUTES.SESSIONS}/create`}>
             <Button>
               <FaPlus className="mr-2" /> Create New Session
             </Button>
           </Link>
         </div>
 
-        {isLoading && <p>Loading sessions...</p>}
+        {activeSession ? (
+          <SessionCard session={activeSession} />
+        ) : <p>No active session found. Please set one.</p>}
 
-        {!isLoading && activeSession && (
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">Active Session</h2>
-            <Card className="bg-green-50 border-green-200">
-              <CardHeader>
-                <CardTitle className="text-2xl">{activeSession.name}</CardTitle>
-                <CardDescription>
-                  {new Date(activeSession.start_date).toLocaleDateString()} - {new Date(activeSession.end_date).toLocaleDateString()}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                 <div className="flex items-center space-x-2">
-                    <Switch
-                        checked={activeSession.isActive}
-                        onCheckedChange={() => handleToggleActive(activeSession)}
-                        aria-label="Toggle Active Status"
-                    />
-                    <label>Active</label>
-                </div>
-              </CardContent>
-            </Card>
+        {otherSessions.length > 0 && (
+          <div className="mt-8">
+            <h2 className="text-2xl font-semibold mb-4 border-b pb-2">Archived Sessions</h2>
+            {otherSessions.map(session => (
+              <SessionCard key={session.id} session={session} />
+            ))}
           </div>
         )}
 
-        {!isLoading && otherSessions.length > 0 && (
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Archived Sessions</h2>
-            <Card>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Session Name</TableHead>
-                    <TableHead>Start Date</TableHead>
-                    <TableHead>End Date</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {otherSessions.map(session => (
-                    <TableRow key={session.id}>
-                      <TableCell className="font-medium">{session.name}</TableCell>
-                      <TableCell>{new Date(session.start_date).toLocaleDateString()}</TableCell>
-                      <TableCell>{new Date(session.end_date).toLocaleDateString()}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end space-x-2">
-                           <Switch
-                              checked={session.isActive}
-                              onCheckedChange={() => handleToggleActive(session)}
-                              aria-label="Toggle Active Status"
-                          />
-                           <AlertDialogTrigger asChild>
-                              <Button variant="destructive" size="sm" onClick={() => setSessionToDelete(session)}>
-                                  Delete
-                              </Button>
-                          </AlertDialogTrigger>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Card>
-          </div>
-        )}
       </div>
 
       <AlertDialogContent>
@@ -141,11 +179,11 @@ const SessionsDashboardPage = () => {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={() => setSessionToDelete(null)}>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleDeleteSession}>Delete</AlertDialogAction>
+          <AlertDialogAction onClick={handleDeleteSession} className="bg-red-600 hover:bg-red-700">Delete</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   );
 };
 
-export default withAuth(SessionsDashboardPage, [UserRole.SUPER_ADMIN]);
+export default withAuth(SessionsDashboardPage, [UserRole.SUPER_ADMIN, UserRole.ADMIN]);

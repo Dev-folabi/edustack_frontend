@@ -4,12 +4,7 @@ import { useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
 
 const AuthSync = () => {
-  const { initializeAuth, token } = useAuthStore();
-
-  useEffect(() => {
-    // Initialize auth state from localStorage
-    initializeAuth();
-  }, [initializeAuth]);
+  const { token } = useAuthStore();
 
   useEffect(() => {
     // Sync token to cookie whenever it changes

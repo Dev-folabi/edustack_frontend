@@ -21,7 +21,8 @@ interface AuthState {
   isOnboarded: boolean;
   classes: Class[];
   sections: Section[];
-  isLoggedIn: boolean; // Add computed property
+  isLoggedIn: boolean;
+  isHydrated: boolean; // To check if store is rehydrated
 
   // Actions
   login: (emailOrUsername: string, password: string) => Promise<void>;
@@ -51,6 +52,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isOnboarded: false,
   classes: [],
   sections: [],
+  isHydrated: false,
   get isLoggedIn() {
     return !!get().user && !!get().token;
   },
@@ -92,6 +94,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           localStorage.removeItem('parent');
         }
       }
+      set({ isHydrated: true });
     }
   },
 
