@@ -8,45 +8,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Button } from '@/components/ui/button';
 import { FaUserCircle } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
-
-const SessionSelector = () => {
-  const { sessions, selectedSession, fetchSessions, setSelectedSession, isLoading } = useSessionStore();
-
-  useEffect(() => {
-    fetchSessions();
-  }, [fetchSessions]);
-
-  if (isLoading) {
-    return <div>Loading Sessions...</div>;
-  }
-
-  if (!selectedSession) {
-      return null;
-  }
-
-  return (
-    <Select
-      value={selectedSession.id}
-      onValueChange={(sessionId) => {
-        const session = sessions.find(s => s.id === sessionId);
-        if (session) {
-          setSelectedSession(session);
-        }
-      }}
-    >
-      <SelectTrigger className="w-[180px]">
-        <SelectValue placeholder="Select a session" />
-      </SelectTrigger>
-      <SelectContent>
-        {sessions.map((session) => (
-          <SelectItem key={session.id} value={session.id}>
-            {session.name}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
-};
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { COLORS } from '@/constants/colors';
+import SchoolSelector from './SchoolSelector';
+import SessionSelector from './SessionSelector';
 
 const UserProfile = () => {
     const { user, logout } = useAuthStore();
@@ -54,15 +19,23 @@ const UserProfile = () => {
 
     const handleLogout = () => {
         logout();
+        router.push('/login');
     };
 
     if (!user) return null;
 
+    const userInitial = user.username ? user.username.charAt(0).toUpperCase() : '?';
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <FaUserCircle className="h-8 w-8" />
+                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                    <Avatar className="h-10 w-10 border-2" style={{ borderColor: COLORS.primary[500] }}>
+                        <AvatarImage src={user.photo_url} alt={user.username} />
+                        <AvatarFallback style={{ backgroundColor: COLORS.primary[100], color: COLORS.primary[600] }}>
+                            {userInitial}
+                        </AvatarFallback>
+                    </Avatar>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
@@ -84,17 +57,9 @@ const UserProfile = () => {
     );
 }
 
-import SchoolSelector from './SchoolSelector';
-
 const Header = () => {
-  const { loadSchools } = useAuthStore();
-
-  useEffect(() => {
-    loadSchools();
-  }, [loadSchools]);
-
   return (
-    <header className="bg-white shadow-sm p-4 border-b flex justify-between items-center">
+    <header className="bg-background-primary shadow-sm p-4 border-b flex justify-between items-center">
       <div>{/* Logo can go here */}</div>
       <div className="flex items-center space-x-4">
         <SchoolSelector />

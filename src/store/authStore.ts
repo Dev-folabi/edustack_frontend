@@ -2,7 +2,6 @@ import { create } from "zustand";
 import {
   authService,
   type OnboardingData,
-  type School,
   type Class,
   type Section,
   type InitializationResponse,
@@ -20,7 +19,6 @@ interface AuthState {
   parent: any | null;
   isLoading: boolean;
   isOnboarded: boolean;
-  schools: School[];
   classes: Class[];
   sections: Section[];
   isLoggedIn: boolean; // Add computed property
@@ -36,7 +34,6 @@ interface AuthState {
     onboardingProgress?: number;
   }>;
   initializeSystem: (data: OnboardingData) => Promise<InitializationResponse>;
-  loadSchools: () => Promise<void>;
   loadClasses: (schoolId: string) => Promise<void>;
   loadSections: (classId: string) => Promise<void>;
   setLoading: (loading: boolean) => void;
@@ -52,7 +49,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   parent: null,
   isLoading: false,
   isOnboarded: false,
-  schools: [],
   classes: [],
   sections: [],
   get isLoggedIn() {
@@ -211,17 +207,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch (error: unknown) {
       set({ isLoading: false });
       throw error;
-    }
-  },
-
-  loadSchools: async () => {
-    try {
-      const response = await authService.getSchools();
-      if (response.success && response.data) {
-        set({ schools: response.data.data });
-      }
-    } catch (error: unknown) {
-      console.error("Error loading schools:", error);
     }
   },
 

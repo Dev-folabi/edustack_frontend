@@ -201,10 +201,6 @@ export const authService = {
   studentSignup: (data: StudentSignupData) =>
     apiClient.post("/auth/student-signup", data),
 
-  // Get schools (for dropdowns)
-  getSchools: (): Promise<ApiResponse<SchoolsResponse>> =>
-    apiClient.get("/school/all"),
-
   // Get classes by school, which includes sections
   getClasses: (schoolId: string): Promise<ApiResponse<ClassesResponse>> =>
     apiClient.get(`/class?schoolId=${schoolId}`),
