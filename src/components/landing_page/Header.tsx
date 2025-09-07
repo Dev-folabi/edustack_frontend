@@ -4,12 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { COLORS, SCHOOL_INFO } from "@/constants/colors";
 import Image from "next/image";
+import { useAuthStore } from "@/store/authStore";
 
-interface HeaderProps {
-  isLoggedIn: boolean;
-}
-
-export default function Header({ isLoggedIn }: HeaderProps) {
+export default function Header() {
+  const { isLoggedIn } = useAuthStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [

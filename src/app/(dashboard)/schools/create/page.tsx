@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/components/ui/Toast';
 import { schoolService } from '@/services/schoolService';
+import { useAuthStore } from '@/store/authStore';
 import { DASHBOARD_ROUTES } from '@/constants/routes';
 import withAuth from '@/components/withAuth';
 import { UserRole } from '@/constants/roles';
@@ -34,6 +35,7 @@ type SchoolFormValues = z.infer<typeof formSchema>;
 const CreateSchoolPage = () => {
   const router = useRouter();
   const { showToast } = useToast();
+  const { loadSchools } = useAuthStore();
   const form = useForm<SchoolFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -58,6 +60,7 @@ const CreateSchoolPage = () => {
         message: 'School created successfully!',
         type: 'success',
       });
+      await loadSchools();
       router.push(DASHBOARD_ROUTES.SCHOOL_MANAGEMENT);
     } catch (error) {
       showToast({

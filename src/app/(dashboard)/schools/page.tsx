@@ -12,10 +12,12 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { FaPlus, FaList, FaTh, FaEdit, FaTrash } from 'react-icons/fa';
 import Link from 'next/link';
 import { DASHBOARD_ROUTES } from '@/constants/routes';
+import { Loader } from 'lucide-react';
 import { schoolService } from '@/services/schoolService';
 import { useToast } from '@/components/ui/Toast';
 import withAuth from '@/components/withAuth';
 import { UserRole } from '@/constants/roles';
+import { EditSchoolModal } from '@/components/dashboard/schools/EditSchoolModal';
 
 const SchoolsPage = () => {
   const { schools, loadSchools, isLoading } = useAuthStore();
@@ -23,6 +25,7 @@ const SchoolsPage = () => {
   const [viewMode, setViewMode] = useState('grid');
   const [searchTerm, setSearchTerm] = useState('');
   const [schoolToDelete, setSchoolToDelete] = useState<School | null>(null);
+  const [schoolToEdit, setSchoolToEdit] = useState<School | null>(null);
 
   useEffect(() => {
     loadSchools();
@@ -56,6 +59,9 @@ const SchoolsPage = () => {
 
   const Actions = ({ school }: { school: School }) => (
     <div className="flex items-center space-x-2">
+      <Button variant="outline" size="icon" onClick={() => setSchoolToEdit(school)}>
+        <FaEdit />
+      </Button>
       <Switch
         checked={school.isActive}
         onCheckedChange={() => handleToggleActive(school)}
@@ -72,15 +78,28 @@ const SchoolsPage = () => {
   const SchoolGrid = () => (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       {filteredSchools.map(school => (
-        <Card key={school.id} className="flex flex-col">
-          <CardHeader>
+        <Card key={school.id} className="flex flex-col transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
+          <CardHeader className="flex-row items-center justify-between">
             <CardTitle>{school.name}</CardTitle>
+            <div className={`px-3 py-1 rounded-full text-xs font-semibold ${school.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+              {school.isActive ? 'Active' : 'Inactive'}
+            </div>
           </CardHeader>
-          <CardContent className="flex-grow">
-            <p className="text-sm text-gray-500">{school.address}</p>
-            <p className="mt-2">{school.email}</p>
+          <CardContent className="flex-grow space-y-2">
+            <div>
+              <p className="text-sm font-medium text-gray-500">Address</p>
+              <p className="text-sm">{school.address}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">Email</p>
+              <p className="text-sm">{school.email}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">Phone</p>
+              <p className="text-sm">{school.phone.join(', ')}</p>
+            </div>
           </CardContent>
-          <div className="p-4 border-t flex justify-end">
+          <div className="p-4 bg-gray-50 border-t flex justify-end">
             <Actions school={school} />
           </div>
         </Card>
@@ -89,9 +108,10 @@ const SchoolsPage = () => {
   );
 
   const SchoolTable = () => (
-    <Table>
-      <TableHeader>
-        <TableRow>
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
           <TableHead>School Name</TableHead>
           <TableHead>Email</TableHead>
           <TableHead>Status</TableHead>
@@ -115,11 +135,13 @@ const SchoolsPage = () => {
         ))}
       </TableBody>
     </Table>
+    </div>
   );
 
   return (
     <AlertDialog>
       <div>
+        <EditSchoolModal school={schoolToEdit} onClose={() => setSchoolToEdit(null)} />
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Schools Management</h1>
           <Link href={DASHBOARD_ROUTES.CREATE_SCHOOL}>
@@ -143,7 +165,9 @@ const SchoolsPage = () => {
         </div>
 
         {isLoading ? (
-          <p>Loading schools...</p>
+          <div className="flex justify-center items-center h-64">
+            <Loader className="animate-spin h-8 w-8" />
+          </div>
         ) : (
           viewMode === 'grid' ? <SchoolGrid /> : <SchoolTable />
         )}

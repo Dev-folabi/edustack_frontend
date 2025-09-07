@@ -8,6 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Button } from '@/components/ui/button';
 import { FaUserCircle } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
+import { Loader } from 'lucide-react';
 
 const SessionSelector = () => {
   const { sessions, selectedSession, fetchSessions, setSelectedSession, isLoading } = useSessionStore();
@@ -17,7 +18,7 @@ const SessionSelector = () => {
   }, [fetchSessions]);
 
   if (isLoading) {
-    return <div>Loading Sessions...</div>;
+    return <div className="w-[180px] h-10 flex items-center justify-center"><Loader className="animate-spin" /></div>;
   }
 
   if (!selectedSession) {
@@ -34,7 +35,7 @@ const SessionSelector = () => {
         }
       }}
     >
-      <SelectTrigger className="w-[180px]">
+      <SelectTrigger className="w-full md:w-[180px]">
         <SelectValue placeholder="Select a session" />
       </SelectTrigger>
       <SelectContent>
@@ -48,8 +49,10 @@ const SessionSelector = () => {
   );
 };
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 const UserProfile = () => {
-    const { user, logout } = useAuthStore();
+    const { user, logout, staff, student } = useAuthStore();
     const router = useRouter();
 
     const handleLogout = () => {
@@ -58,11 +61,20 @@ const UserProfile = () => {
 
     if (!user) return null;
 
+    const getInitials = (name: string) => {
+        return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    }
+
+    const photoUrl = staff?.photo_url || student?.photo_url || '';
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <FaUserCircle className="h-8 w-8" />
+                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                    <Avatar className="h-10 w-10">
+                        <AvatarImage src={photoUrl} alt={user.username} />
+                        <AvatarFallback>{getInitials(user.username)}</AvatarFallback>
+                    </Avatar>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>

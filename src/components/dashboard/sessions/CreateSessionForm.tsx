@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { useToast } from '@/components/ui/Toast';
 import { sessionService } from '@/services/sessionService';
+import { useSessionStore } from '@/store/sessionStore';
 import { DASHBOARD_ROUTES } from '@/constants/routes';
 import { FaPlus, FaTrash } from 'react-icons/fa';
 
@@ -56,6 +57,7 @@ type SessionFormValues = z.infer<typeof sessionFormSchema>;
 export const CreateSessionForm = () => {
   const router = useRouter();
   const { showToast } = useToast();
+  const { fetchSessions } = useSessionStore();
   const form = useForm<SessionFormValues>({
     resolver: zodResolver(sessionFormSchema),
     defaultValues: {
@@ -77,6 +79,7 @@ export const CreateSessionForm = () => {
     try {
       await sessionService.createSession(values);
       showToast({ title: "Success", message: "Academic session created successfully!", type: 'success' });
+      await fetchSessions();
       router.push(DASHBOARD_ROUTES.SESSIONS_TERMS);
     } catch (error) {
       showToast({ title: "Error", message: "Failed to create session.", type: 'error' });

@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { useAuthStore } from "@/store/authStore";
 import Header from "@/components/landing_page/Header";
 import HeroSection from "@/components/landing_page/HeroSection";
@@ -14,17 +13,16 @@ import GallerySection from "@/components/landing_page/GallerySection";
 import NoticeBoardSection from "@/components/landing_page/NoticeBoardSection";
 import ContactSection from "@/components/landing_page/ContactSection";
 import Footer from "@/components/landing_page/Footer";
+import ClientAuthWrapper from "@/components/ClientAuthWrapper";
 
 export default function Home() {
-  const { isLoggedIn, initializeAuth } = useAuthStore();
-
-  useEffect(() => {
-    initializeAuth();
-  }, [initializeAuth]);
+  const { isLoggedIn } = useAuthStore();
 
   return (
     <div className="min-h-screen bg-white">
-      <Header isLoggedIn={isLoggedIn} />
+      <ClientAuthWrapper>
+        <Header />
+      </ClientAuthWrapper>
       <main>
         <HeroSection />
         <AboutSection />

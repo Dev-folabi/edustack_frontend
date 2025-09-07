@@ -3,9 +3,14 @@
 import React from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader } from 'lucide-react';
 
 const SchoolSelector = () => {
-  const { userSchools, selectedSchool, setSelectedSchool, schools } = useAuthStore();
+  const { userSchools, selectedSchool, setSelectedSchool, schools, isLoading } = useAuthStore();
+
+  if (isLoading) {
+    return <div className="w-[180px] h-10 flex items-center justify-center"><Loader className="animate-spin" /></div>;
+  }
 
   if (!userSchools || userSchools.length === 0) {
     return null;
@@ -30,7 +35,7 @@ const SchoolSelector = () => {
         }
       }}
     >
-      <SelectTrigger className="w-[180px]">
+      <SelectTrigger className="w-full md:w-[180px]">
         <SelectValue placeholder="Select a school">
           {getSchoolName(selectedSchool.schoolId)}
         </SelectValue>
