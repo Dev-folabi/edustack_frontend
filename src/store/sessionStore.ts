@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { sessionService } from "@/services/sessionService"; // Updated import
 import type { Session } from "@/services/sessionService";
+export type { Session };
 
 interface SessionState {
   sessions: Session[];

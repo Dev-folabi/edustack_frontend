@@ -5,9 +5,12 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { EditSessionForm } from '@/components/dashboard/sessions/EditSessionForm';
-import { sessionService, Session } from '@/services/sessionService';
+import { sessionService } from '@/services/sessionService';
+import { Session } from '@/store/sessionStore';
 import { DASHBOARD_ROUTES } from '@/constants/routes';
 import { Loader } from '@/components/ui/Loader';
+import withAuth from '@/components/withAuth';
+import { UserRole } from '@/constants/roles';
 
 const ManageSessionPage = () => {
   const params = useParams();
@@ -56,4 +59,4 @@ const ManageSessionPage = () => {
   );
 };
 
-export default ManageSessionPage;
+export default withAuth(ManageSessionPage, [UserRole.SUPER_ADMIN]);

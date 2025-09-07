@@ -1,8 +1,12 @@
+"use client";
+
 import React from 'react';
 import { CreateSessionForm } from '@/components/dashboard/sessions/CreateSessionForm';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { DASHBOARD_ROUTES } from '@/constants/routes';
+import withAuth from '@/components/withAuth';
+import { UserRole } from '@/constants/roles';
 
 const CreateSessionPage = () => {
   return (
@@ -18,4 +22,4 @@ const CreateSessionPage = () => {
   );
 };
 
-export default CreateSessionPage;
+export default withAuth(CreateSessionPage, [UserRole.SUPER_ADMIN]);

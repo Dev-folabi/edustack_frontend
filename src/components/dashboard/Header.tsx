@@ -84,11 +84,20 @@ const UserProfile = () => {
     );
 }
 
+import SchoolSelector from './SchoolSelector';
+
 const Header = () => {
+  const { loadSchools } = useAuthStore();
+
+  useEffect(() => {
+    loadSchools();
+  }, [loadSchools]);
+
   return (
     <header className="bg-white shadow-sm p-4 border-b flex justify-between items-center">
       <div>{/* Logo can go here */}</div>
       <div className="flex items-center space-x-4">
+        <SchoolSelector />
         <SessionSelector />
         <UserProfile />
       </div>

@@ -14,6 +14,8 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/components/ui/Toast';
 import { schoolService } from '@/services/schoolService';
 import { DASHBOARD_ROUTES } from '@/constants/routes';
+import withAuth from '@/components/withAuth';
+import { UserRole } from '@/constants/roles';
 
 const phoneRegex = new RegExp(
   /^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/
@@ -155,4 +157,4 @@ const CreateSchoolPage = () => {
   );
 };
 
-export default CreateSchoolPage;
+export default withAuth(CreateSchoolPage, [UserRole.SUPER_ADMIN]);
