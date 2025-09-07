@@ -55,12 +55,12 @@ export const isStaff = (): boolean => {
  * This is useful for components that need to check multiple permissions.
  */
 export const usePermissions = () => {
-  const { user, selectedSchool } = useAuthStore();
+  const { user, selectedSchool, userSchools } = useAuthStore();
 
   const superAdmin = user?.isSuperAdmin === true;
 
-  const currentRole = selectedSchool
-    ? (user?.userSchools?.find(us => us.schoolId === selectedSchool.schoolId)?.role as UserRole | null)
+  const currentRole = selectedSchool && userSchools
+    ? (userSchools.find(us => us.schoolId === selectedSchool.schoolId)?.role as UserRole | null)
     : null;
 
   const checkRole = (role: UserRole): boolean => {
@@ -80,5 +80,7 @@ export const usePermissions = () => {
     isTeacher: checkRole(UserRole.TEACHER),
     isFinance: checkRole(UserRole.FINANCE),
     isLibrarian: checkRole(UserRole.LIBRARIAN),
+    isStudent: checkRole(UserRole.STUDENT),
+    isParent: checkRole(UserRole.PARENT),
   };
 };

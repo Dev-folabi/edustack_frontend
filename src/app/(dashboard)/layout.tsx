@@ -7,6 +7,7 @@ import Header from '@/components/dashboard/Header';
 import Sidebar from '@/components/dashboard/Sidebar';
 import { NotificationBanner } from '@/components/dashboard/NotificationBanner';
 import { Loader } from '@/components/ui/Loader';
+import { FaBars } from 'react-icons/fa';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -16,21 +17,19 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const { user, token, isLoading, initializeAuth } = useAuthStore();
   const router = useRouter();
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    // Initialize auth on mount
     initializeAuth();
     setIsInitialized(true);
   }, [initializeAuth]);
 
   useEffect(() => {
-    // Redirect to login if not authenticated after initialization
     if (isInitialized && !isLoading && (!user || !token)) {
       router.push('/login');
     }
   }, [user, token, isLoading, isInitialized, router]);
 
-  // Show loading while initializing or checking auth
   if (!isInitialized || isLoading || !user || !token) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -40,13 +39,37 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar />
-      <div className="flex-1 flex flex-col">
+    <div className="flex h-screen bg-gray-100 overflow-hidden">
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+      
+      {/* Sidebar */}
+      <div className={`${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:relative z-50 transition-transform duration-300 ease-in-out`}>
+        <Sidebar />
+      </div>
+      
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Mobile Menu Button */}
+        <div className="md:hidden bg-white p-4 border-b">
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="text-gray-600 hover:text-gray-900"
+          >
+            <FaBars size={20} />
+          </button>
+        </div>
+        
         <NotificationBanner />
         <Header />
-        <main className="flex-1 p-6 overflow-y-auto">
-          {children}
+        <main className="flex-1 p-4 md:p-6 overflow-y-auto overflow-x-hidden">
+          <div className="max-w-full">
+            {children}
+          </div>
         </main>
       </div>
     </div>
