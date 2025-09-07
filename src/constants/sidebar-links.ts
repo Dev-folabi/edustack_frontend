@@ -1,6 +1,6 @@
 import {
   FaTachometerAlt, FaSchool, FaBook, FaUsers, FaUserGraduate,
-  FaUserTie, FaClipboardList, FaFileInvoiceDollar, FaCog
+  FaUserTie, FaClipboardList, FaFileInvoiceDollar, FaCog, FaEnvelope
 } from 'react-icons/fa';
 import { UserRole } from './roles';
 import { DASHBOARD_ROUTES } from './routes';
@@ -223,6 +223,24 @@ export const sidebarConfig: SidebarCategory[] = [
         label: 'Expense Management',
         icon: FaFileInvoiceDollar,
         roles: [UserRole.ADMIN, UserRole.FINANCE],
+      },
+    ],
+  },
+  {
+    title: 'Notification & Mail',
+    roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN],
+    links: [
+      {
+        href: DASHBOARD_ROUTES.NOTIFICATION_SEND,
+        label: 'Send Bulk Messages',
+        icon: FaEnvelope,
+        roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN],
+      },
+      {
+        href: DASHBOARD_ROUTES.NOTIFICATION_VIEW,
+        label: 'View Notifications',
+        icon: FaEnvelope,
+        roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN],
       },
     ],
   },

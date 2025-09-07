@@ -45,6 +45,10 @@ export const DASHBOARD_ROUTES = {
   FINANCE_PAYMENTS: '/finance/payments',
   FINANCE_EXPENSES: '/finance/expenses',
 
+  // Notification & Mail
+  NOTIFICATION_SEND: '/notifications/send',
+  NOTIFICATION_VIEW: '/notifications/view',
+
   // Shared Routes
   PROFILE: '/profile',
   SETTINGS: '/settings',
