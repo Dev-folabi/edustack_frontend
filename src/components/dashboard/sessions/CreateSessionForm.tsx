@@ -28,11 +28,18 @@ const sessionFormSchema = z.object({
   end_date: z.date({ required_error: "Session end date is required." }),
   isActive: z.boolean().default(false),
   terms: z.array(termSchema).min(2, "You must add at least two terms."),
-}).refine(data => data.start_date < data.end_date, {
+}).refine(data => {
+    if (data.start_date && data.end_date) {
+        return data.start_date < data.end_date;
+    }
+    return true;
+}, {
   message: "Session end date must be after the start date.",
   path: ["end_date"],
 }).refine(data => {
+    if (!data.start_date || !data.end_date) return true; // Don't validate if session dates aren't set
     for (const term of data.terms) {
+        if (!term.start_date || !term.end_date) return true; // Don't validate if term dates aren't set
         if (term.start_date < data.start_date || term.end_date > data.end_date) {
             return false;
         }
