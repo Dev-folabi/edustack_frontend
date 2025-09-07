@@ -101,7 +101,7 @@ const SessionsDashboardPage = () => {
               />
               <label htmlFor={`active-switch-${session.id}`} className="text-sm font-medium">Active</label>
             </div>
-            <Link href={`${DASHBOARD_ROUTES.SESSIONS_TERMS}/${session.id}/manage`}>
+            <Link href={`${DASHBOARD_ROUTES.SESSIONS}/${session.id}/manage`}>
               <Button variant="outline" size="sm"><FaEdit className="mr-2" /> Edit</Button>
             </Link>
             <AlertDialogTrigger asChild>
@@ -148,7 +148,7 @@ const SessionsDashboardPage = () => {
       <div>
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Sessions & Terms</h1>
-          <Link href={`${DASHBOARD_ROUTES.SESSIONS_TERMS}/create`}>
+          <Link href={`${DASHBOARD_ROUTES.SESSIONS}/create`}>
             <Button>
               <FaPlus className="mr-2" /> Create New Session
             </Button>
