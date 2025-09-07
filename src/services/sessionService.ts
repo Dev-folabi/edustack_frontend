@@ -64,4 +64,9 @@ export const sessionService = {
   deleteSession: (sessionId: string): Promise<any> => {
     return apiClient.delete(`/session/${sessionId}`);
   },
+
+  // Get all terms for a specific session
+  getTermsForSession: (sessionId: string): Promise<any> => {
+    return apiClient.get(`/session/${sessionId}/terms`);
+  },
 };

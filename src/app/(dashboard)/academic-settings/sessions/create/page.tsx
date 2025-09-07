@@ -22,4 +22,4 @@ const CreateSessionPage = () => {
   );
 };
 
-export default withAuth(CreateSessionPage, [UserRole.SUPER_ADMIN]);
+export default withAuth(CreateSessionPage, [UserRole.SUPER_ADMIN, UserRole.ADMIN]);
