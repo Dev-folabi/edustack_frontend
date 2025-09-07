@@ -49,6 +49,13 @@ export const DASHBOARD_ROUTES = {
   NOTIFICATION_SEND: '/notifications/send',
   NOTIFICATION_VIEW: '/notifications/view',
 
+  // Student & Parent Dashboard
+  STUDENT_DASHBOARD: '/student/dashboard',
+  STUDENT_PROFILE: '/student/profile',
+  STUDENT_EXAMS_CBT: '/student/examinations/cbt',
+  STUDENT_FINANCE_MAKE_PAYMENT: '/student/finance/make-payment',
+  STUDENT_NOTIFICATIONS: '/student/notifications',
+
   // Shared Routes
   PROFILE: '/profile',
   SETTINGS: '/settings',

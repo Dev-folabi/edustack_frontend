@@ -30,7 +30,7 @@ export const NotificationBanner = () => {
         <div>
           <p className="font-bold">Session Reminder</p>
           <p className="text-sm">
-            The current session, &apos;{selectedSession?.name}&apos;, is ending in {daysUntilEnd} {daysUntilEnd === 1 ? 'day' : 'days'}. Please prepare for the next academic session.
+            The current session, '{selectedSession?.name}', is ending in {daysUntilEnd} {daysUntilEnd === 1 ? 'day' : 'days'}. Please prepare for the next academic session.
           </p>
         </div>
         <div className="ml-auto pl-3">
