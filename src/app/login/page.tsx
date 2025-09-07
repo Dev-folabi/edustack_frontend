@@ -72,7 +72,18 @@ const LoginPage: React.FC = () => {
         type: "success",
         message: "Welcome back!",
       });
-      router.push(DASHBOARD_ROUTES.MULTI_SCHOOL_DASHBOARD);
+
+      // Get the latest state from the store to decide on redirection
+      const authState = useAuthStore.getState();
+
+      if (authState.user?.isSuperAdmin || authState.staff) {
+        router.push(DASHBOARD_ROUTES.MULTI_SCHOOL_DASHBOARD);
+      } else if (authState.student || authState.parent) {
+        router.push(DASHBOARD_ROUTES.STUDENT_DASHBOARD);
+      } else {
+        // Fallback to the main dashboard
+        router.push(DASHBOARD_ROUTES.MULTI_SCHOOL_DASHBOARD);
+      }
     } catch (error) {
       if (
         error instanceof ApiError &&

@@ -16,8 +16,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const { user, token, isLoading, initializeAuth } = useAuthStore();
   const router = useRouter();
   const [isInitialized, setIsInitialized] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
     // Initialize auth on mount
@@ -42,25 +40,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   }
 
   return (
-    <div className="flex h-screen bg-gray-100 overflow-hidden">
-      <Sidebar 
-        isCollapsed={sidebarCollapsed}
-        setIsCollapsed={setSidebarCollapsed}
-        isMobileOpen={mobileSidebarOpen}
-        setIsMobileOpen={setMobileSidebarOpen}
-      />
-      <div className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${
-        sidebarCollapsed ? 'md:ml-0' : 'md:ml-0'
-      } w-full min-w-0`}>
+    <div className="flex h-screen bg-gray-100">
+      <Sidebar />
+      <div className="flex-1 flex flex-col">
         <NotificationBanner />
-        <Header 
-          onMobileMenuClick={() => setMobileSidebarOpen(true)}
-          sidebarCollapsed={sidebarCollapsed}
-        />
-        <main className="flex-1 p-4 md:p-6 overflow-y-auto bg-gray-50">
-          <div className="max-w-full">
-            {children}
-          </div>
+        <Header />
+        <main className="flex-1 p-6 overflow-y-auto">
+          {children}
         </main>
       </div>
     </div>
