@@ -12,6 +12,8 @@ import { FaPlus, FaTrash } from 'react-icons/fa';
 import { DASHBOARD_ROUTES } from '@/constants/routes';
 import { sessionService } from '@/services/sessionService';
 import { useToast } from '@/components/ui/Toast';
+import withAuth from '@/components/withAuth';
+import { UserRole } from '@/constants/roles';
 
 const SessionsDashboardPage = () => {
   const { sessions, fetchSessions, isLoading } = useSessionStore();
@@ -146,4 +148,4 @@ const SessionsDashboardPage = () => {
   );
 };
 
-export default SessionsDashboardPage;
+export default withAuth(SessionsDashboardPage, [UserRole.SUPER_ADMIN]);

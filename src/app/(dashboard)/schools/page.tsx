@@ -14,6 +14,8 @@ import Link from 'next/link';
 import { DASHBOARD_ROUTES } from '@/constants/routes';
 import { schoolService } from '@/services/schoolService';
 import { useToast } from '@/components/ui/Toast';
+import withAuth from '@/components/withAuth';
+import { UserRole } from '@/constants/roles';
 
 const SchoolsPage = () => {
   const { schools, loadSchools, isLoading } = useAuthStore();
@@ -164,4 +166,4 @@ const SchoolsPage = () => {
   );
 };
 
-export default SchoolsPage;
+export default withAuth(SchoolsPage, [UserRole.SUPER_ADMIN]);

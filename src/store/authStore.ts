@@ -14,6 +14,7 @@ interface AuthState {
   user: UserData | null;
   token: string | null;
   userSchools: UserSchool[] | null;
+  selectedSchool: UserSchool | null;
   staff: any | null;
   student: any | null;
   parent: any | null;
@@ -28,6 +29,7 @@ interface AuthState {
   login: (emailOrUsername: string, password: string) => Promise<void>;
   logout: () => void;
   initializeAuth: () => void; // Add initialization method
+  setSelectedSchool: (school: UserSchool) => void;
   checkOnboardingStatus: () => Promise<{
     isOnboarded: boolean;
     currentStep?: number;
@@ -44,6 +46,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   token: null,
   userSchools: null,
+  selectedSchool: null,
   staff: null,
   student: null,
   parent: null,
@@ -62,21 +65,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const token = localStorage.getItem('token');
       const userData = localStorage.getItem('userData');
       const userSchools = localStorage.getItem('userSchools');
+      const selectedSchool = localStorage.getItem('selectedSchool');
       const staff = localStorage.getItem('staff');
       const student = localStorage.getItem('student');
       const parent = localStorage.getItem('parent');
-      
+
       if (token && userData) {
         try {
           set({
             token,
             user: JSON.parse(userData),
             userSchools: userSchools ? JSON.parse(userSchools) : null,
+            selectedSchool: selectedSchool ? JSON.parse(selectedSchool) : null,
             staff: staff ? JSON.parse(staff) : null,
             student: student ? JSON.parse(student) : null,
             parent: parent ? JSON.parse(parent) : null,
           });
-          
+
           // Set cookie for middleware
           document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 60 * 60}`; // 7 days
         } catch (error) {
@@ -85,6 +90,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           localStorage.removeItem('token');
           localStorage.removeItem('userData');
           localStorage.removeItem('userSchools');
+          localStorage.removeItem('selectedSchool');
           localStorage.removeItem('staff');
           localStorage.removeItem('student');
           localStorage.removeItem('parent');
@@ -101,11 +107,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (response.success && response.data) {
         const { userData, token, userSchools, staff, student, parent } =
           response.data;
-        
+
+        const selectedSchool = userSchools && userSchools.length > 0 ? userSchools[0] : null;
+
         set({
           user: userData,
           token,
           userSchools,
+          selectedSchool,
           staff,
           student,
           parent,
@@ -116,10 +125,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         localStorage.setItem("token", token);
         localStorage.setItem("userData", JSON.stringify(userData));
         if (userSchools) localStorage.setItem("userSchools", JSON.stringify(userSchools));
+        if (selectedSchool) localStorage.setItem("selectedSchool", JSON.stringify(selectedSchool));
         if (staff) localStorage.setItem("staff", JSON.stringify(staff));
         if (student) localStorage.setItem("student", JSON.stringify(student));
         if (parent) localStorage.setItem("parent", JSON.stringify(parent));
-        
+
         // Set cookie for middleware
         document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 60 * 60}`; // 7 days
       } else {
@@ -132,20 +142,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: () => {
-    set({ 
-      user: null, 
-      token: null, 
-      userSchools: null, 
-      staff: null, 
-      student: null, 
-      parent: null 
+    set({
+      user: null,
+      token: null,
+      userSchools: null,
+      selectedSchool: null,
+      staff: null,
+      student: null,
+      parent: null,
     });
-    
+
     // Clear localStorage
     if (typeof window !== 'undefined') {
       localStorage.removeItem("token");
       localStorage.removeItem("userData");
       localStorage.removeItem("userSchools");
+      localStorage.removeItem("selectedSchool");
       localStorage.removeItem("staff");
       localStorage.removeItem("student");
       localStorage.removeItem("parent");
@@ -155,6 +167,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       // Hard redirect to login page
       window.location.href = '/login';
+    }
+  },
+
+  setSelectedSchool: (school: UserSchool) => {
+    set({ selectedSchool: school });
+    if (typeof window !== 'undefined') {
+      localStorage.setItem("selectedSchool", JSON.stringify(school));
     }
   },
 

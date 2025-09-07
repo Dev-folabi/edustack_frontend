@@ -1,6 +1,10 @@
+"use client";
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FaSchool, FaUserGraduate, FaUserTie, FaDollarSign } from 'react-icons/fa';
+import withAuth from '@/components/withAuth';
+import { UserRole } from '@/constants/roles';
 
 const SuperAdminDashboardPage = () => {
   const stats = [
@@ -56,4 +60,4 @@ const SuperAdminDashboardPage = () => {
   );
 };
 
-export default SuperAdminDashboardPage;
+export default withAuth(SuperAdminDashboardPage, [UserRole.SUPER_ADMIN]);
