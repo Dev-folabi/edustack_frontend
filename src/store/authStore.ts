@@ -22,7 +22,7 @@ interface AuthState {
   classes: Class[];
   sections: Section[];
   isLoggedIn: boolean;
-  isHydrated: boolean; // To check if store is rehydrated
+  isHydrated: boolean;
 
   // Actions
   login: (emailOrUsername: string, password: string) => Promise<void>;

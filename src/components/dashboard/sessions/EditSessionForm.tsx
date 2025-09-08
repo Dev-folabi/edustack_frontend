@@ -19,6 +19,7 @@ import { FaPlus, FaTrash } from 'react-icons/fa';
 
 const termSchema = z.object({
   id: z.string().optional(),
+  databaseId: z.string().optional(),
   name: z.string().min(1, "Term name is required."),
   start_date: z.date({ required_error: "Start date is required." }),
   end_date: z.date({ required_error: "End date is required." }),
@@ -73,6 +74,7 @@ export const EditSessionForm: React.FC<EditSessionFormProps> = ({ initialData })
         end_date: new Date(initialData.end_date),
         terms: initialData.terms.map(term => ({
             ...term,
+            databaseId: term.id,
             start_date: new Date(term.start_date),
             end_date: new Date(term.end_date),
         }))
@@ -83,6 +85,34 @@ export const EditSessionForm: React.FC<EditSessionFormProps> = ({ initialData })
     control: form.control,
     name: "terms",
   });
+
+  // Handle term deletion with API call for existing terms
+  const handleTermDelete = async (index: number) => {
+    const formValues = form.getValues();
+    const term = formValues.terms[index];
+    console.log({index, term})
+    
+    if (term.databaseId) {
+      try {
+        await sessionService.deleteTerm(term.databaseId);
+        showToast({ 
+          title: "Success", 
+          message: "Term deleted successfully!", 
+          type: 'success' 
+        });
+      } catch (error) {
+        showToast({ 
+          title: "Error", 
+          message: "Failed to delete term.", 
+          type: 'error' 
+        });
+        return; 
+      }
+    }
+    
+    // Remove from form array
+    remove(index);
+  };
 
   const onSubmit = async (values: SessionFormValues) => {
     try {
@@ -143,7 +173,7 @@ export const EditSessionForm: React.FC<EditSessionFormProps> = ({ initialData })
                              <FormItem><FormLabel>End Date</FormLabel><FormControl><DatePicker value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem>
                         )} />
                     </div>
-                    <Button type="button" variant="destructive" size="sm" onClick={() => remove(index)}><FaTrash /></Button>
+                    <Button type="button" variant="destructive" size="sm" onClick={() => handleTermDelete(index)}><FaTrash /></Button>
                 </div>
             ))}
             </div>
