@@ -98,7 +98,7 @@ export const EditSectionModal = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">No Teacher</SelectItem>
+                      <SelectItem value="none">No Teacher</SelectItem>
                       {teachers.map((teacher) => (
                         <SelectItem key={teacher.id} value={teacher.id}>
                           {teacher.name}
