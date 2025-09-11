@@ -15,6 +15,40 @@ export interface Class {
   name: string;
   schoolId: string;
   sections: ClassSection[];
+}
+
+export interface CreateClassData {
+  name: string;
+  section: string; // Comma-separated list of section names
+  schoolId: string[];
+}
+
+export type UpdateClassData = Partial<CreateClassData>;
+
+interface ClassesResponse {
+  data: Class[];
+}
+
+interface ClassResponse {
+  data: Class;
+}
+
+export const classService = {
+  getClasses: (schoolId: string): Promise<any> => {
+    return apiClient.get<ClassesResponse>(`/class?schoolId=${schoolId}`);
+  },
+
+  createClass: (data: CreateClassData): Promise<any> => {
+    return apiClient.post<ClassResponse>("/class", data);
+  },
+
+  updateClass: (classId: string, data: UpdateClassData): Promise<any> => {
+    return apiClient.put<ClassResponse>(`/class/${classId}`, data);
+  },
+
+  deleteClass: (classId: string): Promise<any> => {
+    return apiClient.delete(`/class/${classId}`);
+  },
   schools: Pick<School, "name">;
 }
 
@@ -94,5 +128,5 @@ export const classService = {
     data: UpdateSectionData
   ): Promise<ApiResponse<ClassSection>> => {
     return apiClient.put(`/class/section/${sectionId}`, data);
-  },
+  };
 };
