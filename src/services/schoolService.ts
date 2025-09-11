@@ -27,7 +27,7 @@ export interface Staff {
     user: {
         id: string;
         username: string;
-    }
+    };
 }
 
 // Interface for the API response for a list of staff

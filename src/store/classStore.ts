@@ -50,12 +50,21 @@ export const useClassStore = create<ClassState>((set, get) => ({
 
   fetchTeachers: async (schoolId: string) => {
     try {
-      // This might be refactored to a more generic staff store in the future
-      const response = await schoolService.getStaffBySchool(schoolId);
+      const response = await schoolService.getStaffBySchool(schoolId) as StaffApiResponse;
       if (response.success && response.data && response.data.data) {
-        // Assuming the API returns a list of staff with a 'teacher' role
-        // For now, we'll take all staff returned by this endpoint
-        set({ teachers: response.data.data });
+        // Filter only staff with 'teacher' role and map to the expected Staff interface
+        const teachers = response.data.data
+          .filter((staffMember: StaffMember) => staffMember.role === 'teacher')
+          .map((staffMember: StaffMember) => ({
+            id: staffMember.user.staff.id,
+            name: staffMember.user.staff.name,
+            email: staffMember.user.staff.email,
+            user: {
+              id: staffMember.user.staff.id, // Using staff id as user id for consistency
+              username: staffMember.user.username,
+            }
+          }));
+        set({ teachers });
       } else {
         throw new Error(response.message || "Failed to fetch teachers");
       }
@@ -73,7 +82,7 @@ export const useClassStore = create<ClassState>((set, get) => ({
       await classService.createClass(data);
       const selectedSchool = useAuthStore.getState().selectedSchool;
       if (selectedSchool) {
-        await get().fetchClasses(selectedSchool.id);
+        await get().fetchClasses(selectedSchool.schoolId);
       }
     } catch (error) {
       console.error("Error creating class:", error);
@@ -92,7 +101,7 @@ export const useClassStore = create<ClassState>((set, get) => ({
       await classService.updateClass(classId, data);
       const selectedSchool = useAuthStore.getState().selectedSchool;
       if (selectedSchool) {
-        await get().fetchClasses(selectedSchool.id);
+        await get().fetchClasses(selectedSchool.schoolId);
       }
     } catch (error) {
       console.error("Error updating class:", error);
@@ -111,7 +120,7 @@ export const useClassStore = create<ClassState>((set, get) => ({
       await classService.deleteClass(classId);
       const selectedSchool = useAuthStore.getState().selectedSchool;
       if (selectedSchool) {
-        await get().fetchClasses(selectedSchool.id);
+        await get().fetchClasses(selectedSchool.schoolId);
       }
     } catch (error) {
       console.error("Error deleting class:", error);
@@ -133,7 +142,7 @@ export const useClassStore = create<ClassState>((set, get) => ({
       await classService.updateSection(sectionId, data);
       const selectedSchool = useAuthStore.getState().selectedSchool;
       if (selectedSchool) {
-        await get().fetchClasses(selectedSchool.id);
+        await get().fetchClasses(selectedSchool.schoolId);
       }
     } catch (error) {
       console.error("Error updating section:", error);
@@ -146,3 +155,45 @@ export const useClassStore = create<ClassState>((set, get) => ({
     }
   },
 }));
+
+// Interface for a single staff member from API
+interface StaffMember {
+  role: string;
+  user: {
+    username: string;
+    email: string;
+    staff: {
+      id: string;
+      name: string;
+      phone: string[];
+      email: string;
+      address: string;
+      designation: string;
+      dob: string;
+      salary: number;
+      joining_date: string;
+      gender: string;
+      photo_url: string | null;
+      qualification: string;
+      notes: string;
+      isActive: boolean;
+      createdAt: string;
+      updatedAt: string;
+    };
+  };
+}
+
+// Interface for the API response for a list of staff
+interface StaffApiResponse {
+  success: boolean;
+  message: string;
+  data: {
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+    prevPage: number | null;
+    nextPage: number | null;
+    itemPerPage: number;
+    data: StaffMember[];
+  };
+}
