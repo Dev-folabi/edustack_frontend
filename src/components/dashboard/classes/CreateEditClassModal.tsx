@@ -27,7 +27,7 @@ import { PlusCircle, XCircle } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(2, "Class name must be at least 2 characters."),
-  sections: z.array(z.object({ name: z.string().min(1, "Section name cannot be empty.") })),
+  sections: z.array(z.object({ name: z.string().min(1, "Section name cannot be empty.") })).optional(),
 });
 
 interface CreateEditClassModalProps {
@@ -49,7 +49,7 @@ export const CreateEditClassModal = ({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: classData?.name || "",
-      sections: classData?.sections.map(s => ({ name: s.name })) || [{ name: "" }],
+      sections: classData?.sections.map(s => ({ name: s.name })) || [],
     },
   });
 
@@ -61,7 +61,9 @@ export const CreateEditClassModal = ({
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!selectedSchool) return;
 
-    const sectionString = values.sections.map(s => s.name).join(",");
+    const sectionString = values.sections && values.sections.length > 0 
+      ? values.sections.map(s => s.name).filter(name => name.trim() !== "").join(",")
+      : "";
 
     if (isEditMode) {
         await updateClass(classData.id, { name: values.name, section: sectionString });
@@ -94,7 +96,7 @@ export const CreateEditClassModal = ({
             />
 
             <div>
-              <FormLabel>Sections</FormLabel>
+              <FormLabel>Sections {isEditMode ? "(Optional)" : ""}</FormLabel>
               {fields.map((field, index) => (
                 <FormField
                   key={field.id}
@@ -106,7 +108,7 @@ export const CreateEditClassModal = ({
                         <FormControl>
                           <Input placeholder="e.g., A" {...field} />
                         </FormControl>
-                        <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} disabled={fields.length <= 1}>
+                        <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} disabled={!isEditMode && fields.length <= 1}>
                           <XCircle className="h-5 w-5 text-red-500" />
                         </Button>
                       </div>
