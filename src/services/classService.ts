@@ -1,5 +1,4 @@
 import { apiClient, ApiResponse } from "../utils/api";
-import { School } from "./authService";
 import { Staff } from "./schoolService";
 
 export interface ClassSection {
@@ -23,33 +22,14 @@ export interface CreateClassData {
   schoolId: string[];
 }
 
-export type UpdateClassData = Partial<CreateClassData>;
-
-interface ClassesResponse {
-  data: Class[];
+export interface UpdateClassData {
+  name?: string;
+  section?: string; // Comma-separated list of section names
 }
 
-interface ClassResponse {
-  data: Class;
-}
-
-export const classService = {
-  getClasses: (schoolId: string): Promise<any> => {
-    return apiClient.get<ClassesResponse>(`/class?schoolId=${schoolId}`);
-  },
-
-  createClass: (data: CreateClassData): Promise<any> => {
-    return apiClient.post<ClassResponse>("/class", data);
-  },
-
-  updateClass: (classId: string, data: UpdateClassData): Promise<any> => {
-    return apiClient.put<ClassResponse>(`/class/${classId}`, data);
-  },
-
-  deleteClass: (classId: string): Promise<any> => {
-    return apiClient.delete(`/class/${classId}`);
-  },
-  schools: Pick<School, "name">;
+export interface UpdateSectionData {
+  name?: string;
+  teacherId?: string;
 }
 
 export interface PaginatedClasses {
@@ -62,43 +42,12 @@ export interface PaginatedClasses {
   data: Class[];
 }
 
-interface ClassesResponse {
-  success: boolean;
-  message: string;
-  data: PaginatedClasses;
-}
-
-interface ClassResponse {
-  success: boolean;
-  message: string;
-  data: Class;
-}
-
-interface SectionResponse {
-    success: boolean;
-  message: string;
-  data: ClassSection;
-}
-
-export interface CreateClassData {
-  name: string;
-  section: string;
-  schoolId: string[];
-}
-
-export interface UpdateClassData {
-  name?: string;
-  section?: string; // Comma-separated list of section names
-}
-
-export interface UpdateSectionData {
-  name?: string;
-  teacherId?: string;
-}
-
 export const classService = {
   // Get all classes for a given school
-  getClasses: (schoolId: string, search?: string): Promise<ApiResponse<PaginatedClasses>> => {
+  getClasses: (
+    schoolId: string,
+    search?: string
+  ): Promise<ApiResponse<PaginatedClasses>> => {
     const params = new URLSearchParams();
     params.append("schoolId", schoolId);
     if (search) {
@@ -113,7 +62,10 @@ export const classService = {
   },
 
   // Update a class by its ID
-  updateClass: (classId: string, data: UpdateClassData): Promise<ApiResponse<Class>> => {
+  updateClass: (
+    classId: string,
+    data: UpdateClassData
+  ): Promise<ApiResponse<Class>> => {
     return apiClient.put(`/class/${classId}`, data);
   },
 
@@ -128,5 +80,5 @@ export const classService = {
     data: UpdateSectionData
   ): Promise<ApiResponse<ClassSection>> => {
     return apiClient.put(`/class/section/${sectionId}`, data);
-  };
+  },
 };

@@ -1,15 +1,4 @@
 import { create } from "zustand";
-import { classService, Class, CreateClassData, UpdateClassData } from "@/services/classService";
-
-interface ClassState {
-  classes: Class[];
-  isLoading: boolean;
-  error: string | null;
-  fetchClasses: (schoolId: string) => Promise<void>;
-  createClass: (classData: CreateClassData) => Promise<any>;
-  updateClass: (classId: string, classData: UpdateClassData) => Promise<any>;
-  deleteClass: (classId: string) => Promise<any>;
-
 import {
   classService,
   Class,
@@ -19,6 +8,48 @@ import {
 } from "@/services/classService";
 import { schoolService, Staff } from "@/services/schoolService";
 import { useAuthStore } from "./authStore";
+
+// Interface for a single staff member from API
+interface StaffMember {
+  role: string;
+  user: {
+    username: string;
+    email: string;
+    staff: {
+      id: string;
+      name: string;
+      phone: string[];
+      email: string;
+      address: string;
+      designation: string;
+      dob: string;
+      salary: number;
+      joining_date: string;
+      gender: string;
+      photo_url: string | null;
+      qualification: string;
+      notes: string;
+      isActive: boolean;
+      createdAt: string;
+      updatedAt: string;
+    };
+  };
+}
+
+// Interface for the API response for a list of staff
+interface StaffApiResponse {
+  success: boolean;
+  message: string;
+  data: {
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+    prevPage: number | null;
+    nextPage: number | null;
+    itemPerPage: number;
+    data: StaffMember[];
+  };
+}
 
 interface ClassState {
   classes: Class[];
@@ -34,80 +65,10 @@ interface ClassState {
     sectionId: string,
     data: UpdateSectionData
   ) => Promise<void>;
-  
 }
 
 export const useClassStore = create<ClassState>((set, get) => ({
   classes: [],
-
-  isLoading: false,
-  error: null,
-
-  fetchClasses: async (schoolId: string) => {
-    try {
-      set({ isLoading: true, error: null });
-      const response = await classService.getClasses(schoolId);
-      if (response.success && response.data) {
-        set({ classes: response.data, isLoading: false });
-      } else {
-        throw new Error(response.message || "Failed to fetch classes");
-      }
-    } catch (error: any) {
-      console.error("Error fetching classes:", error);
-      set({ isLoading: false, error: error.message });
-    }
-  },
-
-  createClass: async (classData: CreateClassData) => {
-    try {
-      const response = await classService.createClass(classData);
-      if (response.success && response.data) {
-        // Assuming the response.data is the new class object or an array of new classes
-        const newClasses = Array.isArray(response.data) ? response.data : [response.data];
-        set((state) => ({
-          classes: [...state.classes, ...newClasses],
-        }));
-      }
-      return response;
-    } catch (error) {
-      console.error("Error creating class:", error);
-      throw error;
-    }
-  },
-
-  updateClass: async (classId: string, classData: UpdateClassData) => {
-    try {
-      const response = await classService.updateClass(classId, classData);
-      if (response.success && response.data) {
-        set((state) => ({
-          classes: state.classes.map((c) =>
-            c.id === classId ? { ...c, ...response.data } : c
-          ),
-        }));
-      }
-      return response;
-    } catch (error) {
-      console.error("Error updating class:", error);
-      throw error;
-    }
-  },
-
-  deleteClass: async (classId: string) => {
-    try {
-      const response = await classService.deleteClass(classId);
-      if (response.success) {
-        set((state) => ({
-          classes: state.classes.filter((c) => c.id !== classId),
-        }));
-      }
-      return response;
-    } catch (error) {
-      console.error("Error deleting class:", error);
-      throw error;
-    }
-  },
-}));
-
   teachers: [],
   isLoading: false,
   error: null,
@@ -117,7 +78,7 @@ export const useClassStore = create<ClassState>((set, get) => ({
       set({ isLoading: true, error: null });
       const response = await classService.getClasses(schoolId, search);
       if (response.success) {
-        set({ classes: response.data.data, isLoading: false });
+        set({ classes: response.data?.data || [], isLoading: false });
       } else {
         throw new Error(response.message || "Failed to fetch classes");
       }
@@ -236,45 +197,3 @@ export const useClassStore = create<ClassState>((set, get) => ({
     }
   },
 }));
-
-// Interface for a single staff member from API
-interface StaffMember {
-  role: string;
-  user: {
-    username: string;
-    email: string;
-    staff: {
-      id: string;
-      name: string;
-      phone: string[];
-      email: string;
-      address: string;
-      designation: string;
-      dob: string;
-      salary: number;
-      joining_date: string;
-      gender: string;
-      photo_url: string | null;
-      qualification: string;
-      notes: string;
-      isActive: boolean;
-      createdAt: string;
-      updatedAt: string;
-    };
-  };
-}
-
-// Interface for the API response for a list of staff
-interface StaffApiResponse {
-  success: boolean;
-  message: string;
-  data: {
-    totalItems: number;
-    totalPages: number;
-    currentPage: number;
-    prevPage: number | null;
-    nextPage: number | null;
-    itemPerPage: number;
-    data: StaffMember[];
-  };
-}
