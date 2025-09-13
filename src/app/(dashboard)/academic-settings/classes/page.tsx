@@ -76,6 +76,7 @@ const EditClassModal = ({
   onClassUpdated: () => void;
 }) => {
   const { updateClass } = useClassStore();
+  const [isLoading, setIsLoading] = useState(false);
   const {
     register,
     handleSubmit,
@@ -102,13 +103,35 @@ const EditClassModal = ({
   const onSubmit = async (data: z.infer<typeof editFormSchema>) => {
     if (!classData) return;
 
-    const updatedData: UpdateClassData = {
-      name: data.name,
-      section: data.sections.map((s) => s.name).join(","),
-    };
-    await updateClass(classData.id, updatedData);
-    onClassUpdated();
-    onClose();
+    setIsLoading(true);
+    try {
+      const updatedData: UpdateClassData = {
+        name: data.name,
+        section: data.sections.map((s) => s.name).join(","),
+      };
+      await updateClass(classData.id, updatedData);
+      
+      // Dispatch success toast event
+      window.dispatchEvent(new CustomEvent('showToast', {
+        detail: {
+          type: 'success',
+          message: 'Class updated successfully!'
+        }
+      }));
+      
+      onClassUpdated();
+      onClose();
+    } catch (error) {
+      // Dispatch error toast event
+      window.dispatchEvent(new CustomEvent('showToast', {
+        detail: {
+          type: 'error',
+          message: 'Failed to update class. Please try again.'
+        }
+      }));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -162,10 +185,19 @@ const EditClassModal = ({
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
               Cancel
             </Button>
-            <Button type="submit">Save Changes</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Changes"
+              )}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -216,6 +248,7 @@ const CreateClassModal = ({
 }) => {
   const { schools, fetchSchools } = useSchoolStore();
   const { createClass } = useClassStore();
+  const [isLoading, setIsLoading] = useState(false);
   const {
     register,
     handleSubmit,
@@ -239,14 +272,36 @@ const CreateClassModal = ({
   }, [fetchSchools]);
 
   const onSubmit = async (data: z.infer<typeof createFormSchema>) => {
-    const classData: CreateClassData = {
-      name: data.name,
-      schoolId: data.schoolId,
-      section: data.sections.map((s) => s.name).join(","),
-    };
-    await createClass(classData);
-    onClassCreated();
-    onClose();
+    setIsLoading(true);
+    try {
+      const classData: CreateClassData = {
+        name: data.name,
+        schoolId: data.schoolId,
+        section: data.sections.map((s) => s.name).join(","),
+      };
+      await createClass(classData);
+      
+      // Dispatch success toast event
+      window.dispatchEvent(new CustomEvent('showToast', {
+        detail: {
+          type: 'success',
+          message: 'Class created successfully!'
+        }
+      }));
+      
+      onClassCreated();
+      onClose();
+    } catch (error) {
+      // Dispatch error toast event
+      window.dispatchEvent(new CustomEvent('showToast', {
+        detail: {
+          type: 'error',
+          message: 'Failed to create class. Please try again.'
+        }
+      }));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -321,10 +376,19 @@ const CreateClassModal = ({
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
               Cancel
             </Button>
-            <Button type="submit">Create Class</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Create Class"
+              )}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

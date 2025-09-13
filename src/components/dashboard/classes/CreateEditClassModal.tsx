@@ -68,7 +68,7 @@ export const CreateEditClassModal = ({
     if (isEditMode) {
         await updateClass(classData.id, { name: values.name, section: sectionString });
     } else {
-        await createClass({ name: values.name, section: sectionString, schoolId: [selectedSchool.id] });
+        await createClass({ name: values.name, section: sectionString, schoolId: [selectedSchool.schoolId] });
     }
     onClose();
   };

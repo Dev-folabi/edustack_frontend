@@ -9,48 +9,6 @@ import {
 import { schoolService, Staff } from "@/services/schoolService";
 import { useAuthStore } from "./authStore";
 
-// Interface for a single staff member from API
-interface StaffMember {
-  role: string;
-  user: {
-    username: string;
-    email: string;
-    staff: {
-      id: string;
-      name: string;
-      phone: string[];
-      email: string;
-      address: string;
-      designation: string;
-      dob: string;
-      salary: number;
-      joining_date: string;
-      gender: string;
-      photo_url: string | null;
-      qualification: string;
-      notes: string;
-      isActive: boolean;
-      createdAt: string;
-      updatedAt: string;
-    };
-  };
-}
-
-// Interface for the API response for a list of staff
-interface StaffApiResponse {
-  success: boolean;
-  message: string;
-  data: {
-    totalItems: number;
-    totalPages: number;
-    currentPage: number;
-    prevPage: number | null;
-    nextPage: number | null;
-    itemPerPage: number;
-    data: StaffMember[];
-  };
-}
-
 interface ClassState {
   classes: Class[];
   teachers: Staff[];
@@ -61,10 +19,7 @@ interface ClassState {
   createClass: (data: CreateClassData) => Promise<void>;
   updateClass: (classId: string, data: UpdateClassData) => Promise<void>;
   deleteClass: (classId: string) => Promise<void>;
-  updateSection: (
-    sectionId: string,
-    data: UpdateSectionData
-  ) => Promise<void>;
+  updateSection: (sectionId: string, data: UpdateSectionData) => Promise<void>;
 }
 
 export const useClassStore = create<ClassState>((set, get) => ({
@@ -92,29 +47,46 @@ export const useClassStore = create<ClassState>((set, get) => ({
 
   fetchTeachers: async (schoolId: string) => {
     try {
-      const response = await schoolService.getStaffBySchool(schoolId) as StaffApiResponse;
-      if (response.success && response.data && response.data.data) {
-        // Filter only staff with 'teacher' role and map to the expected Staff interface
-        const teachers = response.data.data
-          .filter((staffMember: StaffMember) => staffMember.role === 'teacher')
-          .map((staffMember: StaffMember) => ({
-            id: staffMember.user.staff.id,
-            name: staffMember.user.staff.name,
-            email: staffMember.user.staff.email,
-            user: {
-              id: staffMember.user.staff.id, // Using staff id as user id for consistency
-              username: staffMember.user.username,
-            }
+      const response = await schoolService.getStaffBySchool(
+        schoolId,
+        "teacher",
+        true
+      );
+  
+      if (response.success && response.data) {
+        const staffData = response.data.data?.data || [];
+        const teachers = staffData
+          .filter((staff: any) => staff.role === "teacher")
+          .map((staff: any) => ({
+            id: staff.id,
+            name: staff.name,
+            email: staff.email,
+            user: staff.user,
           }));
         set({ teachers });
       } else {
-        throw new Error(response.message || "Failed to fetch teachers");
+        set({ teachers: [] });
+        if (!response.success) {
+          throw new Error(response.message || "Failed to fetch teachers");
+        }
       }
     } catch (error) {
       console.error("Error fetching teachers:", error);
-      if (error instanceof Error) {
-        set({ error: error.message });
-      }
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to fetch teachers";
+      set({ error: errorMessage, teachers: [] });
+  
+      // Show error toast using custom event (if you've implemented the toast fix)
+      const event = new CustomEvent("showToast", {
+        detail: {
+          type: "error",
+          title: "Error",
+          message: errorMessage,
+        },
+      });
+      window.dispatchEvent(event);
+  
+      throw error;
     }
   },
 
@@ -137,7 +109,10 @@ export const useClassStore = create<ClassState>((set, get) => ({
     }
   },
 
-  updateClass: async (classId: string, data: UpdateClassData): Promise<void> => {
+  updateClass: async (
+    classId: string,
+    data: UpdateClassData
+  ): Promise<void> => {
     try {
       set({ isLoading: true });
       await classService.updateClass(classId, data);

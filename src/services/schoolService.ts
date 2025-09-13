@@ -1,4 +1,4 @@
-import { apiClient } from "../utils/api";
+import { apiClient, ApiResponse } from "../utils/api";
 import { School } from "./authService"; // Re-using the School type
 
 // Interface for creating a new school
@@ -21,20 +21,20 @@ interface SchoolsResponse {
 
 // Interface for a single staff member
 export interface Staff {
+  id: string;
+  name: string;
+  email: string;
+  user: {
     id: string;
-    name: string;
-    email: string;
-    user: {
-        id: string;
-        username: string;
-    };
+    username: string;
+  };
 }
 
 // Interface for the API response for a list of staff
 interface StaffResponse {
-    data: {
-        data: Staff[];
-    };
+  data: {
+    data: Staff[];
+  };
 }
 
 // Interface for updating a school, all fields are optional
@@ -67,7 +67,15 @@ export const schoolService = {
   },
 
   // Get staff by school ID
-  getStaffBySchool: (schoolId: string): Promise<any> => {
-    return apiClient.get<StaffResponse>(`/staff/school/${schoolId}`);
-  }
+  getStaffBySchool: (
+    schoolId: string,
+    role?: string,
+    isActive?: boolean
+  ): Promise<ApiResponse<StaffResponse>> => {
+    return apiClient.get<StaffResponse>(
+      `/staff/school/${schoolId}${role ? `?role=${role}` : ""}${
+        isActive !== undefined ? `${role ? "&" : "?"}isActive=${isActive}` : ""
+      }`
+    );
+  },
 };
