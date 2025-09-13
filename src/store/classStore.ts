@@ -52,17 +52,18 @@ export const useClassStore = create<ClassState>((set, get) => ({
         "teacher",
         true
       );
-  
+
       if (response.success && response.data) {
-        const staffData = response.data.data?.data || [];
+        const staffData = response.data.data || [];
         const teachers = staffData
           .filter((staff: any) => staff.role === "teacher")
           .map((staff: any) => ({
-            id: staff.id,
-            name: staff.name,
-            email: staff.email,
+            id: staff.user.staff.id,
+            name: staff.user.staff.name,
+            email: staff.user.staff.email,
             user: staff.user,
           }));
+
         set({ teachers });
       } else {
         set({ teachers: [] });
@@ -75,8 +76,7 @@ export const useClassStore = create<ClassState>((set, get) => ({
       const errorMessage =
         error instanceof Error ? error.message : "Failed to fetch teachers";
       set({ error: errorMessage, teachers: [] });
-  
-      // Show error toast using custom event (if you've implemented the toast fix)
+
       const event = new CustomEvent("showToast", {
         detail: {
           type: "error",
@@ -85,7 +85,7 @@ export const useClassStore = create<ClassState>((set, get) => ({
         },
       });
       window.dispatchEvent(event);
-  
+
       throw error;
     }
   },

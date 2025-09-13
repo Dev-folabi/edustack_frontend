@@ -29,6 +29,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ClassSection } from "@/services/classService";
 import { useClassStore } from "@/store/classStore";
+import { useEffect } from "react";
+import { useSchoolStore } from "@/store/schoolStore";
 
 const formSchema = z.object({
   name: z.string().min(1, "Section name cannot be empty."),
@@ -52,14 +54,14 @@ export const EditSectionModal = ({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: section.name,
-      teacherId: section.teacherId || "",
+      teacherId: section.teacherId || "none",
     },
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     await updateSection(section.id, {
         name: values.name,
-        teacherId: values.teacherId,
+        teacherId: values.teacherId === "none" ? undefined : values.teacherId,
     });
     onClose();
   };
@@ -99,11 +101,17 @@ export const EditSectionModal = ({
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="none">No Teacher</SelectItem>
-                      {teachers.map((teacher) => (
-                        <SelectItem key={teacher.id} value={teacher.id}>
-                          {teacher.name}
+                      {teachers && teachers.length > 0 ? (
+                        teachers.map((teacher) => (
+                          <SelectItem key={teacher.id} value={teacher.id}>
+                            {teacher.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-teachers" disabled>
+                          No teachers available
                         </SelectItem>
-                      ))}
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />
