@@ -11,19 +11,23 @@ import {
 } from "@/components/ui/command";
 import { Command as CommandPrimitive } from "cmdk";
 
-type Option = Record<"value" | "label", string>;
+type Option = Record<"value" | "label", string> & {
+  icon?: React.ComponentType<{ className?: string }>;
+};
+
+interface MultiSelectProps {
+  options: Option[];
+  onValueChange: (value: string[]) => void;
+  defaultValue: string[];
+  placeholder?: string;
+}
 
 export function MultiSelect({
-    options,
-    onValueChange,
-    defaultValue,
-    placeholder = "Select options"
-}: {
-    options: Option[],
-    onValueChange: (value: string[]) => void,
-    defaultValue: string[],
-    placeholder?: string
-}) {
+  options,
+  onValueChange,
+  defaultValue,
+  placeholder = "Select options"
+}: MultiSelectProps) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [open, setOpen] = React.useState(false);
   const [selected, setSelected] = React.useState<Option[]>(
@@ -33,14 +37,14 @@ export function MultiSelect({
 
   React.useEffect(() => {
     onValueChange(selected.map(s => s.value));
-  }, [selected]);
+  }, [selected, onValueChange]);
 
   const handleUnselect = React.useCallback((option: Option) => {
     setSelected(prev => prev.filter(s => s.value !== option.value));
   }, []);
 
   const handleKeyDown = React.useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
-    const input = inputRef.current
+    const input = inputRef.current;
     if (input) {
       if (e.key === "Delete" || e.key === "Backspace") {
         if (input.value === "") {
@@ -48,7 +52,7 @@ export function MultiSelect({
             const newSelected = [...prev];
             newSelected.pop();
             return newSelected;
-          })
+          });
         }
       }
       if (e.key === "Escape") {
@@ -66,8 +70,10 @@ export function MultiSelect({
       >
         <div className="flex gap-1 flex-wrap">
           {selected.map((option) => {
+            const Icon = option.icon;
             return (
               <Badge key={option.value} variant="secondary">
+                {Icon && <Icon className="h-3 w-3 mr-1" />}
                 {option.label}
                 <button
                   className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
@@ -85,7 +91,7 @@ export function MultiSelect({
                   <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
                 </button>
               </Badge>
-            )
+            );
           })}
           <CommandPrimitive.Input
             ref={inputRef}
@@ -99,10 +105,11 @@ export function MultiSelect({
         </div>
       </div>
       <div className="relative mt-2">
-        {open && selectables.length > 0 ?
+        {open && selectables.length > 0 ? (
           <div className="absolute w-full z-10 top-0 rounded-md border bg-popover text-popover-foreground shadow-md outline-none animate-in">
             <CommandGroup className="h-full overflow-auto">
               {selectables.map((option) => {
+                const Icon = option.icon;
                 return (
                   <CommandItem
                     key={option.value}
@@ -111,19 +118,20 @@ export function MultiSelect({
                       e.stopPropagation();
                     }}
                     onSelect={() => {
-                      setInputValue("")
-                      setSelected(prev => [...prev, option])
+                      setInputValue("");
+                      setSelected(prev => [...prev, option]);
                     }}
-                    className={"cursor-pointer"}
+                    className="cursor-pointer"
                   >
+                    {Icon && <Icon className="mr-2 h-4 w-4 text-muted-foreground" />}
                     {option.label}
                   </CommandItem>
                 );
               })}
             </CommandGroup>
           </div>
-          : null}
+        ) : null}
       </div>
-    </Command >
-  )
+    </Command>
+  );
 }

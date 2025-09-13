@@ -1,5 +1,4 @@
-import { apiClient } from "../utils/api";
-import { School } from "./authService";
+import { apiClient, ApiResponse } from "../utils/api";
 import { Staff } from "./schoolService";
 
 export interface ClassSection {
@@ -15,29 +14,6 @@ export interface Class {
   name: string;
   schoolId: string;
   sections: ClassSection[];
-  schools: Pick<School, "name">;
-}
-
-export interface PaginatedClasses {
-  totalItems: number;
-  totalPages: number;
-  currentPage: number;
-  prevPage: number | null;
-  nextPage: number | null;
-  itemPerPage: number;
-  data: Class[];
-}
-
-interface ClassesResponse {
-  data: PaginatedClasses;
-}
-
-interface ClassResponse {
-  data: Class;
-}
-
-interface SectionResponse {
-  data: ClassSection;
 }
 
 export interface CreateClassData {
@@ -56,9 +32,22 @@ export interface UpdateSectionData {
   teacherId?: string;
 }
 
+export interface PaginatedClasses {
+  totalItems: number;
+  totalPages: number;
+  currentPage: number;
+  prevPage: number | null;
+  nextPage: number | null;
+  itemPerPage: number;
+  data: Class[];
+}
+
 export const classService = {
   // Get all classes for a given school
-  getClasses: (schoolId: string, search?: string): Promise<ClassesResponse> => {
+  getClasses: (
+    schoolId: string,
+    search?: string
+  ): Promise<ApiResponse<PaginatedClasses>> => {
     const params = new URLSearchParams();
     params.append("schoolId", schoolId);
     if (search) {
@@ -68,17 +57,20 @@ export const classService = {
   },
 
   // Create a new class
-  createClass: (data: CreateClassData): Promise<ClassResponse> => {
+  createClass: (data: CreateClassData): Promise<ApiResponse<Class>> => {
     return apiClient.post("/class", data);
   },
 
   // Update a class by its ID
-  updateClass: (classId: string, data: UpdateClassData): Promise<ClassResponse> => {
+  updateClass: (
+    classId: string,
+    data: UpdateClassData
+  ): Promise<ApiResponse<Class>> => {
     return apiClient.put(`/class/${classId}`, data);
   },
 
   // Delete a class by its ID
-  deleteClass: (classId: string): Promise<void> => {
+  deleteClass: (classId: string): Promise<ApiResponse<void>> => {
     return apiClient.delete(`/class/${classId}`);
   },
 
@@ -86,8 +78,12 @@ export const classService = {
   updateSection: (
     sectionId: string,
     data: UpdateSectionData
-  ): Promise<SectionResponse> => {
-    // Assuming a dedicated endpoint for updating a section will be available.
+  ): Promise<ApiResponse<ClassSection>> => {
     return apiClient.put(`/class/section/${sectionId}`, data);
+  },
+
+  // Delete a section by its ID
+  deleteSection: (sectionId: string): Promise<ApiResponse<void>> => {
+    return apiClient.delete(`/class/section/${sectionId}`);
   },
 };

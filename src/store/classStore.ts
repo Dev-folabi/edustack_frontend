@@ -19,10 +19,8 @@ interface ClassState {
   createClass: (data: CreateClassData) => Promise<void>;
   updateClass: (classId: string, data: UpdateClassData) => Promise<void>;
   deleteClass: (classId: string) => Promise<void>;
-  updateSection: (
-    sectionId: string,
-    data: UpdateSectionData
-  ) => Promise<void>;
+  updateSection: (sectionId: string, data: UpdateSectionData) => Promise<void>;
+  deleteSection: (sectionId: string) => Promise<void>;
 }
 
 export const useClassStore = create<ClassState>((set, get) => ({
@@ -36,7 +34,7 @@ export const useClassStore = create<ClassState>((set, get) => ({
       set({ isLoading: true, error: null });
       const response = await classService.getClasses(schoolId, search);
       if (response.success) {
-        set({ classes: response.data.data, isLoading: false });
+        set({ classes: response.data?.data || [], isLoading: false });
       } else {
         throw new Error(response.message || "Failed to fetch classes");
       }
@@ -50,20 +48,46 @@ export const useClassStore = create<ClassState>((set, get) => ({
 
   fetchTeachers: async (schoolId: string) => {
     try {
-      // This might be refactored to a more generic staff store in the future
-      const response = await schoolService.getStaffBySchool(schoolId);
-      if (response.success && response.data && response.data.data) {
-        // Assuming the API returns a list of staff with a 'teacher' role
-        // For now, we'll take all staff returned by this endpoint
-        set({ teachers: response.data.data });
+      const response = await schoolService.getStaffBySchool(
+        schoolId,
+        "teacher",
+        true
+      );
+
+      if (response.success && response.data) {
+        const staffData = response.data.data || [];
+        const teachers = staffData
+          .filter((staff: any) => staff.role === "teacher")
+          .map((staff: any) => ({
+            id: staff.user.staff.id,
+            name: staff.user.staff.name,
+            email: staff.user.staff.email,
+            user: staff.user,
+          }));
+
+        set({ teachers });
       } else {
-        throw new Error(response.message || "Failed to fetch teachers");
+        set({ teachers: [] });
+        if (!response.success) {
+          throw new Error(response.message || "Failed to fetch teachers");
+        }
       }
     } catch (error) {
       console.error("Error fetching teachers:", error);
-      if (error instanceof Error) {
-        set({ error: error.message });
-      }
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to fetch teachers";
+      set({ error: errorMessage, teachers: [] });
+
+      const event = new CustomEvent("showToast", {
+        detail: {
+          type: "error",
+          title: "Error",
+          message: errorMessage,
+        },
+      });
+      window.dispatchEvent(event);
+
+      throw error;
     }
   },
 
@@ -73,7 +97,7 @@ export const useClassStore = create<ClassState>((set, get) => ({
       await classService.createClass(data);
       const selectedSchool = useAuthStore.getState().selectedSchool;
       if (selectedSchool) {
-        await get().fetchClasses(selectedSchool.id);
+        await get().fetchClasses(selectedSchool.schoolId);
       }
     } catch (error) {
       console.error("Error creating class:", error);
@@ -86,13 +110,16 @@ export const useClassStore = create<ClassState>((set, get) => ({
     }
   },
 
-  updateClass: async (classId: string, data: UpdateClassData): Promise<void> => {
+  updateClass: async (
+    classId: string,
+    data: UpdateClassData
+  ): Promise<void> => {
     try {
       set({ isLoading: true });
       await classService.updateClass(classId, data);
       const selectedSchool = useAuthStore.getState().selectedSchool;
       if (selectedSchool) {
-        await get().fetchClasses(selectedSchool.id);
+        await get().fetchClasses(selectedSchool.schoolId);
       }
     } catch (error) {
       console.error("Error updating class:", error);
@@ -111,7 +138,7 @@ export const useClassStore = create<ClassState>((set, get) => ({
       await classService.deleteClass(classId);
       const selectedSchool = useAuthStore.getState().selectedSchool;
       if (selectedSchool) {
-        await get().fetchClasses(selectedSchool.id);
+        await get().fetchClasses(selectedSchool.schoolId);
       }
     } catch (error) {
       console.error("Error deleting class:", error);
@@ -133,10 +160,29 @@ export const useClassStore = create<ClassState>((set, get) => ({
       await classService.updateSection(sectionId, data);
       const selectedSchool = useAuthStore.getState().selectedSchool;
       if (selectedSchool) {
-        await get().fetchClasses(selectedSchool.id);
+        await get().fetchClasses(selectedSchool.schoolId);
       }
     } catch (error) {
       console.error("Error updating section:", error);
+      if (error instanceof Error) {
+        set({ error: error.message });
+      }
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  deleteSection: async (sectionId: string): Promise<void> => {
+    try {
+      set({ isLoading: true });
+      await classService.deleteSection(sectionId);
+      const selectedSchool = useAuthStore.getState().selectedSchool;
+      if (selectedSchool) {
+        await get().fetchClasses(selectedSchool.schoolId);
+      }
+    } catch (error) {
+      console.error("Error deleting section:", error);
       if (error instanceof Error) {
         set({ error: error.message });
       }
