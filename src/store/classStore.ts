@@ -20,6 +20,7 @@ interface ClassState {
   updateClass: (classId: string, data: UpdateClassData) => Promise<void>;
   deleteClass: (classId: string) => Promise<void>;
   updateSection: (sectionId: string, data: UpdateSectionData) => Promise<void>;
+  deleteSection: (sectionId: string) => Promise<void>;
 }
 
 export const useClassStore = create<ClassState>((set, get) => ({
@@ -163,6 +164,25 @@ export const useClassStore = create<ClassState>((set, get) => ({
       }
     } catch (error) {
       console.error("Error updating section:", error);
+      if (error instanceof Error) {
+        set({ error: error.message });
+      }
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  deleteSection: async (sectionId: string): Promise<void> => {
+    try {
+      set({ isLoading: true });
+      await classService.deleteSection(sectionId);
+      const selectedSchool = useAuthStore.getState().selectedSchool;
+      if (selectedSchool) {
+        await get().fetchClasses(selectedSchool.schoolId);
+      }
+    } catch (error) {
+      console.error("Error deleting section:", error);
       if (error instanceof Error) {
         set({ error: error.message });
       }

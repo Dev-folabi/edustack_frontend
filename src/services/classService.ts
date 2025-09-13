@@ -81,4 +81,9 @@ export const classService = {
   ): Promise<ApiResponse<ClassSection>> => {
     return apiClient.put(`/class/section/${sectionId}`, data);
   },
+
+  // Delete a section by its ID
+  deleteSection: (sectionId: string): Promise<ApiResponse<void>> => {
+    return apiClient.delete(`/class/section/${sectionId}`);
+  },
 };
