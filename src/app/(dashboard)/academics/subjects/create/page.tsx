@@ -1,20 +1,20 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Switch } from '@/components/ui/switch';
-import { MultiSelect } from '@/components/ui/multi-select'; // Assuming a MultiSelect component exists
+import { MultiSelect } from '@/components/ui/multi-select';
 import { subjectService } from '@/services/subjectService';
 import { schoolService } from '@/services/schoolService';
 import { classService } from '@/services/classService';
 import { toast } from 'react-hot-toast';
+import { useAuthStore } from '@/store/authStore';
 
 const subjectFormSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -28,8 +28,10 @@ type SubjectFormValues = z.infer<typeof subjectFormSchema>;
 
 const CreateSubjectPage = () => {
   const router = useRouter();
-  const [schools, setSchools] = useState([]);
-  const [sections, setSections] = useState([]);
+  const [schools, setSchools] = useState<{ value: string; label: string }[]>([]);
+  const [sections, setSections] = useState<{ value: string; label: string }[]>([]);
+
+  const { selectedSchool } = useAuthStore();
 
   const form = useForm<SubjectFormValues>({
     resolver: zodResolver(subjectFormSchema),
@@ -37,53 +39,62 @@ const CreateSubjectPage = () => {
       name: '',
       code: '',
       isActive: true,
-      schoolIds: [],
+      schoolIds: selectedSchool ? [selectedSchool.id] : [],
       sectionIds: [],
     },
   });
 
-  useEffect(() => {
-    const fetchSchools = async () => {
-      try {
-        const response = await schoolService.getSchools();
+  const fetchSchools = useCallback(async () => {
+    try {
+      const response = await schoolService.getSchools();
+      if (response.success) {
         setSchools(response.data.data.map((s: any) => ({ value: s.id, label: s.name })));
-      } catch (error) {
-        toast.error('Failed to fetch schools');
       }
-    };
+    } catch (error) {
+      toast.error('Failed to fetch schools');
+    }
+  }, []);
 
-    const fetchClassesAndSections = async () => {
-        try {
-          const response = await classService.getClasses();
-          const allSections = response.data.flatMap((c: any) =>
-            c.sections.map((s: any) => ({ value: s.id, label: `${c.name} - ${s.name}` }))
-          );
-          setSections(allSections);
-        } catch (error) {
-          toast.error('Failed to fetch classes and sections');
-        }
-      };
+  const fetchClassesAndSections = useCallback(async () => {
+    if (!selectedSchool) return;
+    try {
+      const response = await classService.getClasses(selectedSchool.id);
+      if (response.success) {
+        const allSections = response.data.data.flatMap((c: any) =>
+          c.sections.map((s: any) => ({ value: s.id, label: `${c.name} - ${s.name}` }))
+        );
+        setSections(allSections);
+      }
+    } catch (error) {
+      toast.error('Failed to fetch classes and sections');
+    }
+  }, [selectedSchool]);
 
+  useEffect(() => {
     fetchSchools();
     fetchClassesAndSections();
-  }, []);
+  }, [fetchSchools, fetchClassesAndSections]);
 
   const onSubmit = async (data: SubjectFormValues) => {
     try {
-      await subjectService.createSubject(data);
-      toast.success('Subject created successfully');
-      router.push('/academics/subjects');
-    } catch (error) {
-      toast.error('Failed to create subject');
+      const response = await subjectService.createSubject(data);
+      if (response.success) {
+        toast.success('Subject created successfully');
+        router.push('/academics/subjects');
+      } else {
+        toast.error(response.message || 'Failed to create subject');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to create subject');
     }
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Create Subject</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8">
+        <div className="mb-8">
+            <h1 className="text-gray-900 text-3xl font-bold tracking-tight">Create Subject</h1>
+            <p className="text-gray-500 mt-2 text-base">Fill in the details to create a new subject.</p>
+        </div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
@@ -93,7 +104,7 @@ const CreateSubjectPage = () => {
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Mathematics" {...field} />
+                    <Input placeholder="e.g., Mathematics" {...field} className="h-12 px-4" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -106,7 +117,7 @@ const CreateSubjectPage = () => {
                 <FormItem>
                   <FormLabel>Code</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., MATH101" {...field} />
+                    <Input placeholder="e.g., MATH101" {...field} className="h-12 px-4" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -161,16 +172,17 @@ const CreateSubjectPage = () => {
                 </FormItem>
               )}
             />
-            <div className="flex justify-end space-x-2">
-                <Button type="button" variant="outline" onClick={() => router.back()}>
+            <div className="flex justify-end gap-4 pt-4">
+                <Button type="button" variant="outline" onClick={() => router.back()} className="px-6 py-3 text-sm font-semibold">
                     Cancel
                 </Button>
-                <Button type="submit">Create Subject</Button>
+                <Button type="submit" className="px-6 py-3 text-sm font-semibold">
+                    Create Subject
+                </Button>
             </div>
           </form>
         </Form>
-      </CardContent>
-    </Card>
+    </div>
   );
 };
 

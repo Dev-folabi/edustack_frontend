@@ -1,19 +1,16 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { subjectService, staffService, Subject, Teacher } from '@/services/subjectService';
 import { toast } from 'react-hot-toast';
 import { useAuthStore } from '@/store/authStore';
 import { UserRole } from '@/constants/roles';
-
+import { PlusCircle, Pencil, Trash2, UserPlus } from 'lucide-react';
 
 const SubjectsList = () => {
   const router = useRouter();
@@ -29,36 +26,46 @@ const SubjectsList = () => {
   const userRole = selectedSchool?.role;
   const canManage = userRole === UserRole.SUPER_ADMIN || userRole === UserRole.ADMIN;
 
-  useEffect(() => {
-    const fetchSubjects = async () => {
-      try {
-        setLoading(true);
-        const response = await subjectService.getSubjects();
-        setSubjects(response.data);
-        setError(null);
-      } catch (error) {
-        toast.error('Failed to fetch subjects');
-        setError('Failed to fetch subjects');
-      } finally {
-        setLoading(false);
+  const fetchSubjects = useCallback(async () => {
+    if (!selectedSchool) return;
+    try {
+      setLoading(true);
+      const response = await subjectService.getSubjects({ schoolId: selectedSchool.id });
+      if (response.success) {
+        setSubjects(response.data.data);
+      } else {
+        throw new Error(response.message);
       }
-    };
+      setError(null);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to fetch subjects');
+      setError('Failed to fetch subjects');
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedSchool]);
 
-    const fetchTeachers = async () => {
-        try {
-          const response = await staffService.getAllStaff();
-          const teacherList = response.data
-            .filter((staff: any) => staff.user.role === UserRole.TEACHER)
-            .map((staff: any) => ({ id: staff.id, name: staff.name }));
-          setTeachers(teacherList);
-        } catch (error) {
-          toast.error('Failed to fetch teachers');
-        }
-      };
+  const fetchTeachers = useCallback(async () => {
+    if (!selectedSchool) return;
+    try {
+      const response = await staffService.getAllStaff(selectedSchool.id);
+      if (response.success) {
+        const teacherList = response.data.data
+          .filter((staff: any) => staff.user.role === UserRole.TEACHER)
+          .map((staff: any) => ({ id: staff.id, name: staff.user.name }));
+        setTeachers(teacherList);
+      }
+    } catch (error) {
+      toast.error('Failed to fetch teachers');
+    }
+  }, [selectedSchool]);
 
+  useEffect(() => {
     fetchSubjects();
-    fetchTeachers();
-  }, []);
+    if (canManage) {
+      fetchTeachers();
+    }
+  }, [fetchSubjects, fetchTeachers, canManage]);
 
   const handleAssignTeacher = (subject: Subject) => {
     setSelectedSubject(subject);
@@ -74,9 +81,7 @@ const SubjectsList = () => {
       await subjectService.assignTeacher(selectedSubject.id, selectedTeacher);
       toast.success('Teacher assigned successfully');
       setIsAssignTeacherDialogOpen(false);
-      // Refresh subjects list
-      const response = await subjectService.getSubjects();
-      setSubjects(response.data);
+      fetchSubjects();
     } catch (error) {
       toast.error('Failed to assign teacher');
     }
@@ -87,7 +92,7 @@ const SubjectsList = () => {
       try {
         await subjectService.deleteSubject(id);
         toast.success('Subject deleted successfully');
-        setSubjects(subjects.filter((s) => s.id !== id));
+        fetchSubjects();
       } catch (error) {
         toast.error('Failed to delete subject');
       }
@@ -95,111 +100,102 @@ const SubjectsList = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="flex justify-center items-center h-64">Loading...</div>;
   }
 
   if (error) {
-    return <div>{error}</div>;
+    return <div className="text-red-500 text-center">{error}</div>;
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle>Subjects</CardTitle>
-          {canManage && (
-            <Button onClick={() => router.push('/academics/subjects/create')}>
-              Add Subject
-            </Button>
-          )}
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <h1 className="text-2xl font-bold text-gray-800">Subjects</h1>
+            {canManage && (
+                <Button onClick={() => router.push('/academics/subjects/create')} className="inline-flex items-center gap-2">
+                    <PlusCircle size={18} />
+                    Add Subject
+                </Button>
+            )}
         </div>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Code</TableHead>
-              <TableHead>Class</TableHead>
-              <TableHead>Teacher</TableHead>
-              <TableHead>Status</TableHead>
-              {canManage && <TableHead>Actions</TableHead>}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {subjects.map((subject) => (
-              <TableRow key={subject.id}>
-                <TableCell>{subject.name}</TableCell>
-                <TableCell>{subject.code}</TableCell>
-                <TableCell>{subject.className}</TableCell>
-                <TableCell>{subject.teacher}</TableCell>
-                <TableCell>
-                  <Badge variant={subject.isActive ? 'default' : 'destructive'}>
-                    {subject.isActive ? 'Active' : 'Inactive'}
-                  </Badge>
-                </TableCell>
-                {canManage && (
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">Open menu</span>
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem
-                          onClick={() => router.push(`/academics/subjects/edit/${subject.id}`)}
-                        >
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleAssignTeacher(subject)}>
-                          Assign Teacher
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDelete(subject.id)}>
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                )}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </CardContent>
+        <div className="p-6">
+            <div className="overflow-x-auto">
+                <Table>
+                    <TableHeader>
+                        <TableRow className="bg-gray-50 hover:bg-gray-100">
+                            <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</TableHead>
+                            <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</TableHead>
+                            <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teacher</TableHead>
+                            <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</TableHead>
+                            {canManage && <TableHead className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</TableHead>}
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody className="bg-white divide-y divide-gray-200">
+                        {subjects.map((subject) => (
+                        <TableRow key={subject.id}>
+                            <TableCell className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{subject.name}</TableCell>
+                            <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{subject.code}</TableCell>
+                            <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{subject.teacher || 'Unassigned'}</TableCell>
+                            <TableCell className="px-6 py-4 whitespace-nowrap text-sm">
+                                <Badge variant={subject.isActive ? 'default' : 'destructive'}>
+                                    {subject.isActive ? 'Active' : 'Inactive'}
+                                </Badge>
+                            </TableCell>
+                            {canManage && (
+                            <TableCell className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div className="flex items-center justify-end gap-4">
+                                    <button onClick={() => router.push(`/academics/subjects/edit/${subject.id}`)} className="flex items-center gap-1 text-gray-500 transition-colors hover:text-blue-600">
+                                        <Pencil size={16} />
+                                        Edit
+                                    </button>
+                                    <button onClick={() => handleAssignTeacher(subject)} className="flex items-center gap-1 text-gray-500 transition-colors hover:text-blue-600">
+                                        <UserPlus size={16} />
+                                        Assign Teacher
+                                    </button>
+                                    <button onClick={() => handleDelete(subject.id)} className="flex items-center gap-1 text-red-500 transition-colors hover:text-red-700">
+                                        <Trash2 size={16} />
+                                        Delete
+                                    </button>
+                                </div>
+                            </TableCell>
+                            )}
+                        </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
+        </div>
 
-      {canManage && (
-        <Dialog open={isAssignTeacherDialogOpen} onOpenChange={setIsAssignTeacherDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Assign Teacher to {selectedSubject?.name}</DialogTitle>
-            </DialogHeader>
-            <div className="py-4">
-              <Select onValueChange={setSelectedTeacher}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a teacher" />
-                </SelectTrigger>
-                <SelectContent>
-                  {teachers.map((teacher) => (
-                    <SelectItem key={teacher.id} value={teacher.id}>
-                      {teacher.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => setIsAssignTeacherDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleConfirmAssignTeacher}>Confirm</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
-    </Card>
+        {canManage && (
+            <Dialog open={isAssignTeacherDialogOpen} onOpenChange={setIsAssignTeacherDialogOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Assign Teacher to {selectedSubject?.name}</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <Select onValueChange={setSelectedTeacher}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a teacher" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {teachers.map((teacher) => (
+                                <SelectItem key={teacher.id} value={teacher.id}>
+                                    {teacher.name}
+                                </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="flex justify-end space-x-2">
+                        <Button variant="outline" onClick={() => setIsAssignTeacherDialogOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleConfirmAssignTeacher}>Confirm</Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        )}
+    </div>
   );
 };
 

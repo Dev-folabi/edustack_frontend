@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Switch } from '@/components/ui/switch';
 import { MultiSelect } from '@/components/ui/multi-select';
@@ -15,6 +14,7 @@ import { subjectService } from '@/services/subjectService';
 import { schoolService } from '@/services/schoolService';
 import { classService } from '@/services/classService';
 import { toast } from 'react-hot-toast';
+import { useAuthStore } from '@/store/authStore';
 
 const subjectFormSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -31,40 +31,46 @@ const EditSubjectPage = () => {
   const params = useParams();
   const { id } = params;
 
-  const [subject, setSubject] = useState(null);
-  const [schools, setSchools] = useState([]);
-  const [sections, setSections] = useState([]);
+  const [schools, setSchools] = useState<{ value: string; label: string }[]>([]);
+  const [sections, setSections] = useState<{ value: string; label: string }[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const { selectedSchool } = useAuthStore();
 
   const form = useForm<SubjectFormValues>({
     resolver: zodResolver(subjectFormSchema),
   });
 
-  useEffect(() => {
-    const fetchSchools = async () => {
-        try {
-          const response = await schoolService.getSchools();
-          setSchools(response.data.data.map((s: any) => ({ value: s.id, label: s.name })));
-        } catch (error) {
-          toast.error('Failed to fetch schools');
-        }
-      };
-
-      const fetchClassesAndSections = async () => {
-          try {
-            const response = await classService.getClasses();
-            const allSections = response.data.flatMap((c: any) =>
-              c.sections.map((s: any) => ({ value: s.id, label: `${c.name} - ${s.name}` }))
-            );
-            setSections(allSections);
-          } catch (error) {
-            toast.error('Failed to fetch classes and sections');
-          }
-        };
-
-      fetchSchools();
-      fetchClassesAndSections();
+  const fetchSchools = useCallback(async () => {
+    try {
+      const response = await schoolService.getSchools();
+      if (response.success) {
+        setSchools(response.data.data.map((s: any) => ({ value: s.id, label: s.name })));
+      }
+    } catch (error) {
+      toast.error('Failed to fetch schools');
+    }
   }, []);
+
+  const fetchClassesAndSections = useCallback(async () => {
+    if (!selectedSchool) return;
+    try {
+      const response = await classService.getClasses(selectedSchool.id);
+      if (response.success) {
+        const allSections = response.data.data.flatMap((c: any) =>
+          c.sections.map((s: any) => ({ value: s.id, label: `${c.name} - ${s.name}` }))
+        );
+        setSections(allSections);
+      }
+    } catch (error) {
+      toast.error('Failed to fetch classes and sections');
+    }
+  }, [selectedSchool]);
+
+  useEffect(() => {
+    fetchSchools();
+    fetchClassesAndSections();
+  }, [fetchSchools, fetchClassesAndSections]);
 
   useEffect(() => {
     if (id) {
@@ -72,10 +78,13 @@ const EditSubjectPage = () => {
         try {
           setLoading(true);
           const response = await subjectService.getSubject(id as string);
-          setSubject(response);
-          form.reset(response);
-        } catch (error) {
-          toast.error('Failed to fetch subject');
+          if (response.success) {
+            form.reset(response.data);
+          } else {
+            toast.error(response.message || 'Failed to fetch subject');
+          }
+        } catch (error: any) {
+          toast.error(error.message || 'Failed to fetch subject');
         } finally {
           setLoading(false);
         }
@@ -84,28 +93,30 @@ const EditSubjectPage = () => {
     }
   }, [id, form]);
 
-
-
   const onSubmit = async (data: SubjectFormValues) => {
     try {
-      await subjectService.updateSubject(id as string, data);
-      toast.success('Subject updated successfully');
-      router.push('/academics/subjects');
-    } catch (error) {
-      toast.error('Failed to update subject');
+      const response = await subjectService.updateSubject(id as string, data);
+      if (response.success) {
+        toast.success('Subject updated successfully');
+        router.push('/academics/subjects');
+      } else {
+        toast.error(response.message || 'Failed to update subject');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update subject');
     }
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="flex justify-center items-center h-64">Loading...</div>;
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Edit Subject</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8">
+        <div className="mb-8">
+            <h1 className="text-gray-900 text-3xl font-bold tracking-tight">Edit Subject</h1>
+            <p className="text-gray-500 mt-2 text-base">Update the details of the subject.</p>
+        </div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
@@ -115,7 +126,7 @@ const EditSubjectPage = () => {
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Mathematics" {...field} />
+                    <Input placeholder="e.g., Mathematics" {...field} className="h-12 px-4" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -128,7 +139,7 @@ const EditSubjectPage = () => {
                 <FormItem>
                   <FormLabel>Code</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., MATH101" {...field} />
+                    <Input placeholder="e.g., MATH101" {...field} className="h-12 px-4" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -183,16 +194,17 @@ const EditSubjectPage = () => {
                 </FormItem>
               )}
             />
-            <div className="flex justify-end space-x-2">
-                <Button type="button" variant="outline" onClick={() => router.back()}>
+            <div className="flex justify-end gap-4 pt-4">
+                <Button type="button" variant="outline" onClick={() => router.back()} className="px-6 py-3 text-sm font-semibold">
                     Cancel
                 </Button>
-                <Button type="submit">Save Changes</Button>
+                <Button type="submit" className="px-6 py-3 text-sm font-semibold">
+                    Save Changes
+                </Button>
             </div>
           </form>
         </Form>
-      </CardContent>
-    </Card>
+    </div>
   );
 };
 
