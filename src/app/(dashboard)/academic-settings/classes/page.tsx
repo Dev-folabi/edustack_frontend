@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   Class,
+  ClassSection,
   CreateClassData,
   UpdateClassData,
 } from "@/services/classService";
@@ -48,6 +49,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { MultiSelect } from "@/components/ui/multi-select";
+import { EditSectionModal } from "@/components/dashboard/classes/EditSectionModal";
 
 const createFormSchema = z.object({
   name: z.string().min(1, "Class name is required"),
@@ -404,6 +406,8 @@ const ClassesPage = () => {
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [isDeleteDialog, setDeleteDialog] = useState(false);
   const [selectedClass, setSelectedClass] = useState<Class | null>(null);
+  const [isEditSectionModalOpen, setEditSectionModalOpen] = useState(false);
+  const [selectedSection, setSelectedSection] = useState<ClassSection | null>(null);
 
   useEffect(() => {
     if (selectedSchool) {
@@ -439,6 +443,17 @@ const ClassesPage = () => {
   const handleEditClass = (classData: Class) => {
     setSelectedClass(classData);
     setEditModalOpen(true);
+  };
+
+  const handleEditSection = (section: ClassSection) => {
+    setSelectedSection(section);
+    setEditSectionModalOpen(true);
+  };
+
+  const handleSectionUpdated = () => {
+    if (selectedSchool) {
+      fetchClasses(selectedSchool.id);
+    }
   };
 
   return (
@@ -483,11 +498,21 @@ const ClassesPage = () => {
                               <h4 className="font-bold mt-2">Sections:</h4>
                               {classItem.sections &&
                               classItem.sections.length > 0 ? (
-                                <ul className="list-disc pl-5">
+                                <div className="space-y-2">
                                   {classItem.sections.map((section) => (
-                                    <li key={section.id}>{section.name}</li>
+                                    <div key={section.id} className="flex items-center justify-between p-2 border rounded">
+                                      <span>{section.name}</span>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleEditSection(section)}
+                                        className="ml-2"
+                                      >
+                                        Edit Section
+                                      </Button>
+                                    </div>
                                   ))}
-                                </ul>
+                                </div>
                               ) : (
                                 <p>No sections available.</p>
                               )}
@@ -537,6 +562,16 @@ const ClassesPage = () => {
         onConfirm={confirmDelete}
         className={selectedClass?.name || ""}
       />
+      {selectedSection && (
+        <EditSectionModal
+          isOpen={isEditSectionModalOpen}
+          onClose={() => {
+            setEditSectionModalOpen(false);
+            setSelectedSection(null);
+          }}
+          section={selectedSection}
+        />
+      )}
     </div>
   );
 };
