@@ -4,6 +4,7 @@ import {
   type Timetable,
   type Entry,
   type CreateTimetableData,
+  type UpdateTimetableData,
   type CreateEntryData,
   type UpdateEntryData,
 } from "@/services/timetableService";
@@ -42,6 +43,7 @@ interface TimetableState {
   fetchSchoolTimetables: (schoolId: string) => Promise<void>;
   fetchClassTimetable: (sectionId: string) => Promise<void>;
   createTimetable: (data: CreateTimetableData) => Promise<Timetable | undefined>;
+  updateTimetable: (timetableId: string, data: UpdateTimetableData) => Promise<Timetable | undefined>;
   deleteTimetable: (timetableId: string) => Promise<void>;
   createEntry: (data: CreateEntryData) => Promise<void>;
   updateEntry: (entryId: string, data: UpdateEntryData) => Promise<void>;
@@ -71,6 +73,28 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
       showErrorToast(error.message);
+    }
+  },
+
+  updateTimetable: async (timetableId: string, data: UpdateTimetableData) => {
+    try {
+      set({ isLoading: true, error: null });
+      const response = await timetableService.updateTimetable(timetableId, data);
+      if (response.success && response.data) {
+        set({ isLoading: false });
+        showSuccessToast("Timetable updated successfully!");
+        // Refetch timetables for the school
+        if (data.schoolId) {
+            get().fetchSchoolTimetables(data.schoolId);
+        }
+        return response.data.data;
+      } else {
+        throw new Error(response.message || "Failed to update timetable.");
+      }
+    } catch (error: any) {
+      set({ error: error.message, isLoading: false });
+      showErrorToast(error.message);
+      return undefined;
     }
   },
 

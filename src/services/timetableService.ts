@@ -83,6 +83,8 @@ export interface CreateEntryData {
 // Data for updating a timetable entry
 export type UpdateEntryData = Partial<CreateEntryData>;
 
+export type UpdateTimetableData = Partial<CreateTimetableData>;
+
 // API response for a list of timetables
 interface TimetablesResponse {
   data: Timetable[];
@@ -123,6 +125,14 @@ export const timetableService = {
   // Delete a timetable by its ID
   deleteTimetable: (timetableId: string): Promise<ApiResponse<any>> => {
     return apiClient.delete(`/timetables/${timetableId}`);
+  },
+
+  // Update a timetable by its ID
+  updateTimetable: (
+    timetableId: string,
+    data: UpdateTimetableData
+  ): Promise<ApiResponse<TimetableResponse>> => {
+    return apiClient.put(`/timetables/${timetableId}`, data);
   },
 
   // Create a new timetable entry
