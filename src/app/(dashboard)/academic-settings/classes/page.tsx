@@ -452,7 +452,7 @@ const ClassesPage = () => {
 
   const handleSectionUpdated = () => {
     if (selectedSchool) {
-      fetchClasses(selectedSchool.id);
+      fetchClasses(selectedSchool.schoolId);
     }
   };
 
