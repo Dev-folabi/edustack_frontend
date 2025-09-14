@@ -35,6 +35,7 @@ const EditSubjectPage = () => {
   const { id } = params;
 
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { selectedSchool } = useAuthStore();
 
@@ -77,6 +78,7 @@ const EditSubjectPage = () => {
     }
 
     try {
+      setIsSubmitting(true);
       const updateData = Object.fromEntries(
         Object.entries(data).filter(([_, value]) => value !== undefined)
       );
@@ -98,6 +100,8 @@ const EditSubjectPage = () => {
       }
     } catch (error: any) {
       toast.error(error.message || "Failed to update subject");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -183,11 +187,23 @@ const EditSubjectPage = () => {
               variant="outline"
               onClick={() => router.back()}
               className="px-6 py-3 text-sm font-semibold"
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
-            <Button type="submit" className="px-6 py-3 text-sm font-semibold">
-              Save Changes
+            <Button 
+              type="submit" 
+              className="px-6 py-3 text-sm font-semibold"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save Changes'
+              )}
             </Button>
           </div>
         </form>

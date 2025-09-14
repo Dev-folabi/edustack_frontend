@@ -29,6 +29,7 @@ const CreateSubjectPage = () => {
   const router = useRouter();
   const [sections, setSections] = useState<{ value: string; label: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { selectedSchool } = useAuthStore();
 
@@ -71,6 +72,7 @@ const CreateSubjectPage = () => {
     }
 
     try {
+      setIsSubmitting(true);
       const subjectData = {
         ...data,
         schoolIds: [selectedSchool.schoolId],
@@ -84,6 +86,8 @@ const CreateSubjectPage = () => {
       }
     } catch (error: any) {
       toast.error(error.message || 'Failed to create subject');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -163,11 +167,28 @@ const CreateSubjectPage = () => {
               )}
             />
             <div className="flex justify-end gap-4 pt-4">
-                <Button type="button" variant="outline" onClick={() => router.back()} className="px-6 py-3 text-sm font-semibold">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => router.back()} 
+                  className="px-6 py-3 text-sm font-semibold"
+                  disabled={isSubmitting}
+                >
                     Cancel
                 </Button>
-                <Button type="submit" className="px-6 py-3 text-sm font-semibold">
-                    Create Subject
+                <Button 
+                  type="submit" 
+                  className="px-6 py-3 text-sm font-semibold"
+                  disabled={isSubmitting}
+                >
+                    {isSubmitting ? (
+                      <>
+                        <Loader className="mr-2 h-4 w-4 animate-spin" />
+                        Creating...
+                      </>
+                    ) : (
+                      'Create Subject'
+                    )}
                 </Button>
             </div>
           </form>

@@ -18,13 +18,15 @@ const SubjectsList = () => {
   const router = useRouter();
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
-  const [sections, setSections] = useState<{ value: string; label: string }[]>([]);
+  const [sections, setSections] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [sectionFilter, setSectionFilter] = useState('');
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [selectedTeacher, setSelectedTeacher] = useState('');
   const [isAssignTeacherDialogOpen, setIsAssignTeacherDialogOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [isAssigningTeacher, setIsAssigningTeacher] = useState(false);
+  const [deletingSubjectId, setDeletingSubjectId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [sectionFilter, setSectionFilter] = useState('');
 
   const { selectedSchool } = useAuthStore();
   const userRole = selectedSchool?.role;
@@ -107,17 +109,19 @@ const SubjectsList = () => {
       return;
     }
     try {
+      setIsAssigningTeacher(true);
       await subjectService.assignTeacher(selectedSubject.id, selectedTeacher);
       toast.success('Teacher assigned successfully');
       setIsAssignTeacherDialogOpen(false);
       fetchSubjects();
     } catch (error) {
       toast.error('Failed to assign teacher');
+    } finally {
+      setIsAssigningTeacher(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-
     const confirmDelete = () => {
       toast(
         (t) => (
@@ -127,30 +131,42 @@ const SubjectsList = () => {
               <Button
                 size="sm"
                 variant="destructive"
+                disabled={deletingSubjectId === id}
                 onClick={async () => {
                   toast.dismiss(t.id);
                   try {
+                    setDeletingSubjectId(id);
                     await subjectService.deleteSubject(id);
                     toast.success('Subject deleted successfully');
                     fetchSubjects();
                   } catch (error) {
                     toast.error('Failed to delete subject');
+                  } finally {
+                    setDeletingSubjectId(null);
                   }
                 }}
               >
-                Delete
+                {deletingSubjectId === id ? (
+                  <>
+                    <Loader className="mr-2 h-4 w-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  'Delete'
+                )}
               </Button>
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => toast.dismiss(t.id)}
+                disabled={deletingSubjectId === id}
               >
                 Cancel
               </Button>
             </div>
           </div>
         ),
-        { duration: 10000 }
+        { duration: Infinity }
       );
     };
     confirmDelete();
@@ -326,11 +342,25 @@ const SubjectsList = () => {
                         )}
                     </div>
                     <div className="flex justify-end space-x-2">
-                        <Button variant="outline" onClick={() => setIsAssignTeacherDialogOpen(false)}>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setIsAssignTeacherDialogOpen(false)}
+                          disabled={isAssigningTeacher}
+                        >
                             Cancel
                         </Button>
-                        <Button onClick={handleConfirmAssignTeacher} disabled={!selectedTeacher || selectedTeacher === 'no-teachers'}>
-                            Confirm
+                        <Button 
+                          onClick={handleConfirmAssignTeacher} 
+                          disabled={!selectedTeacher || selectedTeacher === 'no-teachers' || isAssigningTeacher}
+                        >
+                            {isAssigningTeacher ? (
+                              <>
+                                <Loader className="mr-2 h-4 w-4 animate-spin" />
+                                Assigning...
+                              </>
+                            ) : (
+                              'Confirm'
+                            )}
                         </Button>
                     </div>
                 </DialogContent>
