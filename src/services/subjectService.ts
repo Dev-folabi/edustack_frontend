@@ -47,8 +47,3 @@ export const subjectService = {
   },
 };
 
-export const staffService = {
-    getStaffBySchool: async (schoolId: string): Promise<ApiResponse<any>> => {
-        return apiClient.get( `/staff/school/${schoolId}${`?role=${UserRole.TEACHER}`}&isActive=${true}`);
-    },
-}
