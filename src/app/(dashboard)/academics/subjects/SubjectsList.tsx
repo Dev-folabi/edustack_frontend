@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader } from '@/components/ui/Loader';
+import { Loader2 } from 'lucide-react';
 import { subjectService, staffService, Subject, Teacher } from '@/services/subjectService';
 import { classService } from '@/services/classService';
 import { toast } from 'react-hot-toast';
@@ -52,9 +53,7 @@ const SubjectsList = () => {
     try {
       setLoading(true);
       const filters: any = { schoolId: selectedSchool.schoolId };
-      if (sectionFilter) {
-        filters.sectionId = sectionFilter;
-      }
+      // Remove server-side section filtering to handle it client-side
       
       const response = await subjectService.getSubjects(filters);
       if (response.success) {
@@ -69,7 +68,7 @@ const SubjectsList = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedSchool, sectionFilter]);
+  }, [selectedSchool]); // Remove sectionFilter dependency
 
   const fetchTeachers = useCallback(async () => {
     if (!selectedSchool) return;
@@ -148,7 +147,7 @@ const SubjectsList = () => {
               >
                 {deletingSubjectId === id ? (
                   <>
-                    <Loader className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Deleting...
                   </>
                 ) : (
@@ -172,11 +171,23 @@ const SubjectsList = () => {
     confirmDelete();
   };
 
-
   const filteredSubjects = subjects.filter(subject => {
-    const matchesSection = !sectionFilter || sectionFilter === 'all' || 
-                          subject.sectionIds?.includes(sectionFilter);
-    return matchesSection;
+    // Fix the filtering logic
+    if (!sectionFilter || sectionFilter === 'all' || sectionFilter === '') {
+      return true; // Show all subjects
+    }
+    
+    // Check if subject has sections and if any section matches the filter
+    if (subject.sections && subject.sections.length > 0) {
+      return subject.sections.some((s: any) => s.section?.id === sectionFilter);
+    }
+    
+    // Fallback: check sectionIds if available
+    if (subject.sectionIds && subject.sectionIds.length > 0) {
+      return subject.sectionIds.includes(sectionFilter);
+    }
+    
+    return false;
   });
 
   const getSectionNames = (subject: any) => {
@@ -230,11 +241,11 @@ const SubjectsList = () => {
                 ))}
               </SelectContent>
             </Select>
-            {sectionFilter && (
+            {sectionFilter && sectionFilter !== 'all' && (
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setSectionFilter('')}
+                onClick={() => setSectionFilter('all')}
                 className="px-2"
               >
                 <X size={16} />
@@ -355,7 +366,7 @@ const SubjectsList = () => {
                         >
                             {isAssigningTeacher ? (
                               <>
-                                <Loader className="mr-2 h-4 w-4 animate-spin" />
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                 Assigning...
                               </>
                             ) : (
