@@ -28,6 +28,8 @@ const SubjectsList = () => {
   const [isAssigningTeacher, setIsAssigningTeacher] = useState(false);
   const [deletingSubjectId, setDeletingSubjectId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [subjectToDelete, setSubjectToDelete] = useState<Subject | null>(null);
 
   const { selectedSchool } = useAuthStore();
   const userRole = selectedSchool?.role;
@@ -120,55 +122,32 @@ const SubjectsList = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    const confirmDelete = () => {
-      toast(
-        (t) => (
-          <div className="flex flex-col gap-2">
-            <span>Are you sure you want to delete this subject?</span>
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant="destructive"
-                disabled={deletingSubjectId === id}
-                onClick={async () => {
-                  toast.dismiss(t.id);
-                  try {
-                    setDeletingSubjectId(id);
-                    await subjectService.deleteSubject(id);
-                    toast.success('Subject deleted successfully');
-                    fetchSubjects();
-                  } catch (error) {
-                    toast.error('Failed to delete subject');
-                  } finally {
-                    setDeletingSubjectId(null);
-                  }
-                }}
-              >
-                {deletingSubjectId === id ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Deleting...
-                  </>
-                ) : (
-                  'Delete'
-                )}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => toast.dismiss(t.id)}
-                disabled={deletingSubjectId === id}
-              >
-                Cancel
-              </Button>
-            </div>
-          </div>
-        ),
-        { duration: Infinity }
-      );
-    };
-    confirmDelete();
+  const handleDelete = (subject: Subject) => {
+    setSubjectToDelete(subject);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!subjectToDelete) return;
+    
+    try {
+      setDeletingSubjectId(subjectToDelete.id);
+      await subjectService.deleteSubject(subjectToDelete.id);
+      toast.success('Subject deleted successfully');
+      fetchSubjects();
+      setIsDeleteDialogOpen(false);
+      setSubjectToDelete(null);
+    } catch (error) {
+      toast.error('Failed to delete subject');
+    } finally {
+      setDeletingSubjectId(null);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteDialogOpen(false);
+    setSubjectToDelete(null);
+    setDeletingSubjectId(null);
   };
 
   const filteredSubjects = subjects.filter(subject => {
@@ -300,7 +279,7 @@ const SubjectsList = () => {
                                         <UserPlus size={16} />
                                         Assign Teacher
                                     </button>
-                                    <button onClick={() => handleDelete(subject.id)} className="flex items-center gap-1 text-red-500 transition-colors hover:text-red-700">
+                                    <button onClick={() => handleDelete(subject)} className="flex items-center gap-1 text-red-500 transition-colors hover:text-red-700">
                                         <Trash2 size={16} />
                                         Delete
                                     </button>
@@ -322,60 +301,99 @@ const SubjectsList = () => {
         </div>
 
         {canManage && (
-            <Dialog open={isAssignTeacherDialogOpen} onOpenChange={setIsAssignTeacherDialogOpen}>
-                <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                        <DialogTitle>Assign Teacher to {selectedSubject?.name}</DialogTitle>
-                    </DialogHeader>
-                    <div className="py-4">
-                        <Select value={selectedTeacher} onValueChange={setSelectedTeacher}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a teacher" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {teachers.length === 0 ? (
-                                  <SelectItem key="no-teachers" value="no-teachers" disabled>
-                                    No teachers available
-                                  </SelectItem>
-                                ) : (
-                                  teachers.map((teacher) => (
-                                    <SelectItem key={teacher.id} value={teacher.id}>
-                                        {teacher.name}
-                                    </SelectItem>
-                                  ))
-                                )}
-                            </SelectContent>
-                        </Select>
-                        {teachers.length === 0 && (
-                          <p className="text-sm text-gray-600 mt-2">
-                            No teachers found. Please ensure teachers are registered in the system.
-                          </p>
-                        )}
-                    </div>
-                    <div className="flex justify-end space-x-2">
-                        <Button 
-                          variant="outline" 
-                          onClick={() => setIsAssignTeacherDialogOpen(false)}
-                          disabled={isAssigningTeacher}
-                        >
-                            Cancel
-                        </Button>
-                        <Button 
-                          onClick={handleConfirmAssignTeacher} 
-                          disabled={!selectedTeacher || selectedTeacher === 'no-teachers' || isAssigningTeacher}
-                        >
-                            {isAssigningTeacher ? (
-                              <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Assigning...
-                              </>
-                            ) : (
-                              'Confirm'
+            <>
+                <Dialog open={isAssignTeacherDialogOpen} onOpenChange={setIsAssignTeacherDialogOpen}>
+                    <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                            <DialogTitle>Assign Teacher to {selectedSubject?.name}</DialogTitle>
+                        </DialogHeader>
+                        <div className="py-4">
+                            <Select value={selectedTeacher} onValueChange={setSelectedTeacher}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a teacher" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {teachers.length === 0 ? (
+                                      <SelectItem key="no-teachers" value="no-teachers" disabled>
+                                        No teachers available
+                                      </SelectItem>
+                                    ) : (
+                                      teachers.map((teacher) => (
+                                        <SelectItem key={teacher.id} value={teacher.id}>
+                                            {teacher.name}
+                                        </SelectItem>
+                                      ))
+                                    )}
+                                </SelectContent>
+                            </Select>
+                            {teachers.length === 0 && (
+                              <p className="text-sm text-gray-600 mt-2">
+                                No teachers found. Please ensure teachers are registered in the system.
+                              </p>
                             )}
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
+                        </div>
+                        <div className="flex justify-end space-x-2">
+                            <Button 
+                              variant="outline" 
+                              onClick={() => setIsAssignTeacherDialogOpen(false)}
+                              disabled={isAssigningTeacher}
+                            >
+                                Cancel
+                            </Button>
+                            <Button 
+                              onClick={handleConfirmAssignTeacher} 
+                              disabled={!selectedTeacher || selectedTeacher === 'no-teachers' || isAssigningTeacher}
+                            >
+                                {isAssigningTeacher ? (
+                                  <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Assigning...
+                                  </>
+                                ) : (
+                                  'Confirm'
+                                )}
+                            </Button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+
+                <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                    <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                            <DialogTitle>Delete Subject</DialogTitle>
+                        </DialogHeader>
+                        <div className="py-4">
+                            <p className="text-sm text-gray-600">
+                                Are you sure you want to delete the subject <strong>"{subjectToDelete?.name}"</strong>? 
+                                This action cannot be undone.
+                            </p>
+                        </div>
+                        <div className="flex justify-end space-x-2">
+                            <Button 
+                              variant="outline" 
+                              onClick={handleCancelDelete}
+                              disabled={deletingSubjectId === subjectToDelete?.id}
+                            >
+                                Cancel
+                            </Button>
+                            <Button 
+                              variant="destructive"
+                              onClick={handleConfirmDelete}
+                              disabled={deletingSubjectId === subjectToDelete?.id}
+                            >
+                                {deletingSubjectId === subjectToDelete?.id ? (
+                                  <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Deleting...
+                                  </>
+                                ) : (
+                                  'Delete'
+                                )}
+                            </Button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            </>
         )}
     </div>
   );
