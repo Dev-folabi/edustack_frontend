@@ -48,7 +48,7 @@ export const subjectService = {
 };
 
 export const staffService = {
-    getAllStaff: async (schoolId: string): Promise<ApiResponse<any>> => {
-        return apiClient.get(`/staff/school/${schoolId}`);
-    }
+    getStaffBySchool: async (schoolId: string): Promise<ApiResponse<any>> => {
+        return apiClient.get( `/staff/school/${schoolId}${`?role=${UserRole.TEACHER}`}&isActive=${true}`);
+    },
 }

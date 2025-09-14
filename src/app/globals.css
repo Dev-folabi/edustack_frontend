@@ -45,7 +45,7 @@ html {
 }
 
 body {
-  font-family: "Inter", "Noto Sans", sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 /* Define CSS custom properties for COLORS constants */
