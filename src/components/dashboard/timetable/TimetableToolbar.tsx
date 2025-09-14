@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { useTimetableStore } from "@/store/timetableStore";
+import { useClassStore } from "@/store/classStore";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -13,64 +14,40 @@ import {
 } from "@/components/ui/select";
 import { usePermissions } from "@/utils/permissions";
 import { UserRole } from "@/constants/roles";
-import { sessionService } from "@/services/sessionService";
-import { classService, Class, Section } from "@/services/classService";
-import { type Session } from "@/services/sessionService";
+import { ClassSection } from "@/services/classService";
+import { CreateTimetableData } from "@/services/timetableService";
+import CreateTimetableModal from "./CreateTimetableModal";
 
 const TimetableToolbar = () => {
   const { selectedSchool } = useAuthStore();
-  const { fetchClassTimetable, selectTimetable } = useTimetableStore();
+  const { fetchClassTimetable, createTimetable } = useTimetableStore();
+  const { classes, fetchClasses } = useClassStore();
   const { hasRole } = usePermissions();
   const isAdmin = hasRole(UserRole.ADMIN) || hasRole(UserRole.SUPER_ADMIN);
 
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [classes, setClasses] = useState<Class[]>([]);
-  const [sections, setSections] = useState<Section[]>([]);
-
-  const [selectedSession, setSelectedSession] = useState<string>("");
+  const [sections, setSections] = useState<ClassSection[]>([]);
   const [selectedClass, setSelectedClass] = useState<string>("");
   const [selectedSection, setSelectedSection] = useState<string>("");
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
+  // Fetch classes when selectedSchool changes
   useEffect(() => {
-    const loadSessions = async () => {
-      if (selectedSchool) {
-        try {
-          const res = await sessionService.getAllSessions();
-          if (res.success && res.data) {
-            setSessions(res.data.data);
-          }
-        } catch (error) {
-          console.error("Failed to load sessions", error);
-        }
-      }
-    };
-    loadSessions();
-  }, [selectedSchool]);
+    if (selectedSchool) {
+      fetchClasses(selectedSchool.schoolId);
+    }
+  }, [selectedSchool, fetchClasses]);
 
-  useEffect(() => {
-    const loadClasses = async () => {
-      if (selectedSchool) {
-        try {
-          const res = await classService.getClasses(selectedSchool.schoolId);
-          if (res.success && res.data) {
-            setClasses(res.data.data);
-          }
-        } catch (error) {
-          console.error("Failed to load classes", error);
-        }
-      }
-    };
-    loadClasses();
-  }, [selectedSchool]);
-
+  // Update sections when selectedClass changes
   useEffect(() => {
     if (selectedClass) {
-      const classData = classes.find((c) => c.id === selectedClass);
-      if (classData) {
-        setSections(classData.sections);
+      const selectedClassObj = classes.find((c) => c.id === selectedClass);
+      if (selectedClassObj) {
+        setSections(selectedClassObj.sections);
+        setSelectedSection(""); // Reset section selection
       }
     } else {
       setSections([]);
+      setSelectedSection("");
     }
   }, [selectedClass, classes]);
 
@@ -81,60 +58,79 @@ const TimetableToolbar = () => {
   };
 
   const handleCreateTimetable = () => {
-    // This will likely open a modal, to be handled in the main page
-    console.log("Create new timetable clicked");
+    setIsCreateModalOpen(true);
+  };
+
+  const handleCreateTimetableSubmit = async (data: CreateTimetableData) => {
+    try {
+      const result = await createTimetable(data);
+      if (result) {
+        setIsCreateModalOpen(false);
+        // Refresh the timetable view
+        if (selectedSection) {
+          fetchClassTimetable(selectedSection);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to create timetable:", error);
+    }
   };
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-white rounded-lg shadow-sm">
-      <div className="flex flex-wrap items-center gap-4">
-        <Select value={selectedSession} onValueChange={setSelectedSession}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select Session" />
-          </SelectTrigger>
-          <SelectContent>
-            {sessions.map((session) => (
-              <SelectItem key={session.id} value={session.id}>
-                {session.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+    <>
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-white rounded-lg shadow-sm">
+        <div className="flex flex-wrap items-center gap-4">
+          <Select value={selectedClass} onValueChange={setSelectedClass}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select Class" />
+            </SelectTrigger>
+            <SelectContent>
+              {classes.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        <Select value={selectedClass} onValueChange={setSelectedClass}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select Class" />
-          </SelectTrigger>
-          <SelectContent>
-            {classes.map((c) => (
-              <SelectItem key={c.id} value={c.id}>
-                {c.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <Select value={selectedSection} onValueChange={setSelectedSection}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select Section" />
+            </SelectTrigger>
+            <SelectContent>
+              {sections.map((section) => (
+                <SelectItem key={section.id} value={section.id}>
+                  {section.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        <Select value={selectedSection} onValueChange={setSelectedSection}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select Section" />
-          </SelectTrigger>
-          <SelectContent>
-            {sections.map((section) => (
-              <SelectItem key={section.id} value={section.id}>
-                {section.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Button onClick={handleViewTimetable} disabled={!selectedSection}>
-          View Timetable
-        </Button>
+          <Button onClick={handleViewTimetable} disabled={!selectedSection}>
+            View Timetable
+          </Button>
+        </div>
+        {isAdmin && (
+          <Button
+            onClick={handleCreateTimetable}
+            disabled={!selectedClass || !selectedSection}
+          >
+            Create New Timetable
+          </Button>
+        )}
       </div>
-      {isAdmin && (
-        <Button onClick={handleCreateTimetable}>Create New Timetable</Button>
+
+      {/* Create Timetable Modal */}
+      {isCreateModalOpen && (
+        <CreateTimetableModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSubmit={handleCreateTimetableSubmit}
+          classId={selectedClass}
+          sectionId={selectedSection}
+        />
       )}
-    </div>
+    </>
   );
 };
 

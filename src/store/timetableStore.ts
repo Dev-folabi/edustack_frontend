@@ -7,7 +7,28 @@ import {
   type CreateEntryData,
   type UpdateEntryData,
 } from "@/services/timetableService";
-import { toast } from "react-toastify";
+
+const showErrorToast = (message: string) => {
+  const event = new CustomEvent("showToast", {
+    detail: {
+      type: "error",
+      title: "Error",
+      message: message,
+    },
+  });
+  window.dispatchEvent(event);
+};
+
+const showSuccessToast = (message: string) => {
+  const event = new CustomEvent("showToast", {
+    detail: {
+      type: "success",
+      title: "Success",
+      message: message,
+    },
+  });
+  window.dispatchEvent(event);
+};
 
 interface TimetableState {
   timetables: Timetable[];
@@ -49,7 +70,7 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
       }
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
-      toast.error(error.message);
+      showErrorToast(error.message);
     }
   },
 
@@ -60,12 +81,14 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
       if (response.success && response.data) {
         set({ selectedTimetable: response.data.data, isLoading: false });
       } else {
-        // If no timetable is found, it's not necessarily an error to show to the user
         set({ selectedTimetable: null, isLoading: false });
+        if (response.message) {
+          showErrorToast(response.message);
+        }
       }
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
-      toast.error(error.message);
+      showErrorToast(error.message);
     }
   },
 
@@ -75,7 +98,7 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
       const response = await timetableService.createTimetable(data);
       if (response.success && response.data) {
         set({ isLoading: false });
-        toast.success("Timetable created successfully!");
+        showSuccessToast("Timetable created successfully!");
         // Refetch timetables for the school
         get().fetchSchoolTimetables(data.schoolId);
         return response.data.data;
@@ -84,7 +107,7 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
       }
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
-      toast.error(error.message);
+      showErrorToast(error.message);
       return undefined;
     }
   },
@@ -95,18 +118,17 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
       const response = await timetableService.deleteTimetable(timetableId);
       if (response.success) {
         set({ isLoading: false });
-        // Remove the deleted timetable from the list
         set((state) => ({
           timetables: state.timetables.filter((t) => t.id !== timetableId),
           selectedTimetable: state.selectedTimetable?.id === timetableId ? null : state.selectedTimetable,
         }));
-        toast.success("Timetable deleted successfully!");
+        showSuccessToast("Timetable deleted successfully!");
       } else {
         throw new Error(response.message || "Failed to delete timetable.");
       }
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
-      toast.error(error.message);
+      showErrorToast(error.message);
     }
   },
 
@@ -116,7 +138,6 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
       const response = await timetableService.createEntry(data);
       if (response.success && response.data) {
         set({ isLoading: false });
-        // Add the new entry to the selected timetable
         set((state) => {
           if (state.selectedTimetable) {
             const updatedTimetable = {
@@ -127,14 +148,14 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
           }
           return {};
         });
-        toast.success("Entry created successfully!");
+        showSuccessToast("Entry created successfully!");
         get().closeModal();
       } else {
         throw new Error(response.message || "Failed to create entry.");
       }
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
-      toast.error(error.message);
+      showErrorToast(error.message);
     }
   },
 
@@ -144,7 +165,6 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
       const response = await timetableService.updateEntry(entryId, data);
       if (response.success && response.data) {
         set({ isLoading: false });
-        // Update the entry in the selected timetable
         set((state) => {
           if (state.selectedTimetable) {
             const updatedEntries = state.selectedTimetable.entries.map((e) =>
@@ -158,14 +178,14 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
           }
           return {};
         });
-        toast.success("Entry updated successfully!");
+        showSuccessToast("Entry updated successfully!");
         get().closeModal();
       } else {
         throw new Error(response.message || "Failed to update entry.");
       }
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
-      toast.error(error.message);
+      showErrorToast(error.message);
     }
   },
 
@@ -175,7 +195,6 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
       const response = await timetableService.deleteEntry(entryId);
       if (response.success) {
         set({ isLoading: false });
-        // Remove the entry from the selected timetable
         set((state) => {
           if (state.selectedTimetable) {
             const updatedEntries = state.selectedTimetable.entries.filter(
@@ -189,13 +208,13 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
           }
           return {};
         });
-        toast.success("Entry deleted successfully!");
+        showSuccessToast("Entry deleted successfully!");
       } else {
         throw new Error(response.message || "Failed to delete entry.");
       }
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
-      toast.error(error.message);
+      showErrorToast(error.message);
     }
   },
 
