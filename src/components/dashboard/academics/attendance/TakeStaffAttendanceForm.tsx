@@ -7,7 +7,7 @@ import { useAuthStore } from '@/store/authStore';
 import { staffService } from '@/services/staffService';
 import { takeStaffAttendance } from '@/services/attendanceService';
 import { AttendanceStatus, AttendanceRecord } from '@/types/attendance';
-import { toast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/Toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Staff } from '@/types/staff';
 import {
@@ -23,15 +23,13 @@ const TakeStaffAttendanceForm = () => {
   const [staff, setStaff] = useState<Staff[]>([]);
   const [attendanceRecords, setAttendanceRecords] = useState<{ [key: string]: AttendanceStatus }>({});
 
-  const { user } = useAuthStore();
-  const activeSchool = user?.schools[0];
+  const { selectedSchool } = useAuthStore();
 
   useEffect(() => {
-    if (activeSchool) {
-      staffService.getStaffBySchool(activeSchool.schoolId, { isActive: true }).then((res) => {
+    if (selectedSchool) {
+      staffService.getStaffBySchool(selectedSchool.schoolId, { isActive: true }).then((res) => {
         if (res.success) {
-          setStaff(res.data.data);
-           // Initialize attendance records
+          setStaff(res.data?.data || []);
            const initialRecords: { [key: string]: AttendanceStatus } = {};
            res.data.data.forEach((s: Staff) => {
              initialRecords[s.id] = AttendanceStatus.PRESENT;
@@ -40,18 +38,20 @@ const TakeStaffAttendanceForm = () => {
         }
       });
     }
-  }, [activeSchool]);
+  }, [selectedSchool]);
 
   const handleStatusChange = (staffId: string, status: AttendanceStatus) => {
     setAttendanceRecords((prev) => ({ ...prev, [staffId]: status }));
   };
 
+  const { showToast } = useToast();
+
   const handleSubmit = async () => {
     if (!date) {
-      toast({
+      showToast({
+        type: 'error',
         title: 'Error',
-        description: 'Please select a date.',
-        variant: 'destructive',
+        message: 'Please select a date.',
       });
       return;
     }
@@ -70,22 +70,23 @@ const TakeStaffAttendanceForm = () => {
       });
 
       if (res.success) {
-        toast({
+        showToast({
+          type: 'success',
           title: 'Success',
-          description: 'Attendance submitted successfully.',
+          message: 'Attendance submitted successfully.',
         });
       } else {
-        toast({
+        showToast({
+          type: 'error',
           title: 'Error',
-          description: res.message,
-          variant: 'destructive',
+          message: res.message,
         });
       }
     } catch (error: any) {
-      toast({
+      showToast({
+        type: 'error',
         title: 'Error',
-        description: error.message,
-        variant: 'destructive',
+        message: error.message,
       });
     }
   };

@@ -20,7 +20,7 @@ import {
   takeSubjectAttendance,
 } from '@/services/attendanceService';
 import { AttendanceStatus, AttendanceRecord } from '@/types/attendance';
-import { toast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/Toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Student } from '@/types/student';
 
@@ -37,18 +37,17 @@ const TakeStudentAttendanceForm = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [attendanceRecords, setAttendanceRecords] = useState<{ [key: string]: AttendanceStatus }>({});
 
-  const { user } = useAuthStore();
-  const activeSchool = user?.schools[0];
+  const { selectedSchool } = useAuthStore();
 
   useEffect(() => {
-    if (activeSchool) {
-      classService.getClasses(activeSchool.schoolId).then((res) => {
+    if (selectedSchool) {
+      classService.getClasses(selectedSchool.schoolId).then((res) => {
         if (res.success) {
           setClasses(res.data.data);
         }
       });
     }
-  }, [activeSchool]);
+  }, [selectedSchool]);
 
   useEffect(() => {
     if (selectedSection) {
@@ -82,10 +81,10 @@ const TakeStudentAttendanceForm = () => {
 
   const handleSubmit = async () => {
     if (!date || !selectedSection) {
-      toast({
+      showToast({
+        type: 'error',
         title: 'Error',
-        description: 'Please select a date and section.',
-        variant: 'destructive',
+        message: 'Please select a date and section.',
       });
       return;
     }
@@ -107,10 +106,10 @@ const TakeStudentAttendanceForm = () => {
         });
       } else {
         if (!selectedSubject) {
-          toast({
+          showToast({
+            type: 'error',
             title: 'Error',
-            description: 'Please select a subject.',
-            variant: 'destructive',
+            message: 'Please select a subject.',
           });
           return;
         }
@@ -123,31 +122,34 @@ const TakeStudentAttendanceForm = () => {
       }
 
       if (res.success) {
-        toast({
+        showToast({
+          type: 'success',
           title: 'Success',
-          description: 'Attendance submitted successfully.',
+          message: 'Attendance submitted successfully.',
         });
       } else {
-        toast({
+        showToast({
+          type: 'error',
           title: 'Error',
-          description: res.message,
-          variant: 'destructive',
+          message: res.message,
         });
       }
     } catch (error: any) {
-      toast({
+      showToast({
+        type: 'error',
         title: 'Error',
-        description: error.message,
-        variant: 'destructive',
+        message: error.message,
       });
     }
   };
 
   const selectedClassData = classes.find((c) => c.id === selectedClass);
 
+  const { showToast } = useToast();
+
   return (
     <div>
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-4">
         <Select
           onValueChange={(value) =>
             setAttendanceType(value as 'section' | 'subject')
@@ -190,60 +192,62 @@ const TakeStudentAttendanceForm = () => {
         </Select>
 
         {attendanceType === 'subject' && (
-            <Select onValueChange={setSelectedSubject} value={selectedSubject} disabled={!selectedSection}>
+          <Select onValueChange={setSelectedSubject} value={selectedSubject} disabled={!selectedSection}>
             <SelectTrigger>
-                <SelectValue placeholder="Select Subject" />
+              <SelectValue placeholder="Select Subject" />
             </SelectTrigger>
             <SelectContent>
-                {subjects.map((s) => (
+              {subjects.map((s) => (
                 <SelectItem key={s.id} value={s.id}>
-                    {s.name}
+                  {s.name}
                 </SelectItem>
-                ))}
+              ))}
             </SelectContent>
-            </Select>
+          </Select>
         )}
 
         <DatePicker date={date} setDate={setDate} />
-
-        <Button onClick={handleFetchStudents} disabled={!selectedSection}>Fetch Students</Button>
       </div>
 
       {students.length > 0 && (
         <>
+          <div className="overflow-x-auto">
             <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Student Name</TableHead>
-                        <TableHead>Status</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {students.map((student) => (
-                        <TableRow key={student.id}>
-                            <TableCell>{student.name}</TableCell>
-                            <TableCell>
-                                <Select
-                                value={attendanceRecords[student.id]}
-                                onValueChange={(value) => handleStatusChange(student.id, value as AttendanceStatus)}
-                                >
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {Object.values(AttendanceStatus).map((status) => (
-                                    <SelectItem key={status} value={status}>
-                                        {status}
-                                    </SelectItem>
-                                    ))}
-                                </SelectContent>
-                                </Select>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="min-w-[120px]">Student Name</TableHead>
+                  <TableHead className="min-w-[150px]">Attendance Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {students.map((student) => (
+                  <TableRow key={student.id}>
+                    <TableCell className="whitespace-nowrap">{student.name}</TableCell>
+                    <TableCell>
+                      <Select
+                        value={attendanceRecords[student.id]}
+                        onValueChange={(value) => handleStatusChange(student.id, value as AttendanceStatus)}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.values(AttendanceStatus).map((status) => (
+                            <SelectItem key={status} value={status}>
+                              {status}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
             </Table>
-            <Button onClick={handleSubmit} className="mt-4">Submit Attendance</Button>
+          </div>
+          <Button onClick={handleSubmit} className="mt-4 w-full sm:w-auto">
+            Submit Attendance
+          </Button>
         </>
       )}
     </div>

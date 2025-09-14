@@ -17,6 +17,6 @@ export const staffService = {
     filters: { role?: string; isActive?: boolean } = {}
   ): Promise<ApiResponse<PaginatedStaff>> => {
     const params = new URLSearchParams(filters as Record<string, string>);
-    return apiClient.get(`/api/staff/school/${schoolId}?${params.toString()}`);
+    return apiClient.get(`/staff/school/${schoolId}?${params.toString()}`);
   },
 };

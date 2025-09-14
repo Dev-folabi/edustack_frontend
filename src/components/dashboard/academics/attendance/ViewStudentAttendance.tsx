@@ -28,28 +28,27 @@ const ViewStudentAttendance = () => {
   const [date, setDate] = useState<Date | undefined>();
   const [attendanceRecords, setAttendanceRecords] = useState<Attendance[]>([]);
 
-  const { user } = useAuthStore();
-  const activeSchool = user?.schools[0];
+  const { selectedSchool } = useAuthStore();
 
   useEffect(() => {
-    if (activeSchool) {
-      classService.getClasses(activeSchool.schoolId).then((res) => {
+    if (selectedSchool) {
+      classService.getClasses(selectedSchool.schoolId).then((res) => {
         if (res.success) {
           setClasses(res.data.data);
         }
       });
     }
-  }, [activeSchool]);
+  }, [selectedSchool]);
 
   useEffect(() => {
-    if (selectedSection && activeSchool) {
-      studentService.getStudentsBySection(activeSchool.schoolId, selectedSection).then((res) => {
+    if (selectedSection && selectedSchool) {
+      studentService.getStudentsBySection(selectedSchool.schoolId, selectedSection).then((res) => {
         if (res.success) {
           setStudents(res.data.data);
         }
       });
     }
-  }, [selectedSection, activeSchool]);
+  }, [selectedSection, selectedSchool]);
 
   const handleFetchAttendance = () => {
     if (!selectedSection) return;
@@ -73,7 +72,7 @@ const ViewStudentAttendance = () => {
         <CardTitle>View Student Attendance Records</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-4">
           <Select onValueChange={setSelectedClass} value={selectedClass}>
             <SelectTrigger>
               <SelectValue placeholder="Select Class" />
@@ -105,7 +104,7 @@ const ViewStudentAttendance = () => {
               <SelectValue placeholder="Select Student" />
             </SelectTrigger>
             <SelectContent>
-                <SelectItem value="">All Students</SelectItem>
+                <SelectItem value="all">All Students</SelectItem>
               {students.map((s) => (
                 <SelectItem key={s.id} value={s.id}>
                   {s.name}
@@ -116,31 +115,35 @@ const ViewStudentAttendance = () => {
 
           <DatePicker date={date} setDate={setDate} />
 
-          <Button onClick={handleFetchAttendance} disabled={!selectedSection}>Fetch Attendance</Button>
+          <Button onClick={handleFetchAttendance} disabled={!selectedSection} className="w-full">
+            Fetch Attendance
+          </Button>
         </div>
 
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Student</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Subject</TableHead>
-              <TableHead>Notes</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {attendanceRecords.map((record) => (
-              <TableRow key={record.id}>
-                <TableCell>{new Date(record.date).toLocaleDateString()}</TableCell>
-                <TableCell>{record.student?.name}</TableCell>
-                <TableCell>{record.status}</TableCell>
-                <TableCell>{record.subject?.name || 'N/A'}</TableCell>
-                <TableCell>{record.notes}</TableCell>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="min-w-[100px]">Date</TableHead>
+                <TableHead className="min-w-[120px]">Student</TableHead>
+                <TableHead className="min-w-[80px]">Status</TableHead>
+                <TableHead className="min-w-[100px]">Subject</TableHead>
+                <TableHead className="min-w-[120px]">Notes</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {attendanceRecords.map((record) => (
+                <TableRow key={record.id}>
+                  <TableCell className="whitespace-nowrap">{new Date(record.date).toLocaleDateString()}</TableCell>
+                  <TableCell className="whitespace-nowrap">{record.student?.name}</TableCell>
+                  <TableCell className="whitespace-nowrap">{record.status}</TableCell>
+                  <TableCell className="whitespace-nowrap">{record.subject?.name || 'N/A'}</TableCell>
+                  <TableCell className="max-w-[200px] truncate">{record.notes}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );
