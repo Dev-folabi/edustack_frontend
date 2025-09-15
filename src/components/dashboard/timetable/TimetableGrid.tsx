@@ -6,11 +6,24 @@ import { WeekDay } from "@/services/timetableService";
 import EntryCard from "./EntryCard";
 import { usePermissions } from "@/utils/permissions";
 import { UserRole } from "@/constants/roles";
+import { Loader } from "lucide-react";
 
 const TimetableGrid = () => {
-  const { selectedTimetable, openModal } = useTimetableStore();
+  const { selectedTimetable, openModal, isLoading } = useTimetableStore();
   const { hasRole } = usePermissions();
   const isAdmin = hasRole(UserRole.ADMIN) || hasRole(UserRole.SUPER_ADMIN);
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="flex items-center space-x-2">
+          <Loader className="h-6 w-6 animate-spin" />
+          <p className="text-gray-500">Loading timetable...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!selectedTimetable) {
     return (
@@ -18,6 +31,27 @@ const TimetableGrid = () => {
         <p className="text-gray-500">
           Select a class and section to view the timetable.
         </p>
+      </div>
+    );
+  }
+
+  // Check if timetable has no entries
+  if (selectedTimetable.entries.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <div className="text-center">
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No Timetable Found
+          </h3>
+          <p className="text-gray-500 mb-4">
+            This class doesn't have a timetable yet.
+          </p>
+          {isAdmin && (
+            <p className="text-sm text-gray-400">
+              Create a timetable to get started.
+            </p>
+          )}
+        </div>
       </div>
     );
   }

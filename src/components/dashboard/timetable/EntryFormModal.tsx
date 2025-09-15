@@ -107,10 +107,12 @@ const EntryFormModal = ({
             schoolService.getStaffBySchool(selectedSchool.schoolId, "teacher", true),
           ]);
           if (subjectsRes.success && subjectsRes.data) {
-            setSubjects(subjectsRes.data.data.data);
+            setSubjects(subjectsRes.data.data);
           }
           if (teachersRes.success && teachersRes.data) {
-            setTeachers(teachersRes.data.data.data);
+            // Extract staff data from the nested structure
+            const teacherStaff = teachersRes.data.data.map((item: any) => item.user.staff);
+            setTeachers(teacherStaff);
           }
         } catch (error) {
           console.error("Failed to load subjects or teachers", error);
@@ -236,11 +238,11 @@ const EntryFormModal = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {subjects.map((subject) => (
+                      {subjects?.map((subject) => (
                         <SelectItem key={subject.id} value={subject.id}>
                           {subject.name}
                         </SelectItem>
-                      ))}
+                      )) || []}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -260,11 +262,11 @@ const EntryFormModal = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {teachers.map((teacher) => (
+                      {teachers?.map((teacher) => (
                         <SelectItem key={teacher.id} value={teacher.id}>
                           {teacher.name}
                         </SelectItem>
-                      ))}
+                      )) || []}
                     </SelectContent>
                   </Select>
                   <FormMessage />

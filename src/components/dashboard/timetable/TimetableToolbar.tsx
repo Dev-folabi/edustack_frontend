@@ -13,10 +13,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ClassSection } from "@/services/classService";
+import { Loader } from "lucide-react";
 
 const TimetableToolbar = () => {
   const { selectedSchool } = useAuthStore();
-  const { fetchClassTimetable } = useTimetableStore();
+  const { fetchClassTimetable, isLoading } = useTimetableStore();
   const { classes, fetchClasses } = useClassStore();
 
   const [sections, setSections] = useState<ClassSection[]>([]);
@@ -78,8 +79,18 @@ const TimetableToolbar = () => {
         </SelectContent>
       </Select>
 
-      <Button onClick={handleViewTimetable} disabled={!selectedSection}>
-        View Timetable
+      <Button 
+        onClick={handleViewTimetable} 
+        disabled={!selectedSection || isLoading}
+      >
+        {isLoading ? (
+          <>
+            <Loader className="mr-2 h-4 w-4 animate-spin" />
+            Loading...
+          </>
+        ) : (
+          "View Timetable"
+        )}
       </Button>
     </div>
   );

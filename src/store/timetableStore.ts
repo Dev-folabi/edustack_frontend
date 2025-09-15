@@ -33,6 +33,7 @@ const showSuccessToast = (message: string) => {
 
 interface TimetableState {
   timetables: Timetable[];
+  schoolTimetables: Timetable[];
   selectedTimetable: Timetable | null;
   isLoading: boolean;
   error: string | null;
@@ -55,6 +56,9 @@ interface TimetableState {
 
 export const useTimetableStore = create<TimetableState>((set, get) => ({
   timetables: [],
+  get schoolTimetables() {
+    return get().timetables;
+  },
   selectedTimetable: null,
   isLoading: false,
   error: null,

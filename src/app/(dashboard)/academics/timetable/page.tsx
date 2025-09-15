@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import withAuth from "@/components/withAuth";
 import { STAFF_ROLES, UserRole } from "@/constants/roles";
@@ -13,7 +13,8 @@ import { useTimetableStore } from "@/store/timetableStore";
 import { useAuthStore } from "@/store/authStore";
 
 const TimetablePage = () => {
-  const { schoolTimetables, isLoading, fetchSchoolTimetables } = useTimetableStore();
+  const { schoolTimetables, isLoading, fetchSchoolTimetables } =
+    useTimetableStore();
   const { selectedSchool } = useAuthStore();
   const { hasRole } = usePermissions();
   const canCreate = hasRole(UserRole.ADMIN) || hasRole(UserRole.SUPER_ADMIN);
@@ -37,7 +38,9 @@ const TimetablePage = () => {
 
       {/* View Timetable by Section */}
       <div className="p-4 bg-white rounded-lg shadow-sm">
-        <h2 className="text-xl font-semibold mb-4">View Timetable by Section</h2>
+        <h2 className="text-xl font-semibold mb-4">
+          View Timetable by Section
+        </h2>
         <TimetableToolbar />
         <div className="mt-4">
           <TimetableGrid />

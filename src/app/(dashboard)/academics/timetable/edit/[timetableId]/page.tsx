@@ -35,7 +35,7 @@ import { subjectService, Subject } from "@/services/subjectService";
 import { schoolService, Staff } from "@/services/schoolService";
 import EntryFormModal, { EntryFormData } from "@/components/dashboard/timetable/EntryFormModal";
 import EntriesList from "@/components/dashboard/timetable/EntriesList";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/Toast";
 import { Loader } from "lucide-react";
 import {
   AlertDialog,
@@ -61,7 +61,7 @@ interface EditTimetablePageProps {
 const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
   const { timetableId } = params;
   const router = useRouter();
-  const { toast } = useToast();
+  const { showToast } = useToast();
   const { selectedSchool } = useAuthStore();
   const {
     schoolTimetables,
@@ -126,10 +126,10 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
     }
 
     if (result) {
-        toast({ title: "Success", description: `Entry ${editingEntry ? 'updated' : 'created'} successfully.` });
+        showToast({ type: "success", title: "Success", message: `Entry ${editingEntry ? 'updated' : 'created'} successfully.` });
         fetchSchoolTimetables(timetable.schoolId); // Refresh data
     } else {
-        toast({ variant: "destructive", title: "Error", description: "Failed to save entry." });
+        showToast({ type: "error", title: "Error", message: "Failed to save entry." });
     }
   };
 
@@ -137,10 +137,10 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
     if (!entryToDelete || !timetable) return;
      const result = await deleteEntry(entryToDelete.id);
      if (result) {
-        toast({ title: "Success", description: "Entry deleted successfully." });
+        showToast({ type: "success", title: "Success", message: "Entry deleted successfully." });
         fetchSchoolTimetables(timetable.schoolId); // Refresh data
      } else {
-        toast({ variant: "destructive", title: "Error", description: "Failed to delete entry." });
+        showToast({ type: "error", title: "Error", message: "Failed to delete entry." });
      }
      setIsDeleteEntryDialogOpen(false);
      setEntryToDelete(null);
@@ -155,10 +155,10 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
     if (!timetable) return;
     const result = await deleteTimetable(timetable.id);
     if(result) {
-        toast({ title: "Success", description: "Timetable deleted successfully." });
+        showToast({ type: "success", title: "Success", message: "Timetable deleted successfully." });
         router.push("/academics/timetable");
     } else {
-        toast({ variant: "destructive", title: "Error", description: "Failed to delete timetable." });
+        showToast({ type: "error", title: "Error", message: "Failed to delete timetable." });
     }
     setIsDeleteDialogOpen(false);
   };
@@ -172,7 +172,7 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
     });
 
     if (result) {
-      toast({ title: "Success", description: "Timetable updated successfully." });
+      showToast({ type: "success", title: "Success", message: "Timetable updated successfully." });
     }
   };
 

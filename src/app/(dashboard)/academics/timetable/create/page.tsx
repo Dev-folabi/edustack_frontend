@@ -35,9 +35,11 @@ import {
 import { subjectService, Subject } from "@/services/subjectService";
 import { schoolService, Staff } from "@/services/schoolService";
 import { Term } from "@/services/sessionService";
-import EntryFormModal, { EntryFormData } from "@/components/dashboard/timetable/EntryFormModal";
+import EntryFormModal, {
+  EntryFormData,
+} from "@/components/dashboard/timetable/EntryFormModal";
 import EntriesList from "@/components/dashboard/timetable/EntriesList";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/Toast";
 import { Loader } from "lucide-react";
 
 const formSchema = z.object({
@@ -49,9 +51,9 @@ const formSchema = z.object({
 
 const CreateTimetablePage = () => {
   const router = useRouter();
-  const { toast } = useToast();
+  const { showToast } = useToast();
   const { selectedSchool } = useAuthStore();
-  const { activeSession, fetchActiveSession } = useSessionStore();
+  const { selectedSession, fetchSessions } = useSessionStore();
   const { classes, fetchClasses } = useClassStore();
   const { createTimetable, isLoading } = useTimetableStore();
 
@@ -61,7 +63,9 @@ const CreateTimetablePage = () => {
   const [entries, setEntries] = useState<TimetableEntry[]>([]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingEntry, setEditingEntry] = useState<TimetableEntry | undefined>(undefined);
+  const [editingEntry, setEditingEntry] = useState<TimetableEntry | undefined>(
+    undefined
+  );
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -69,28 +73,42 @@ const CreateTimetablePage = () => {
 
   useEffect(() => {
     if (selectedSchool) {
-      fetchActiveSession();
+      fetchSessions();
       fetchClasses(selectedSchool.schoolId);
-      subjectService.getSubjects({ schoolId: selectedSchool.schoolId }).then(res => {
-        if (res.success) setSubjects(res.data?.data.data || []);
-      });
-      schoolService.getStaffBySchool(selectedSchool.schoolId, "teacher", true).then(res => {
-        if (res.success) setTeachers(res.data?.data.data || []);
-      });
+      subjectService
+        .getSubjects({ schoolId: selectedSchool.schoolId })
+        .then((res) => {
+          if (res.success) setSubjects(res.data?.data.data || []);
+        });
+      schoolService
+        .getStaffBySchool(selectedSchool.schoolId, "teacher", true)
+        .then((res) => {
+          if (res.success) setTeachers(res.data?.data.data || []);
+        });
     }
-  }, [selectedSchool, fetchActiveSession, fetchClasses]);
+  }, [selectedSchool, fetchSessions, fetchClasses]);
 
   useEffect(() => {
-    if (activeSession) {
-      // Assuming terms are part of the active session object, if not, an API call is needed
-      setTerms(activeSession.terms || []);
+    if (selectedSession) {
+      // Set terms from the selected session
+      setTerms(selectedSession.terms || []);
     }
-  }, [activeSession]);
+  }, [selectedSession]);
+
+  const convertTimeToISO = (timeString: string): string => {
+    const [hours, minutes] = timeString.split(':');
+    const date = new Date();
+    date.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+    return date.toISOString();
+  };
 
   const handleAddEntry = (data: EntryFormData) => {
     const newEntry: TimetableEntry = {
       ...data,
       id: `temp-${Date.now()}`, // Temporary ID for list key
+      startTime: convertTimeToISO(data.startTime),
+      endTime: convertTimeToISO(data.endTime),
+      timetableId: '', // Will be set when creating the actual timetable
     };
     setEntries([...entries, newEntry]);
   };
@@ -98,13 +116,20 @@ const CreateTimetablePage = () => {
   const handleEditEntry = (data: EntryFormData) => {
     setEntries(
       entries.map((entry) =>
-        entry.id === editingEntry?.id ? { ...entry, ...data } : entry
+        entry.id === editingEntry?.id 
+          ? { 
+              ...entry, 
+              ...data,
+              startTime: convertTimeToISO(data.startTime),
+              endTime: convertTimeToISO(data.endTime),
+            } 
+          : entry
       )
     );
   };
 
   const handleDeleteEntry = (entryToDelete: TimetableEntry) => {
-     setEntries(entries.filter(entry => entry.id !== entryToDelete.id));
+    setEntries(entries.filter((entry) => entry.id !== entryToDelete.id));
   };
 
   const openEditModal = (entry: TimetableEntry) => {
@@ -118,13 +143,13 @@ const CreateTimetablePage = () => {
   };
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!selectedSchool || !activeSession) return;
+    if (!selectedSchool || !selectedSession) return;
 
     if (entries.length === 0) {
-      toast({
-        variant: "destructive",
+      showToast({
+        type: "error",
         title: "No Entries",
-        description: "Please add at least one entry to the timetable.",
+        message: "Please add at least one entry to the timetable.",
       });
       return;
     }
@@ -132,28 +157,35 @@ const CreateTimetablePage = () => {
     const timetableData = {
       ...values,
       schoolId: selectedSchool.schoolId,
-      sessionId: activeSession.id,
+      sessionId: selectedSession.id,
       entries: entries.map(({ id, ...entry }) => entry), // Remove temporary ID
     };
 
     const result = await createTimetable(timetableData);
     if (result) {
-      toast({
+      showToast({
+        type: "success",
         title: "Success",
-        description: "Timetable created successfully.",
+        message: "Timetable created successfully.",
       });
       router.push("/academics/timetable");
     } else {
-       toast({
-        variant: "destructive",
+      showToast({
+        type: "error",
         title: "Error",
-        description: "Failed to create timetable.",
+        message: "Failed to create timetable.",
       });
     }
   };
 
-  const subjectMap = subjects.reduce((acc, subject) => ({...acc, [subject.id]: subject.name}), {});
-  const teacherMap = teachers.reduce((acc, teacher) => ({...acc, [teacher.id]: teacher.name}), {});
+  const subjectMap = subjects.reduce(
+    (acc, subject) => ({ ...acc, [subject.id]: subject.name }),
+    {}
+  );
+  const teacherMap = teachers.reduce(
+    (acc, teacher) => ({ ...acc, [teacher.id]: teacher.name }),
+    {}
+  );
 
   return (
     <div className="container mx-auto p-4 space-y-6">
@@ -165,7 +197,10 @@ const CreateTimetablePage = () => {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <form
+              onSubmit={form.handleSubmit(handleSubmit)}
+              className="space-y-4"
+            >
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <FormField
                   control={form.control}
@@ -173,7 +208,10 @@ const CreateTimetablePage = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Class</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select class" />
@@ -197,18 +235,24 @@ const CreateTimetablePage = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Section</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!form.watch("classId")}>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        disabled={!form.watch("classId")}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select section" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {classes.find(c => c.id === form.watch("classId"))?.sections.map((section) => (
-                            <SelectItem key={section.id} value={section.id}>
-                              {section.name}
-                            </SelectItem>
-                          ))}
+                          {classes
+                            .find((c) => c.id === form.watch("classId"))
+                            ?.sections.map((section) => (
+                              <SelectItem key={section.id} value={section.id}>
+                                {section.name}
+                              </SelectItem>
+                            ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -221,7 +265,10 @@ const CreateTimetablePage = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Term</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select term" />
@@ -245,7 +292,10 @@ const CreateTimetablePage = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Status</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select status" />
@@ -275,12 +325,20 @@ const CreateTimetablePage = () => {
           <Button onClick={openAddModal}>Add New Entry</Button>
         </CardHeader>
         <CardContent>
-          <EntriesList entries={entries} onEdit={openEditModal} onDelete={handleDeleteEntry} subjects={subjectMap} teachers={teacherMap} />
+          <EntriesList
+            entries={entries}
+            onEdit={openEditModal}
+            onDelete={handleDeleteEntry}
+            subjects={subjectMap}
+            teachers={teacherMap}
+          />
         </CardContent>
       </Card>
 
       <div className="flex justify-end gap-4">
-        <Button variant="outline" onClick={() => router.back()}>Cancel</Button>
+        <Button variant="outline" onClick={() => router.back()}>
+          Cancel
+        </Button>
         <Button onClick={form.handleSubmit(handleSubmit)} disabled={isLoading}>
           {isLoading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
           Create Timetable

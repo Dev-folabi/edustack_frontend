@@ -38,6 +38,7 @@ const TimetableList = ({ timetables, isLoading }: TimetableListProps) => {
   }
 
   if (timetables.length === 0) {
+    console.log({timetables})
     return (
       <div className="text-center text-gray-500 py-8">
         No timetables found for this school.
