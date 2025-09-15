@@ -1,0 +1,99 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { useAuthStore } from "@/store/authStore";
+import { useTimetableStore } from "@/store/timetableStore";
+import { useClassStore } from "@/store/classStore";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ClassSection } from "@/services/classService";
+import { Loader } from "lucide-react";
+
+const TimetableToolbar = () => {
+  const { selectedSchool } = useAuthStore();
+  const { fetchClassTimetable, isLoading } = useTimetableStore();
+  const { classes, fetchClasses } = useClassStore();
+
+  const [sections, setSections] = useState<ClassSection[]>([]);
+  const [selectedClass, setSelectedClass] = useState<string>("");
+  const [selectedSection, setSelectedSection] = useState<string>("");
+
+  // Fetch classes when selectedSchool changes
+  useEffect(() => {
+    if (selectedSchool) {
+      fetchClasses(selectedSchool.schoolId);
+    }
+  }, [selectedSchool, fetchClasses]);
+
+  // Update sections when selectedClass changes
+  useEffect(() => {
+    if (selectedClass) {
+      const selectedClassObj = classes.find((c) => c.id === selectedClass);
+      if (selectedClassObj) {
+        setSections(selectedClassObj.sections);
+        setSelectedSection(""); // Reset section selection
+      }
+    } else {
+      setSections([]);
+      setSelectedSection("");
+    }
+  }, [selectedClass, classes]);
+
+  const handleViewTimetable = () => {
+    if (selectedSection) {
+      fetchClassTimetable(selectedSection);
+    }
+  };
+
+  return (
+    <div className="flex flex-wrap items-center gap-4">
+      <Select value={selectedClass} onValueChange={setSelectedClass}>
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Select Class" />
+        </SelectTrigger>
+        <SelectContent>
+          {classes.map((c) => (
+            <SelectItem key={c.id} value={c.id}>
+              {c.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <Select value={selectedSection} onValueChange={setSelectedSection}>
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Select Section" />
+        </SelectTrigger>
+        <SelectContent>
+          {sections.map((section) => (
+            <SelectItem key={section.id} value={section.id}>
+              {section.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <Button 
+        onClick={handleViewTimetable} 
+        disabled={!selectedSection || isLoading}
+      >
+        {isLoading ? (
+          <>
+            <Loader className="mr-2 h-4 w-4 animate-spin" />
+            Loading...
+          </>
+        ) : (
+          "View Timetable"
+        )}
+      </Button>
+    </div>
+  );
+};
+
+export default TimetableToolbar;
