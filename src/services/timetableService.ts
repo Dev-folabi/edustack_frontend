@@ -39,6 +39,8 @@ export interface Entry {
   type: PeriodType;
   subject?: { id: string; name: string };
   teacher?: { id: string; name: string };
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Interface for a timetable
@@ -51,11 +53,38 @@ export interface Timetable {
   termId?: string;
   name: string;
   status: TimetableStatus;
+  createdAt: string;
+  updatedAt: string;
   entries: Entry[];
-  school: School;
-  section: { id: string; name: string; class: { id: string; name: string } };
-  session: { id: string; name: string };
-  term?: { id: string; name: string };
+  school?: School;
+  section: { 
+    id: string; 
+    name: string; 
+    classId: string;
+    teacherId?: string | null;
+    createdAt: string;
+    updatedAt: string;
+    class?: { id: string; name: string };
+  };
+  session: { 
+    id: string; 
+    name: string;
+    start_date: string;
+    end_date: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+  term?: { 
+    id: string; 
+    name: string;
+    sessionId: string;
+    start_date: string;
+    end_date: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
 }
 
 // Data for creating a new timetable
@@ -85,9 +114,16 @@ export type UpdateEntryData = Partial<CreateEntryData>;
 
 export type UpdateTimetableData = Partial<CreateTimetableData>;
 
-// API response for a list of timetables
 interface TimetablesResponse {
-  data: Timetable[];
+  data: {
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+    prevPage: number | null;
+    nextPage: number | null;
+    itemPerPage: number;
+    data: Timetable[];
+  };
 }
 
 // API response for a single timetable

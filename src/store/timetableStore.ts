@@ -71,6 +71,7 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
       const response = await timetableService.getSchoolTimetables(schoolId);
       if (response.success && response.data) {
         set({ timetables: response.data.data, isLoading: false });
+        console.log({timetablesssss: response.data.data});
       } else {
         throw new Error(response.message || "Failed to fetch timetables.");
       }

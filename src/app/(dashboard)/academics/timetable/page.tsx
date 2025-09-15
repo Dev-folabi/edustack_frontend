@@ -5,12 +5,12 @@ import Link from "next/link";
 import withAuth from "@/components/withAuth";
 import { STAFF_ROLES, UserRole } from "@/constants/roles";
 import TimetableToolbar from "@/components/dashboard/timetable/TimetableToolbar";
-import TimetableGrid from "@/components/dashboard/timetable/TimetableGrid";
 import TimetableList from "@/components/dashboard/timetable/TimetableList";
 import { Button } from "@/components/ui/button";
 import { usePermissions } from "@/utils/permissions";
 import { useTimetableStore } from "@/store/timetableStore";
 import { useAuthStore } from "@/store/authStore";
+import { Plus } from "lucide-react";
 
 const TimetablePage = () => {
   const { schoolTimetables, isLoading, fetchSchoolTimetables } =
@@ -26,30 +26,36 @@ const TimetablePage = () => {
   }, [selectedSchool, fetchSchoolTimetables]);
 
   return (
-    <div className="container mx-auto p-4 space-y-4">
+    <div className="container mx-auto p-4 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Timetable Management</h1>
         {canCreate && (
           <Button asChild>
-            <Link href="/academics/timetable/create">Create New Timetable</Link>
+            <Link href="/academics/timetable/create">
+              <Plus className="h-4 w-4 mr-2" />
+              Create New Timetable
+            </Link>
           </Button>
         )}
       </div>
 
-      {/* View Timetable by Section */}
+      {/* Quick Access - View Timetable by Section */}
       <div className="p-4 bg-white rounded-lg shadow-sm">
-        <h2 className="text-xl font-semibold mb-4">
-          View Timetable by Section
+        <h2 className="text-lg font-semibold mb-4">
+          Quick Access - View Timetable by Section
         </h2>
+        <p className="text-sm text-gray-600 mb-4">
+          Select a class and section to quickly view its timetable.
+        </p>
         <TimetableToolbar />
-        <div className="mt-4">
-          <TimetableGrid />
-        </div>
       </div>
 
       {/* All School Timetables */}
-      <div className="mt-8 p-4 bg-white rounded-lg shadow-sm">
-        <h2 className="text-xl font-semibold mb-4">All School Timetables</h2>
+      <div className="p-4 bg-white rounded-lg shadow-sm">
+        <h2 className="text-lg font-semibold mb-4">All School Timetables</h2>
+        <p className="text-sm text-gray-600 mb-4">
+          View and manage all timetables for your school. Click "View" to see the detailed timetable or "Edit" to modify.
+        </p>
         <TimetableList timetables={schoolTimetables} isLoading={isLoading} />
       </div>
     </div>

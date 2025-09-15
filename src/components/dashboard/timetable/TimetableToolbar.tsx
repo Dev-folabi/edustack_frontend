@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
-import { useTimetableStore } from "@/store/timetableStore";
 import { useClassStore } from "@/store/classStore";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,11 +13,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ClassSection } from "@/services/classService";
-import { Loader } from "lucide-react";
+import { Eye } from "lucide-react";
 
 const TimetableToolbar = () => {
+  const router = useRouter();
   const { selectedSchool } = useAuthStore();
-  const { fetchClassTimetable, isLoading } = useTimetableStore();
   const { classes, fetchClasses } = useClassStore();
 
   const [sections, setSections] = useState<ClassSection[]>([]);
@@ -47,7 +47,7 @@ const TimetableToolbar = () => {
 
   const handleViewTimetable = () => {
     if (selectedSection) {
-      fetchClassTimetable(selectedSection);
+      router.push(`/academics/timetable/view/${selectedSection}`);
     }
   };
 
@@ -81,16 +81,10 @@ const TimetableToolbar = () => {
 
       <Button 
         onClick={handleViewTimetable} 
-        disabled={!selectedSection || isLoading}
+        disabled={!selectedSection}
       >
-        {isLoading ? (
-          <>
-            <Loader className="mr-2 h-4 w-4 animate-spin" />
-            Loading...
-          </>
-        ) : (
-          "View Timetable"
-        )}
+        <Eye className="mr-2 h-4 w-4" />
+        View Timetable
       </Button>
     </div>
   );
