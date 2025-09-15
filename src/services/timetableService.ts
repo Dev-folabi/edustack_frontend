@@ -87,6 +87,12 @@ export type UpdateTimetableData = Partial<CreateTimetableData>;
 
 // API response for a list of timetables
 interface TimetablesResponse {
+  totalItems: number;
+  totalPages: number;
+  currentPage: number;
+  prevPage: number | null;
+  nextPage: number | null;
+  itemPerPage: number;
   data: Timetable[];
 }
 
