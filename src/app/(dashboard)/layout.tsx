@@ -8,6 +8,7 @@ import Sidebar from '@/components/dashboard/Sidebar';
 import { NotificationBanner } from '@/components/dashboard/NotificationBanner';
 import { Loader } from '@/components/ui/Loader';
 import { FaBars } from 'react-icons/fa';
+import { ToastProvider } from '@/components/ui/Toast';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -35,9 +36,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   }
 
   return (
-    <div className="flex h-screen bg-gray-100 overflow-hidden">
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
+    <ToastProvider>
+      <div className="flex h-screen bg-gray-100 overflow-hidden">
+        {/* Mobile Menu Overlay */}
+        {isMobileMenuOpen && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
@@ -69,6 +71,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         </main>
       </div>
     </div>
+    </ToastProvider>
   );
 };
 
