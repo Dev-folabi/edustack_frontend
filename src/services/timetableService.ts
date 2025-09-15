@@ -53,7 +53,7 @@ export interface Timetable {
   status: TimetableStatus;
   entries: Entry[];
   school: School;
-  section: { id: string; name: string; class: { id: string; name: string } };
+  section: { id: string; name: string; class?: { id: string; name: string } };
   session: { id: string; name: string };
   term?: { id: string; name: string };
 }

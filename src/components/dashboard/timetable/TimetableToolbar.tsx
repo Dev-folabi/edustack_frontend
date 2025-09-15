@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
-import { useTimetableStore } from "@/store/timetableStore";
 import { useClassStore } from "@/store/classStore";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,9 +16,9 @@ import { ClassSection } from "@/services/classService";
 import { Loader } from "lucide-react";
 
 const TimetableToolbar = () => {
+  const router = useRouter();
   const { selectedSchool } = useAuthStore();
-  const { fetchClassTimetable, isLoading } = useTimetableStore();
-  const { classes, fetchClasses } = useClassStore();
+  const { classes, fetchClasses, isLoading } = useClassStore();
 
   const [sections, setSections] = useState<ClassSection[]>([]);
   const [selectedClass, setSelectedClass] = useState<string>("");
@@ -47,51 +47,53 @@ const TimetableToolbar = () => {
 
   const handleViewTimetable = () => {
     if (selectedSection) {
-      fetchClassTimetable(selectedSection);
+      router.push(`/academics/timetable/view/${selectedSection}`);
     }
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-4">
-      <Select value={selectedClass} onValueChange={setSelectedClass}>
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Select Class" />
-        </SelectTrigger>
-        <SelectContent>
-          {classes.map((c) => (
-            <SelectItem key={c.id} value={c.id}>
-              {c.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+    <div className="p-4 bg-white rounded-lg shadow-sm mb-4">
+      <div className="flex flex-wrap items-center gap-4">
+        <Select value={selectedClass} onValueChange={setSelectedClass}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select Class" />
+          </SelectTrigger>
+          <SelectContent>
+            {classes.map((c) => (
+              <SelectItem key={c.id} value={c.id}>
+                {c.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      <Select value={selectedSection} onValueChange={setSelectedSection}>
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Select Section" />
-        </SelectTrigger>
-        <SelectContent>
-          {sections.map((section) => (
-            <SelectItem key={section.id} value={section.id}>
-              {section.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        <Select value={selectedSection} onValueChange={setSelectedSection}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select Section" />
+          </SelectTrigger>
+          <SelectContent>
+            {sections.map((section) => (
+              <SelectItem key={section.id} value={section.id}>
+                {section.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      <Button 
-        onClick={handleViewTimetable} 
-        disabled={!selectedSection || isLoading}
-      >
-        {isLoading ? (
-          <>
-            <Loader className="mr-2 h-4 w-4 animate-spin" />
-            Loading...
-          </>
-        ) : (
-          "View Timetable"
-        )}
-      </Button>
+        <Button
+          onClick={handleViewTimetable}
+          disabled={!selectedSection || isLoading}
+        >
+          {isLoading ? (
+            <>
+              <Loader className="mr-2 h-4 w-4 animate-spin" />
+              Loading...
+            </>
+          ) : (
+            "View Timetable"
+          )}
+        </Button>
+      </div>
     </div>
   );
 };

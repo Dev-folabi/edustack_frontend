@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +14,8 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Timetable, TimetableStatus } from "@/services/timetableService";
+import { useClassStore } from "@/store/classStore";
+import { useAuthStore } from "@/store/authStore";
 
 interface TimetableListProps {
   timetables: Timetable[];
@@ -22,6 +24,23 @@ interface TimetableListProps {
 
 const TimetableList = ({ timetables, isLoading }: TimetableListProps) => {
   const router = useRouter();
+  const { classes, fetchClasses } = useClassStore();
+  const { selectedSchool } = useAuthStore();
+
+  useEffect(() => {
+    if (selectedSchool) {
+      fetchClasses(selectedSchool.schoolId);
+    }
+  }, [selectedSchool, fetchClasses]);
+
+  const getClassName = (classId: string) => {
+    const classInfo = classes.find((c) => c.id === classId);
+    return classInfo?.name || "N/A";
+  };
+
+  const handleView = (sectionId: string) => {
+    router.push(`/academics/timetable/view/${sectionId}`);
+  };
 
   const handleEdit = (timetableId: string) => {
     router.push(`/academics/timetable/edit/${timetableId}`);
@@ -37,8 +56,7 @@ const TimetableList = ({ timetables, isLoading }: TimetableListProps) => {
     );
   }
 
-  if (timetables.length === 0) {
-    console.log({timetables})
+  if (!timetables || timetables.length === 0) {
     return (
       <div className="text-center text-gray-500 py-8">
         No timetables found for this school.
@@ -51,6 +69,7 @@ const TimetableList = ({ timetables, isLoading }: TimetableListProps) => {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>Name</TableHead>
             <TableHead>Class</TableHead>
             <TableHead>Section</TableHead>
             <TableHead>Term</TableHead>
@@ -61,7 +80,8 @@ const TimetableList = ({ timetables, isLoading }: TimetableListProps) => {
         <TableBody>
           {timetables.map((timetable) => (
             <TableRow key={timetable.id}>
-              <TableCell>{timetable.section.class.name}</TableCell>
+              <TableCell>{timetable.name}</TableCell>
+              <TableCell>{getClassName(timetable.classId)}</TableCell>
               <TableCell>{timetable.section.name}</TableCell>
               <TableCell>{timetable.term?.name || "N/A"}</TableCell>
               <TableCell>
@@ -75,13 +95,20 @@ const TimetableList = ({ timetables, isLoading }: TimetableListProps) => {
                   {timetable.status}
                 </Badge>
               </TableCell>
-              <TableCell className="text-right">
+              <TableCell className="text-right space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleView(timetable.sectionId)}
+                >
+                  View
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleEdit(timetable.id)}
                 >
-                  View / Edit
+                  Edit
                 </Button>
               </TableCell>
             </TableRow>
