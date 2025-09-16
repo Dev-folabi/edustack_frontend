@@ -55,7 +55,6 @@ const TimetableList = ({ timetables, isLoading }: TimetableListProps) => {
       </div>
     );
   }
-
   if (!timetables || timetables.length === 0) {
     return (
       <div className="text-center text-gray-500 py-8">
@@ -69,7 +68,6 @@ const TimetableList = ({ timetables, isLoading }: TimetableListProps) => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
             <TableHead>Class</TableHead>
             <TableHead>Section</TableHead>
             <TableHead>Term</TableHead>
@@ -80,7 +78,6 @@ const TimetableList = ({ timetables, isLoading }: TimetableListProps) => {
         <TableBody>
           {timetables.map((timetable) => (
             <TableRow key={timetable.id}>
-              <TableCell>{timetable.name}</TableCell>
               <TableCell>{getClassName(timetable.classId)}</TableCell>
               <TableCell>{timetable.section.name}</TableCell>
               <TableCell>{timetable.term?.name || "N/A"}</TableCell>

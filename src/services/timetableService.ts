@@ -31,14 +31,17 @@ export enum TimetableStatus {
 export interface Entry {
   id: string;
   timetableId: string;
-  day: WeekDay[];
-  startTime: string; // Assuming ISO string format
-  endTime: string; // Assuming ISO string format
+  day: WeekDay[]; // API returns an array of days
+  startTime: string; // ISO string
+  endTime: string;   // ISO string
   subjectId?: string;
   teacherId?: string;
   type: PeriodType;
+  // Optional populated fields if API includes them
   subject?: { id: string; name: string };
   teacher?: { id: string; name: string };
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // Interface for a timetable
@@ -52,10 +55,16 @@ export interface Timetable {
   name: string;
   status: TimetableStatus;
   entries: Entry[];
-  school: School;
-  section: { id: string; name: string; class?: { id: string; name: string } };
+  school?: School;
+  section: {
+    id: string;
+    name: string;
+    class?: { id: string; name: string };
+  };
   session: { id: string; name: string };
   term?: { id: string; name: string };
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // Data for creating a new timetable
@@ -65,8 +74,9 @@ export interface CreateTimetableData {
   sectionId: string;
   sessionId: string;
   termId?: string;
+  name: string;
   status?: TimetableStatus;
-  entries: Omit<Entry, "id" | "timetableId" | "subject" | "teacher">[];
+  entries: Omit<Entry, "id" | "timetableId" | "subject" | "teacher" | "createdAt" | "updatedAt">[];
 }
 
 // Data for creating a new timetable entry
@@ -82,11 +92,10 @@ export interface CreateEntryData {
 
 // Data for updating a timetable entry
 export type UpdateEntryData = Partial<CreateEntryData>;
-
 export type UpdateTimetableData = Partial<CreateTimetableData>;
 
 // API response for a list of timetables
-interface TimetablesResponse {
+export interface TimetablesResponse {
   totalItems: number;
   totalPages: number;
   currentPage: number;
@@ -97,12 +106,12 @@ interface TimetablesResponse {
 }
 
 // API response for a single timetable
-interface TimetableResponse {
+export interface TimetableResponse {
   data: Timetable;
 }
 
 // API response for a single entry
-interface EntryResponse {
+export interface EntryResponse {
   data: Entry;
 }
 
@@ -129,7 +138,7 @@ export const timetableService = {
   },
 
   // Delete a timetable by its ID
-  deleteTimetable: (timetableId: string): Promise<ApiResponse<any>> => {
+  deleteTimetable: (timetableId: string): Promise<ApiResponse<void>> => {
     return apiClient.delete(`/timetables/${timetableId}`);
   },
 
@@ -155,7 +164,7 @@ export const timetableService = {
   },
 
   // Delete a timetable entry by its ID
-  deleteEntry: (entryId: string): Promise<ApiResponse<any>> => {
+  deleteEntry: (entryId: string): Promise<ApiResponse<void>> => {
     return apiClient.delete(`/timetables/entries/${entryId}`);
   },
 };

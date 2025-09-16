@@ -49,7 +49,7 @@ const ViewTimetablePage = () => {
         </div>
       </div>
       <div className="bg-white rounded-lg shadow-sm p-4">
-        <TimetableGrid />
+        <TimetableGrid sectionId={sectionId as string} />
       </div>
     </div>
   );

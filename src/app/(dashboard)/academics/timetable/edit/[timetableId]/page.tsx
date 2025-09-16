@@ -47,6 +47,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useClassStore } from "@/store/classStore";
 
 const formSchema = z.object({
   status: z.nativeEnum(TimetableStatus),
@@ -59,7 +60,7 @@ interface EditTimetablePageProps {
 }
 
 const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
-  const { timetableId } = params;
+  const { timetableId } = React.use(params);
   const router = useRouter();
   const { showToast } = useToast();
   const { selectedSchool } = useAuthStore();
@@ -88,6 +89,14 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
+
+const { classes, fetchClasses } = useClassStore();
+
+  useEffect(() => {
+    if (selectedSchool) {
+      fetchClasses(selectedSchool.schoolId);
+    }
+  }, [selectedSchool, fetchClasses]);
 
   useEffect(() => {
     if (selectedSchool) {
@@ -193,6 +202,10 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
     return <div className="flex justify-center items-center h-64"><Loader className="animate-spin" /></div>;
   }
 
+  const getClassName = (classId: string) => {
+    const classInfo = classes.find((c) => c.id === classId);
+    return classInfo?.name || "N/A";
+  };
   return (
     <div className="container mx-auto p-4 space-y-6">
       <div className="flex justify-between items-center">
@@ -205,9 +218,11 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
           <CardTitle>Timetable Details</CardTitle>
         </CardHeader>
         <CardContent className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div><FormLabel>Class</FormLabel><p>{timetable.section.class.name}</p></div>
-            <div><FormLabel>Section</FormLabel><p>{timetable.section.name}</p></div>
-            <div><FormLabel>Term</FormLabel><p>{timetable.term?.name || 'N/A'}</p></div>
+            <div><label className="text-sm font-medium">Class</label><p>{getClassName(
+                  selectedTimetable.classId
+                )}</p></div>
+            <div><label className="text-sm font-medium">Section</label><p>{timetable.section.name}</p></div>
+            <div><label className="text-sm font-medium">Term</label><p>{timetable.term?.name || 'N/A'}</p></div>
             <Form {...form}>
                 <FormField
                     control={form.control}

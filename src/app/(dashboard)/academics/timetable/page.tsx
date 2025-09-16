@@ -12,8 +12,8 @@ import { useTimetableStore } from "@/store/timetableStore";
 import { useAuthStore } from "@/store/authStore";
 
 const TimetablePage = () => {
-  const { schoolTimetables, isLoading, fetchSchoolTimetables } =
-    useTimetableStore();
+  const { schoolTimetables, isLoading, fetchSchoolTimetables } = useTimetableStore();
+
   const { selectedSchool } = useAuthStore();
   const { hasRole } = usePermissions();
   const canCreate = hasRole(UserRole.ADMIN) || hasRole(UserRole.SUPER_ADMIN);
