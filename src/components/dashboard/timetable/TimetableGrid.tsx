@@ -3,26 +3,22 @@
 import React, { useMemo, useEffect } from "react";
 import { useTimetableStore } from "@/store/timetableStore";
 import { WeekDay, Entry as TimetableEntry } from "@/services/timetableService";
-import EntryCard from "./EntryCard";
-import { usePermissions } from "@/utils/permissions";
-import { UserRole } from "@/constants/roles";
-import { Loader } from "lucide-react";
+import { Loader, Clock, Calendar, Users } from "lucide-react";
 
-/**
- * TimetableGrid — calendar-style timetable with overlapping and multi-day support.
- *
- * Notes:
- * - EntryCard should accept a `style?: React.CSSProperties` prop so we can position it.
- * - openModal() is called on empty cell click. If you want prefilled data in the modal
- *   extend your store's openModal signature to accept a small prefill object and pass it here.
- */
-
-/* Helper: format Date -> "HH:mm" (deterministic) */
+/* Helper: format Date -> "HH:mm" */
 const formatHHMM = (d: string | Date) => {
   const date = new Date(d);
   const hh = String(date.getHours()).padStart(2, "0");
   const mm = String(date.getMinutes()).padStart(2, "0");
   return `${hh}:${mm}`;
+};
+
+/* Helper: format time to 12-hour format */
+const formatTime12Hour = (hour: number, minute: number) => {
+  const period = hour >= 12 ? "PM" : "AM";
+  const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+  const displayMinute = minute.toString().padStart(2, "0");
+  return `${displayHour}:${displayMinute} ${period}`;
 };
 
 const dayOrder = [
@@ -35,140 +31,146 @@ const dayOrder = [
   WeekDay.SUNDAY,
 ];
 
+// Generate time slots from 7 AM to 6 PM with 30-minute intervals
+const generateTimeSlots = () => {
+  const slots = [];
+  for (let hour = 7; hour <= 18; hour++) {
+    slots.push({ hour, minute: 0, key: `${hour}:00` });
+    if (hour < 18) {
+      slots.push({ hour, minute: 30, key: `${hour}:30` });
+    }
+  }
+  return slots;
+};
+
+const timeSlots = generateTimeSlots();
+
+// Type color mapping based on PeriodType
+const getTypeColor = (type: string) => {
+  switch (type) {
+    case "REGULAR":
+      return "bg-blue-100 border-blue-200 text-blue-800";
+    case "BREAK":
+      return "bg-orange-100 border-orange-200 text-orange-800";
+    case "LUNCH":
+      return "bg-green-100 border-green-200 text-green-800";
+    case "ASSEMBLY":
+      return "bg-purple-100 border-purple-200 text-purple-800";
+    case "SPORTS":
+      return "bg-red-100 border-red-200 text-red-800";
+    case "LIBRARY":
+      return "bg-indigo-100 border-indigo-200 text-indigo-800";
+    case "FREE_PERIOD":
+      return "bg-gray-100 border-gray-200 text-gray-800";
+    default:
+      return "bg-slate-100 border-slate-200 text-slate-800";
+  }
+};
+
 interface SchoolIdProps {
   sectionId: string;
 }
 
-const TimetableGrid = ({sectionId}: SchoolIdProps) => {
-  const { selectedTimetable, openModal, isLoading, fetchClassTimetable } = useTimetableStore();
-  const { hasRole } = usePermissions();
-  const isAdmin = hasRole(UserRole.ADMIN) || hasRole(UserRole.SUPER_ADMIN);
-
+const TimetableGrid = ({ sectionId }: SchoolIdProps) => {
+  const { selectedTimetable, isLoading, fetchClassTimetable } =
+    useTimetableStore();
 
   useEffect(() => {
     if (sectionId) {
-     fetchClassTimetable(sectionId);
+      fetchClassTimetable(sectionId);
     }
   }, [sectionId, fetchClassTimetable]);
 
   const entries: TimetableEntry[] = selectedTimetable?.entries || [];
 
-  // ---- COMPUTE time window for the whole timetable ----
-  const { dayStartStr, dayEndStr, totalMinutes, entriesByDay } = useMemo(() => {
-    if (!entries.length) {
-      // default school hours (fallback)
-      return {
-        dayStartStr: "08:00",
-        dayEndStr: "16:00",
-        totalMinutes: 8 * 60,
-        entriesByDay: new Map<WeekDay, TimetableEntry[]>(),
-      };
-    }
+  // Organize entries by day and time slot
+  const organizedEntries = useMemo(() => {
+    const organized: Record<
+      string,
+      Record<string, TimetableEntry & { span: number; skipSlots: Set<string> }>
+    > = {};
+    const occupiedSlots: Record<string, Set<string>> = {};
 
-    let minTs = Infinity;
-    let maxTs = -Infinity;
-    const map = new Map<WeekDay, TimetableEntry[]>();
-
-    entries.forEach((e) => {
-      const s = new Date(e.startTime).getTime();
-      const en = new Date(e.endTime).getTime();
-      if (s < minTs) minTs = s;
-      if (en > maxTs) maxTs = en;
-
-      // each entry can belong to multiple days
-      e.day.forEach((d) => {
-        const day = d as WeekDay;
-        if (!map.has(day)) map.set(day, []);
-        map.get(day)!.push(e);
-      });
-    });
-
-    // round down start to nearest 30 minutes, round up end to nearest 30 for nicer layout
-    const roundDown = (ts: number) => {
-      const date = new Date(ts);
-      const mins = date.getMinutes();
-      const rounded = mins >= 30 ? 30 : 0;
-      date.setMinutes(rounded, 0, 0);
-      return date.getTime();
-    };
-    const roundUp = (ts: number) => {
-      const date = new Date(ts);
-      const mins = date.getMinutes();
-      if (mins === 0) return date.getTime();
-      if (mins <= 30) date.setMinutes(30, 0, 0);
-      else date.setHours(date.getHours() + 1, 0, 0);
-      return date.getTime();
-    };
-
-    const startTs = roundDown(minTs);
-    const endTs = roundUp(maxTs);
-    const totalMinutes = Math.max(30, Math.round((endTs - startTs) / 60000));
-
-    const dayStartStr = new Date(startTs).toISOString().slice(11, 16); // "HH:MM"
-    const dayEndStr = new Date(endTs).toISOString().slice(11, 16);
-
-    return { dayStartStr, dayEndStr, totalMinutes, entriesByDay: map };
-  }, [entries]);
-
-  const layoutByDay = useMemo(() => {
-    const layout = new Map<WeekDay, { item: TimetableEntry; lane: number }[]>();
-
+    // Initialize structure
     dayOrder.forEach((day) => {
-      const list = (entriesByDay.get(day) || []).slice().sort((a, b) => {
-        return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+      organized[day] = {};
+      occupiedSlots[day] = new Set();
+    });
+
+    // Place entries in the grid
+    entries.forEach((entry) => {
+      const startTime = new Date(entry.startTime);
+      const endTime = new Date(entry.endTime);
+
+      const startHour = startTime.getHours();
+      const startMinute = startTime.getMinutes();
+
+      // Convert to minutes for comparison
+      const startMinutes = startHour * 60 + startMinute;
+
+      // Find nearest slot at or before start time
+      const matchingSlotIndex = timeSlots.findIndex((slot, idx) => {
+        const slotMinutes = slot.hour * 60 + slot.minute;
+        const nextSlot = timeSlots[idx + 1];
+        const nextSlotMinutes = nextSlot
+          ? nextSlot.hour * 60 + nextSlot.minute
+          : Infinity;
+
+        return startMinutes >= slotMinutes && startMinutes < nextSlotMinutes;
       });
 
-      const lanesEnd: number[] = []; // end timestamp per lane
-      const itemsWithLane: { item: TimetableEntry; lane: number }[] = [];
+      // if (matchingSlotIndex === -1) return;
 
-      list.forEach((it) => {
-        const s = new Date(it.startTime).getTime();
-        const e = new Date(it.endTime).getTime();
-        // find lane
-        let found = -1;
-        for (let i = 0; i < lanesEnd.length; i++) {
-          if (s >= lanesEnd[i]) {
-            found = i;
-            lanesEnd[i] = e;
-            break;
-          }
+      // Calculate span (# of slots the entry should cover)
+      const durationMs = endTime.getTime() - startTime.getTime();
+      const durationMinutes = durationMs / (1000 * 60);
+      const span = Math.max(1, Math.ceil(durationMinutes / 30));
+
+      // Use the actual slot key we matched to
+      const firstSlot = timeSlots[matchingSlotIndex];
+      const timeKey = `${firstSlot.hour}:${firstSlot.minute
+        .toString()
+        .padStart(2, "0")}`;
+
+      // Build skip slots set
+      const skipSlots = new Set<string>();
+      for (let i = 1; i < span; i++) {
+        const nextSlotIndex = matchingSlotIndex + i;
+        if (nextSlotIndex < timeSlots.length) {
+          const nextSlot = timeSlots[nextSlotIndex];
+          const nextTimeKey = `${nextSlot.hour}:${nextSlot.minute
+            .toString()
+            .padStart(2, "0")}`;
+          skipSlots.add(nextTimeKey);
         }
-        if (found === -1) {
-          found = lanesEnd.length;
-          lanesEnd.push(e);
+      }
+
+      // Assign entry to each day
+      entry.day.forEach((day) => {
+        if (organized[day]) {
+          organized[day][timeKey] = { ...entry, span, skipSlots };
+          occupiedSlots[day].add(timeKey);
+          skipSlots.forEach((slot) => occupiedSlots[day].add(slot));
         }
-        itemsWithLane.push({ item: it, lane: found });
       });
-
-      layout.set(day, itemsWithLane);
     });
 
-    return layout;
-  }, [entriesByDay]);
-
-  // Precompute lane counts so we know each day's column lane count
-  const lanesCountByDay = useMemo(() => {
-    const map = new Map<WeekDay, number>();
-    layoutByDay.forEach((arr, day) => {
-      let max = 0;
-      arr.forEach((a) => {
-        if (a.lane + 1 > max) max = a.lane + 1;
-      });
-      map.set(day, Math.max(1, max));
-    });
-    // ensure at least 1 lane for days with no entries (so cell still usable)
-    dayOrder.forEach((d) => {
-      if (!map.has(d)) map.set(d, 1);
-    });
-    return map;
-  }, [layoutByDay]);
+    return { organized, occupiedSlots };
+  }, [entries]);
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="flex items-center space-x-2">
-          <Loader className="h-6 w-6 animate-spin" />
-          <p className="text-gray-500">Loading timetable...</p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+        <div className="bg-white rounded-2xl shadow-sm border p-12 text-center">
+          <div className="bg-gradient-to-r from-blue-100 to-indigo-100 p-4 rounded-full mx-auto mb-4 w-16 h-16 flex items-center justify-center">
+            <Loader className="h-8 w-8 animate-spin text-blue-600" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            Loading Timetable
+          </h3>
+          <p className="text-gray-500">
+            Please wait while we fetch the schedule...
+          </p>
         </div>
       </div>
     );
@@ -176,170 +178,198 @@ const TimetableGrid = ({sectionId}: SchoolIdProps) => {
 
   if (!selectedTimetable) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-gray-500">Select a class and section to view the timetable.</p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+        <div className="bg-white rounded-2xl shadow-sm border p-12 text-center max-w-md">
+          <div className="bg-gradient-to-r from-blue-100 to-indigo-100 p-4 rounded-full mx-auto mb-6 w-20 h-20 flex items-center justify-center">
+            <Calendar className="w-10 h-10 text-blue-600" />
+          </div>
+          <h3 className="text-xl font-medium text-gray-900 mb-3">
+            No Timetable Available
+          </h3>
+          <p className="text-gray-500">
+            Select a class and section to view the timetable schedule.
+          </p>
+        </div>
       </div>
     );
   }
 
-  // Helper to compute top/height percentage relative to dayStart/dayEnd
-  const computeTopHeight = (startISO: string, endISO: string) => {
-    const s = new Date(startISO).getTime();
-    const e = new Date(endISO).getTime();
-
-    // compute base start time (dayStartStr)
-    // convert dayStartStr to today's date to compare
-    const baseDate = new Date();
-    const [baseH, baseM] = dayStartStr.split(":").map(Number);
-    baseDate.setHours(baseH, baseM, 0, 0);
-    const baseTs = baseDate.getTime();
-
-    // If baseTs ends up > s (because entries come from different actual dates) we still compute relative to s by shifting base
-    // We'll compute difference in minutes relative to baseTs
-    const topMinutes = Math.max(0, Math.round((s - baseTs) / 60000));
-    const heightMinutes = Math.max(1, Math.round((e - s) / 60000));
-    const top = (topMinutes / totalMinutes) * 100;
-    const height = (heightMinutes / totalMinutes) * 100;
-    return { top, height };
-  };
-
-  // Render
   return (
-    <div className="w-full overflow-auto">
-      {/* header: days */}
-      <div className="min-w-[900px]">
-        <div className="grid grid-cols-[120px_repeat(6,1fr)] items-stretch border border-gray-200">
-          {/* Time column header */}
-          <div className="p-2 bg-gray-50 border-r border-gray-200">Time</div>
-          {dayOrder.slice(0, 6).map((day) => (
-            <div key={day} className="p-2 text-sm font-medium bg-white border-r border-gray-200 capitalize">
-              {day.toLowerCase()}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-3">
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-2 rounded-xl">
+                <Calendar className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">
+                  {selectedTimetable.name}
+                </h1>
+                <p className="text-sm text-gray-500">
+                  {selectedTimetable.session?.name} -{" "}
+                  {selectedTimetable.term?.name}
+                </p>
+              </div>
             </div>
-          ))}
-        </div>
-
-        {/* main body: times + day columns (relative positioning) */}
-        <div
-          className="grid grid-cols-[120px_repeat(6,1fr)] relative"
-          style={{ minHeight: "480px", border: "1px solid #e5e7eb" }}
-        >
-          {/* Time labels column */}
-          <div className="border-r border-gray-200 p-2 bg-gray-50">
-            {/* we will render a vertical time ruler: from dayStartStr to dayEndStr in 30-min steps */}
-            {(() => {
-              const parts: JSX.Element[] = [];
-              // compute numeric start/end in minutes from midnight
-              const [startH, startM] = dayStartStr.split(":").map(Number);
-              const [endH, endM] = dayEndStr.split(":").map(Number);
-              let cur = startH * 60 + startM;
-              const end = endH * 60 + endM;
-              while (cur <= end) {
-                const hh = Math.floor(cur / 60);
-                const mm = cur % 60;
-                const label = new Date(0, 0, 0, hh, mm).toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true });
-                parts.push(
-                  <div key={cur} className="text-xs text-gray-500 h-12 flex items-start">
-                    {label}
-                  </div>
-                );
-                cur += 30; // 30-minute ticks
-              }
-              return parts;
-            })()}
+            <div className="flex items-center space-x-4 text-sm text-gray-500">
+              <div className="flex items-center space-x-1">
+                <Users className="h-4 w-4" />
+                <span>{selectedTimetable.section?.name}</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <Clock className="h-4 w-4" />
+                <span>7:00 AM - 6:00 PM</span>
+              </div>
+            </div>
           </div>
+        </div>
+      </div>
 
-          {/* Day columns */}
-          {dayOrder.slice(0, 6).map((day) => {
-            const items = layoutByDay.get(day) || [];
-            const lanes = lanesCountByDay.get(day) || 1;
-
-            // For empty background grid lines: create same number of 30-min rows as time column
-            const [startH, startM] = dayStartStr.split(":").map(Number);
-            const [endH, endM] = dayEndStr.split(":").map(Number);
-            let cur = startH * 60 + startM;
-            const end = endH * 60 + endM;
-            const slots: JSX.Element[] = [];
-            while (cur <= end) {
-              slots.push(
-                <div key={cur} className="h-12 border-b border-gray-100" />
-              );
-              cur += 30;
-            }
-
-            return (
-              <div
-                key={day}
-                className="relative p-2 bg-white"
-                // allow clicking empty areas to add
-                onClick={(e) => {
-                  // If clicked directly on column background (not on an entry), open modal
-                  // But we must ensure target is the column itself or inner empty area.
-                  const target = e.target as HTMLElement;
-                  // avoid opening when clicking a child entry
-                  if (target.closest("[data-entry-id]")) return;
-                  if (isAdmin) {
-                    // TODO: compute nearest time slot from click position to prefill modal
-                    // For now, just open modal. To prefill compute y% relative to column and convert to time.
-                    openModal();
-                  }
-                }}
-              >
-                {/* background grid rows */}
-                <div className="absolute inset-0 pointer-events-none">
-                  <div className="flex flex-col h-full">
-                    {slots}
-                  </div>
+      {/* Timetable */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-2xl shadow-sm border relative">
+          <div className="overflow-auto">
+            <div className="min-w-[800px] sm:min-w-[1000px] lg:min-w-[1200px] relative z-10">
+              {/* Time header */}
+              <div className="grid grid-cols-[100px_repeat(23,minmax(40px,1fr))] bg-gradient-to-r from-gray-50 to-slate-100 border-b border-gray-200">
+                <div className="p-2 font-semibold text-gray-700 border-r border-gray-200 flex items-center justify-center text-xs">
+                  <Clock className="w-3 h-3 mr-1" />
+                  Day/Time
                 </div>
+                {timeSlots.map((slot) => (
+                  <div
+                    key={slot.key}
+                    className="p-1 text-center font-medium text-gray-700 border-r border-gray-200 last:border-r-0 text-xs leading-tight"
+                  >
+                    <div>
+                      {formatTime12Hour(slot.hour, slot.minute).split(" ")[0]}
+                    </div>
+                    <div className="text-xs opacity-75">
+                      {formatTime12Hour(slot.hour, slot.minute).split(" ")[1]}
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-                {/* container for positioned entries */}
-                <div className="relative w-full h-full">
-                  {items.map(({ item, lane }, idx) => {
-                    // compute positioning & width using start/end relative to dayStart/dayEnd
-                    const { top, height } = computeTopHeight(item.startTime, item.endTime);
-                    const numLanes = lanesCountByDay.get(day) || 1;
-                    const widthPercent = 100 / numLanes;
-                    const leftPercent = (lane * widthPercent);
+              {/* Rows */}
+              {dayOrder.map((day) => (
+                <div
+                  key={day}
+                  className="grid grid-cols-[100px_repeat(23,minmax(40px,1fr))] border-b border-gray-100 last:border-b-0 hover:bg-gray-50/30 transition-colors duration-200"
+                >
+                  <div className="p-2 font-medium text-gray-700 border-r border-gray-200 bg-gradient-to-r from-gray-50 to-white capitalize flex items-center justify-center text-xs">
+                    {day.toLowerCase().slice(0, 3)}
+                  </div>
 
-                    // minimal visual padding
-                    const style: React.CSSProperties = {
-                      position: "absolute",
-                      top: `${top}%`,
-                      height: `${height}%`,
-                      left: `${leftPercent}%`,
-                      width: `calc(${widthPercent}% - 6px)`,
-                      marginLeft: "3px",
-                      marginRight: "3px",
-                      boxSizing: "border-box",
-                      zIndex: 2,
-                    };
+                  {timeSlots.map((slot, index) => {
+                    const timeKey = `${slot.hour}:${slot.minute
+                      .toString()
+                      .padStart(2, "0")}`;
+                    const entry = organizedEntries.organized[day]?.[timeKey];
+
+                    if (
+                      organizedEntries.occupiedSlots[day]?.has(timeKey) &&
+                      !entry
+                    ) {
+                      return null;
+                    }
+
+                    if (entry) {
+                      const colorClass = getTypeColor(entry.type);
+                      const isTopRow = day === WeekDay.MONDAY && index === 0;
+
+                      return (
+                        <div
+                          key={slot.key}
+                          className={`relative p-1 border-r border-gray-100 last:border-r-0 ${colorClass} border-l-2 cursor-pointer group transition-all duration-200 hover:shadow-md hover:scale-[1.02] flex items-center justify-center text-center min-h-[60px]`}
+                          style={{ gridColumn: `span ${entry.span || 1}` }}
+                        >
+                          <div className="w-full text-xs">
+                            <div className="font-medium truncate text-center leading-tight">
+                              {entry.subject?.name ||
+                                entry.type.replace("_", " ")}
+                            </div>
+                            {entry.teacher && (
+                              <div className="text-center opacity-75 truncate mt-1">
+                                {entry.teacher.name}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Tooltip */}
+                          <div
+                            className={`absolute left-1/2 -translate-x-1/2 z-50 min-w-48
+                              bg-white shadow-xl rounded-lg p-3 border
+                              opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none
+                              ${
+                                isTopRow ? "top-full mt-2" : "bottom-full mb-2"
+                              }`}
+                          >
+                            <div className="font-medium text-sm">
+                              {entry.subject?.name || entry.type}
+                            </div>
+                            <div className="text-xs text-gray-600 mt-1">
+                              {entry.teacher && (
+                                <div className="flex items-center gap-1">
+                                  <Users className="w-3 h-3" />
+                                  {entry.teacher.name}
+                                </div>
+                              )}
+                              <div className="flex items-center gap-1 mt-1">
+                                <Clock className="w-3 h-3" />
+                                {formatHHMM(entry.startTime)} –{" "}
+                                {formatHHMM(entry.endTime)}
+                              </div>
+                              <div className="mt-1 text-xs px-2 py-1 bg-gray-100 rounded capitalize">
+                                {entry.type.toLowerCase().replace("_", " ")}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }
 
                     return (
                       <div
-                        key={item.id}
-                        data-entry-id={item.id}
-                        style={style}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // pass full entry into modal for editing
-                          openModal(item as any); // if you want strict typing: change openModal signature
-                        }}
-                        className="cursor-pointer"
-                      >
-                        <EntryCard entry={item} style={{ height: "100%" }} />
-                      </div>
+                        key={slot.key}
+                        className="p-1 border-r border-gray-100 last:border-r-0 min-h-[60px] flex items-center justify-center"
+                      />
                     );
                   })}
                 </div>
+              ))}
+            </div>
+          </div>
+        </div>
 
-                {/* show + Add placeholder when no entries */}
-                {(!items || items.length === 0) && isAdmin && (
-                  <div className="absolute inset-0 flex items-center justify-center text-gray-300 pointer-events-none">
-                    + Add
-                  </div>
-                )}
+        {/* Legend */}
+        <div className="mt-6 bg-white rounded-xl shadow-sm border p-4">
+          <h3 className="text-sm font-medium text-gray-900 mb-3">
+            Period Types
+          </h3>
+          <div className="flex flex-wrap gap-3">
+            {[
+              "REGULAR",
+              "BREAK",
+              "LUNCH",
+              "ASSEMBLY",
+              "SPORTS",
+              "LIBRARY",
+              "FREE_PERIOD",
+            ].map((type) => (
+              <div key={type} className="flex items-center gap-2">
+                <div
+                  className={`w-4 h-4 rounded border ${getTypeColor(type)}`}
+                ></div>
+                <span className="text-sm text-gray-600 capitalize">
+                  {type.toLowerCase().replace("_", " ")}
+                </span>
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
       </div>
     </div>

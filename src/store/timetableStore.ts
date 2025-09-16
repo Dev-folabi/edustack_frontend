@@ -185,35 +185,35 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
   },
 
   updateEntry: async (entryId: string, data: UpdateEntryData) => {
+    set({ isLoading: true, error: null });
     try {
-      set({ isLoading: true, error: null });
       const response = await timetableService.updateEntry(entryId, data);
       if (response.success && response.data) {
         const updatedEntry = response.data.data;
-        set((state) => {
-          if (!state.selectedTimetable) return {};
-          return {
-            selectedTimetable: {
-              ...state.selectedTimetable,
-              entries: state.selectedTimetable.entries.map((e) =>
-                e.id === entryId ? updatedEntry : e
-              ),
-            },
-            isLoading: false,
-          };
-        });
-        showSuccessToast("Entry updated successfully!");
-        get().closeModal();
-        return updatedEntry;
+        set((state) => ({
+          schoolTimetables: state.schoolTimetables.map((timetable) =>
+            timetable.id === updatedEntry.timetableId
+              ? {
+                  ...timetable,
+                  entries: timetable.entries.map((entry) =>
+                    entry.id === updatedEntry.id ? updatedEntry : entry
+                  ),
+                }
+              : timetable
+          ),
+          isLoading: false,
+        }));
+        return true;
       } else {
-        throw new Error(response.message || "Failed to update entry.");
+        set({ error: response.message, isLoading: false });
+        return false;
       }
-    } catch (err: any) {
-      set({ error: err.message, isLoading: false });
-      showErrorToast(err.message);
-      return undefined;
+    } catch (error: any) {
+      set({ error: error.message, isLoading: false });
+      return false;
     }
   },
+
 
   deleteEntry: async (entryId: string) => {
     try {

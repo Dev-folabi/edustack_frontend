@@ -122,14 +122,17 @@ const { classes, fetchClasses } = useClassStore();
   const handleEntrySubmit = async (data: EntryFormData) => {
     if (!timetable) return;
 
+    // Extract the id from data, if it exists, and keep the rest of the data
+    const { id, ...restOfData } = data;
+
     const entryData = {
-      ...data,
+      ...restOfData,
       timetableId: timetable.id,
     };
 
     let result;
-    if (editingEntry) {
-      result = await updateEntry(editingEntry.id, entryData);
+    if (editingEntry && id) { 
+      result = await updateEntry(id, entryData); 
     } else {
       result = await createEntry(entryData);
     }
@@ -219,7 +222,7 @@ const { classes, fetchClasses } = useClassStore();
         </CardHeader>
         <CardContent className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div><label className="text-sm font-medium">Class</label><p>{getClassName(
-                  selectedTimetable.classId
+                  timetable.classId
                 )}</p></div>
             <div><label className="text-sm font-medium">Section</label><p>{timetable.section.name}</p></div>
             <div><label className="text-sm font-medium">Term</label><p>{timetable.term?.name || 'N/A'}</p></div>

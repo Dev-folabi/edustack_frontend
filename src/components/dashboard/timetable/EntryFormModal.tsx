@@ -47,7 +47,7 @@ const formSchema = z.object({
   teacherId: z.string().optional(),
 });
 
-export type EntryFormData = z.infer<typeof formSchema>;
+export type EntryFormData = z.infer<typeof formSchema> & { id?: string };
 
 interface EntryFormModalProps {
   isOpen: boolean;
@@ -125,7 +125,14 @@ const EntryFormModal = ({
   }, [selectedSchool, isOpen]);
 
   const handleFormSubmit = (values: EntryFormData) => {
-    onSubmit(values);
+    const baseDate = "1970-01-01";
+    const updatedValues = {
+      ...values,
+      startTime: new Date(`${baseDate}T${values.startTime}`).toISOString(),
+      endTime: new Date(`${baseDate}T${values.endTime}`).toISOString(),
+      ...(isEditing && initialData?.id && { id: initialData.id }),
+    };
+    onSubmit(updatedValues);
     onClose();
   };
 
