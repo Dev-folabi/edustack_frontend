@@ -47,6 +47,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useClassStore } from "@/store/classStore";
 
 const formSchema = z.object({
   status: z.nativeEnum(TimetableStatus),
@@ -59,7 +60,7 @@ interface EditTimetablePageProps {
 }
 
 const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
-  const { timetableId } = params;
+  const { timetableId } = React.use(params);
   const router = useRouter();
   const { showToast } = useToast();
   const { selectedSchool } = useAuthStore();
@@ -89,6 +90,14 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
     resolver: zodResolver(formSchema),
   });
 
+const { classes, fetchClasses } = useClassStore();
+
+  useEffect(() => {
+    if (selectedSchool) {
+      fetchClasses(selectedSchool.schoolId);
+    }
+  }, [selectedSchool, fetchClasses]);
+
   useEffect(() => {
     if (selectedSchool) {
       fetchSchoolTimetables(selectedSchool.schoolId);
@@ -113,14 +122,17 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
   const handleEntrySubmit = async (data: EntryFormData) => {
     if (!timetable) return;
 
+    // Extract the id from data, if it exists, and keep the rest of the data
+    const { id, ...restOfData } = data;
+
     const entryData = {
-      ...data,
+      ...restOfData,
       timetableId: timetable.id,
     };
 
     let result;
-    if (editingEntry) {
-      result = await updateEntry(editingEntry.id, entryData);
+    if (editingEntry && id) { 
+      result = await updateEntry(id, entryData); 
     } else {
       result = await createEntry(entryData);
     }
@@ -193,6 +205,10 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
     return <div className="flex justify-center items-center h-64"><Loader className="animate-spin" /></div>;
   }
 
+  const getClassName = (classId: string) => {
+    const classInfo = classes.find((c) => c.id === classId);
+    return classInfo?.name || "N/A";
+  };
   return (
     <div className="container mx-auto p-4 space-y-6">
       <div className="flex justify-between items-center">
@@ -205,9 +221,11 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
           <CardTitle>Timetable Details</CardTitle>
         </CardHeader>
         <CardContent className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div><FormLabel>Class</FormLabel><p>{timetable.section.class.name}</p></div>
-            <div><FormLabel>Section</FormLabel><p>{timetable.section.name}</p></div>
-            <div><FormLabel>Term</FormLabel><p>{timetable.term?.name || 'N/A'}</p></div>
+            <div><label className="text-sm font-medium">Class</label><p>{getClassName(
+                  timetable.classId
+                )}</p></div>
+            <div><label className="text-sm font-medium">Section</label><p>{timetable.section.name}</p></div>
+            <div><label className="text-sm font-medium">Term</label><p>{timetable.term?.name || 'N/A'}</p></div>
             <Form {...form}>
                 <FormField
                     control={form.control}
