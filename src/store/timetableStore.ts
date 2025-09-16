@@ -27,7 +27,7 @@ const showSuccessToast = (message: string) => {
 interface TimetableState {
   timetables: Timetable[];
   schoolTimetables: Timetable[];
-  selectedTimetable: Timetable[] | null;
+  selectedTimetable: Timetable | null;   // ✅ single object, not array
   isLoading: boolean;
   error: string | null;
   isModalOpen: boolean;
@@ -69,12 +69,14 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
           schoolTimetables: response.data.data,
           isLoading: false,
         });
+        return response.data.data;
       } else {
         throw new Error(response.message || "Failed to fetch timetables.");
       }
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
       showErrorToast(err.message);
+      return [];
     }
   },
 
@@ -84,13 +86,16 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
       const response = await timetableService.getClassTimetable(sectionId);
       if (response.success && response.data) {
         set({ selectedTimetable: response.data, isLoading: false });
+        return response.data;
       } else {
         set({ selectedTimetable: null, isLoading: false });
         if (response.message) showErrorToast(response.message);
+        return null as any;
       }
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
       showErrorToast(err.message);
+      return null as any;
     }
   },
 
@@ -146,12 +151,14 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
             state.selectedTimetable?.id === timetableId ? null : state.selectedTimetable,
         }));
         showSuccessToast("Timetable deleted successfully!");
+        return response.data;
       } else {
         throw new Error(response.message || "Failed to delete timetable.");
       }
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
       showErrorToast(err.message);
+      throw err;
     }
   },
 
@@ -162,7 +169,7 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
       if (response.success && response.data) {
         const newEntry = response.data.data;
         set((state) => {
-          if (!state.selectedTimetable) return {};
+          if (!state.selectedTimetable) return { isLoading: false };
           return {
             selectedTimetable: {
               ...state.selectedTimetable,
@@ -203,17 +210,16 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
           ),
           isLoading: false,
         }));
-        return true;
+        return updatedEntry;
       } else {
         set({ error: response.message, isLoading: false });
-        return false;
+        return undefined;
       }
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
-      return false;
+      return undefined;
     }
   },
-
 
   deleteEntry: async (entryId: string) => {
     try {
@@ -231,24 +237,10 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
           };
         });
         showSuccessToast("Entry deleted successfully!");
+        return response.data;
       } else {
         throw new Error(response.message || "Failed to delete entry.");
       }
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
-      showErrorToast(err.message);
-    }
-  },
-
-  selectTimetable: (timetable: Timetable | null) => {
-    set({ selectedTimetable: timetable });
-  },
-
-  openModal: (entry?: Entry) => {
-    set({ isModalOpen: true, editingEntry: entry ?? null });
-  },
-
-  closeModal: () => {
-    set({ isModalOpen: false, editingEntry: null });
-  },
-}));
+      showErrorToast(err.mes

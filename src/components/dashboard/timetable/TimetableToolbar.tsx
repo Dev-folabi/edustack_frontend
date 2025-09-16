@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ClassSection } from "@/services/classService";
-import { Loader } from "lucide-react";
+import { Eye, Loader } from "lucide-react";
 
 const TimetableToolbar = () => {
   const router = useRouter();
@@ -90,7 +90,10 @@ const TimetableToolbar = () => {
               Loading...
             </>
           ) : (
-            "View Timetable"
+            <>
+              <Eye className="mr-2 h-4 w-4" />
+              View Timetable
+            </>
           )}
         </Button>
       </div>

@@ -37,11 +37,13 @@ export interface Entry {
   subjectId?: string;
   teacherId?: string;
   type: PeriodType;
+
   // Optional populated fields if API includes them
   subject?: { id: string; name: string };
   teacher?: { id: string; name: string };
-  createdAt?: string;
-  updatedAt?: string;
+
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Interface for a timetable
@@ -54,17 +56,41 @@ export interface Timetable {
   termId?: string;
   name: string;
   status: TimetableStatus;
+  createdAt: string;
+  updatedAt: string;
   entries: Entry[];
   school?: School;
+
   section: {
     id: string;
     name: string;
+    classId: string;
+    teacherId?: string | null;
+    createdAt: string;
+    updatedAt: string;
     class?: { id: string; name: string };
   };
-  session: { id: string; name: string };
-  term?: { id: string; name: string };
-  createdAt?: string;
-  updatedAt?: string;
+
+  session: {
+    id: string;
+    name: string;
+    start_date: string;
+    end_date: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+
+  term?: {
+    id: string;
+    name: string;
+    sessionId: string;
+    start_date: string;
+    end_date: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
 }
 
 // Data for creating a new timetable
@@ -76,7 +102,7 @@ export interface CreateTimetableData {
   termId?: string;
   name: string;
   status?: TimetableStatus;
-  entries: Omit<Entry, "id" | "timetableId" | "subject" | "teacher" | "createdAt" | "updatedAt">[];
+  entries: Omit<Entry, "id" | "timetableId" | "subject" | "teacher">[];
 }
 
 // Data for creating a new timetable entry
@@ -146,25 +172,4 @@ export const timetableService = {
   updateTimetable: (
     timetableId: string,
     data: UpdateTimetableData
-  ): Promise<ApiResponse<TimetableResponse>> => {
-    return apiClient.put(`/timetables/${timetableId}`, data);
-  },
-
-  // Create a new timetable entry
-  createEntry: (data: CreateEntryData): Promise<ApiResponse<EntryResponse>> => {
-    return apiClient.post("/timetables/entries", data);
-  },
-
-  // Update a timetable entry by its ID
-  updateEntry: (
-    entryId: string,
-    data: UpdateEntryData
-  ): Promise<ApiResponse<EntryResponse>> => {
-    return apiClient.put(`/timetables/entries/${entryId}`, data);
-  },
-
-  // Delete a timetable entry by its ID
-  deleteEntry: (entryId: string): Promise<ApiResponse<void>> => {
-    return apiClient.delete(`/timetables/entries/${entryId}`);
-  },
-};
+  ): Promise<ApiRespon

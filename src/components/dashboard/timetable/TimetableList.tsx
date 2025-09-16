@@ -47,6 +47,7 @@ const TimetableList = ({ timetables, isLoading }: TimetableListProps) => {
   };
 
   if (isLoading) {
+    console.log({load: timetables})
     return (
       <div className="space-y-2">
         <Skeleton className="h-10 w-full" />
