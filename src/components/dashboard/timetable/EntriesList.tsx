@@ -17,11 +17,9 @@ interface EntriesListProps {
   entries: TimetableEntry[];
   onEdit: (entry: TimetableEntry) => void;
   onDelete: (entry: TimetableEntry) => void;
-  subjects: { [key: string]: string };
-  teachers: { [key: string]: string };
 }
 
-const EntriesList = ({ entries, onEdit, onDelete, subjects, teachers }: EntriesListProps) => {
+const EntriesList = ({ entries, onEdit, onDelete }: EntriesListProps) => {
   if (entries.length === 0) {
     return (
       <div className="text-center text-gray-500 py-8">
@@ -54,8 +52,8 @@ const EntriesList = ({ entries, onEdit, onDelete, subjects, teachers }: EntriesL
               <TableCell>
                 {formatTime(entry.startTime)} - {formatTime(entry.endTime)}
               </TableCell>
-              <TableCell>{entry.subjectId ? subjects[entry.subjectId] : "N/A"}</TableCell>
-              <TableCell>{entry.teacherId ? teachers[entry.teacherId] : "N/A"}</TableCell>
+              <TableCell>{entry.subject ? entry.subject.name : "N/A"}</TableCell>
+              <TableCell>{entry.teacher ? entry.teacher.name : "N/A"}</TableCell>
               <TableCell>{entry.type}</TableCell>
               <TableCell className="text-right">
                 <Button variant="ghost" size="sm" onClick={() => onEdit(entry)}>

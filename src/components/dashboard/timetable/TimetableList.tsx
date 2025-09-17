@@ -28,10 +28,10 @@ const TimetableList = ({ timetables, isLoading }: TimetableListProps) => {
   const { selectedSchool } = useAuthStore();
 
   useEffect(() => {
-    if (selectedSchool) {
+    if (selectedSchool?.schoolId) {
       fetchClasses(selectedSchool.schoolId);
     }
-  }, [selectedSchool, fetchClasses]);
+  }, [selectedSchool?.schoolId]);
 
   const getClassName = (classId: string) => {
     const classInfo = classes.find((c) => c.id === classId);
@@ -47,7 +47,7 @@ const TimetableList = ({ timetables, isLoading }: TimetableListProps) => {
   };
 
   if (isLoading) {
-    console.log({load: timetables})
+    console.log({ load: timetables });
     return (
       <div className="space-y-2">
         <Skeleton className="h-10 w-full" />

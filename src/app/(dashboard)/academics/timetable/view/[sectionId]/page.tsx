@@ -17,7 +17,8 @@ const ViewTimetablePage = () => {
   const router = useRouter();
   const sectionId = params.sectionId as string;
 
-  const { selectedTimetable, isLoading, fetchClassTimetable } = useTimetableStore();
+  const { selectedTimetable, isLoading, fetchClassTimetable } =
+    useTimetableStore();
   const { selectedSchool } = useAuthStore();
   const { classes, fetchClasses } = useClassStore();
   const schoolId = selectedSchool?.schoolId;
@@ -26,13 +27,14 @@ const ViewTimetablePage = () => {
     if (sectionId) {
       fetchClassTimetable(sectionId);
     }
-  }, [sectionId, fetchClassTimetable]);
+    console.log({selectedTimetable})
+  }, [sectionId]);
 
   useEffect(() => {
     if (schoolId) {
       fetchClasses(schoolId);
     }
-  }, [schoolId, fetchClasses]);
+  }, [schoolId]);
 
   const getClassName = (classId: string) => {
     const classInfo = classes.find((c) => c.id === classId);
@@ -70,7 +72,9 @@ const ViewTimetablePage = () => {
         <div>
           <h1 className="text-2xl font-bold">
             {selectedTimetable
-              ? `Timetable for ${getClassName(selectedTimetable.classId)} - ${selectedTimetable.section.name}`
+              ? `Timetable for ${getClassName(selectedTimetable.classId)} - ${
+                  selectedTimetable.section.name
+                }`
               : "Timetable View"}
           </h1>
           {selectedTimetable && (

@@ -75,12 +75,6 @@ const TimetableGrid = ({ sectionId }: SchoolIdProps) => {
   const { selectedTimetable, isLoading, fetchClassTimetable } =
     useTimetableStore();
 
-  useEffect(() => {
-    if (sectionId) {
-      fetchClassTimetable(sectionId);
-    }
-  }, [sectionId]);
-
   const entries: TimetableEntry[] = selectedTimetable?.entries || [];
 
   // Organize entries by day and time slot
@@ -119,7 +113,7 @@ const TimetableGrid = ({ sectionId }: SchoolIdProps) => {
         return startMinutes >= slotMinutes && startMinutes < nextSlotMinutes;
       });
 
-      // if (matchingSlotIndex === -1) return;
+      if (matchingSlotIndex === -1) return;
 
       // Calculate span (# of slots the entry should cover)
       const durationMs = endTime.getTime() - startTime.getTime();
