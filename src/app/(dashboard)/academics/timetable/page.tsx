@@ -13,17 +13,18 @@ import { useAuthStore } from "@/store/authStore";
 import { Plus } from "lucide-react";
 
 const TimetablePage = () => {
-  const { schoolTimetables, isLoading, fetchSchoolTimetables } = useTimetableStore();
+  const { schoolTimetables, isLoading, fetchSchoolTimetables } =
+    useTimetableStore();
 
   const { selectedSchool } = useAuthStore();
   const { hasRole } = usePermissions();
   const canCreate = hasRole(UserRole.ADMIN) || hasRole(UserRole.SUPER_ADMIN);
 
   useEffect(() => {
-    if (selectedSchool) {
+    if (selectedSchool?.schoolId) { // Check for schoolId directly
       fetchSchoolTimetables(selectedSchool.schoolId);
     }
-  }, [selectedSchool, fetchSchoolTimetables]);
+  }, [selectedSchool?.schoolId, fetchSchoolTimetables]); // Depend on schoolId
 
   return (
     <div className="container mx-auto p-4 space-y-6">
@@ -54,8 +55,8 @@ const TimetablePage = () => {
       <div className="p-4 bg-white rounded-lg shadow-sm">
         <h2 className="text-lg font-semibold mb-4">All School Timetables</h2>
         <p className="text-sm text-gray-600 mb-4">
-          View and manage all timetables for your school. Click "View" to see
-          the detailed timetable or "Edit" to modify.
+          View and manage all timetables for your school. Click &quot;View&quot; to see
+          the detailed timetable or &quot;Edit&quot; to modify.
         </p>
         <TimetableList timetables={schoolTimetables} isLoading={isLoading} />
       </div>
@@ -63,4 +64,4 @@ const TimetablePage = () => {
   );
 };
 
-export default withAuth(Ti
+export default withAuth(TimetablePage, STAFF_ROLES);

@@ -172,4 +172,27 @@ export const timetableService = {
   updateTimetable: (
     timetableId: string,
     data: UpdateTimetableData
-  ): Promise<ApiRespon
+  ): Promise<ApiResponse<TimetableResponse>> => {
+    return apiClient.put(`/timetables/${timetableId}`, data);
+  },
+
+  // Create a new timetable entry
+  createEntry: (
+    data: CreateEntryData
+  ): Promise<ApiResponse<EntryResponse>> => {
+    return apiClient.post("/timetables/entries", data);
+  },
+
+  // Update a timetable entry by its ID
+  updateEntry: (
+    entryId: string,
+    data: UpdateEntryData
+  ): Promise<ApiResponse<EntryResponse>> => {
+    return apiClient.put(`/timetables/entries/${entryId}`, data);
+  },
+
+  // Delete a timetable entry by its ID
+  deleteEntry: (entryId: string): Promise<ApiResponse<void>> => {
+    return apiClient.delete(`/timetables/entries/${entryId}`);
+  },
+};

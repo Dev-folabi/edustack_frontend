@@ -90,7 +90,7 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
     resolver: zodResolver(formSchema),
   });
 
-const { classes, fetchClasses } = useClassStore();
+  const { classes, fetchClasses } = useClassStore();
 
   useEffect(() => {
     if (selectedSchool) {
@@ -102,10 +102,13 @@ const { classes, fetchClasses } = useClassStore();
     if (selectedSchool) {
       fetchSchoolTimetables(selectedSchool.schoolId);
       subjectService.getSubjects({ schoolId: selectedSchool.schoolId }).then(res => {
-        if (res.success) setSubjects(res.data?.data.data || []);
+        if (res.success && res.data) setSubjects(res.data.data.data || []);
       });
       schoolService.getStaffBySchool(selectedSchool.schoolId, "teacher", true).then(res => {
-        if (res.success) setTeachers(res.data?.data.data || []);
+        if (res.success && res.data) {
+            const teacherStaff = res.data.data.map((item: any) => item.user.staff);
+            setTeachers(teacherStaff);
+        }
       });
     }
   }, [selectedSchool, fetchSchoolTimetables]);
@@ -122,7 +125,6 @@ const { classes, fetchClasses } = useClassStore();
   const handleEntrySubmit = async (data: EntryFormData) => {
     if (!timetable) return;
 
-    // Extract the id from data, if it exists, and keep the rest of the data
     const { id, ...restOfData } = data;
 
     const entryData = {
@@ -130,32 +132,49 @@ const { classes, fetchClasses } = useClassStore();
       timetableId: timetable.id,
     };
 
-    let result;
-    if (editingEntry && id) { 
-      result = await updateEntry(id, entryData); 
+    let response;
+    if (editingEntry) {
+      response = await updateEntry(editingEntry.id, entryData);
     } else {
-      result = await createEntry(entryData);
+      response = await createEntry(entryData);
     }
 
-    if (result) {
-        showToast({ type: "success", title: "Success", message: `Entry ${editingEntry ? 'updated' : 'created'} successfully.` });
-        fetchSchoolTimetables(timetable.schoolId); // Refresh data
+    if (response.success) {
+      showToast({
+        type: "success",
+        title: "Success",
+        message: response.message || `Entry ${editingEntry ? "updated" : "created"} successfully.`,
+      });
+      fetchSchoolTimetables(timetable.schoolId); // Refresh data
     } else {
-        showToast({ type: "error", title: "Error", message: "Failed to save entry." });
+      showToast({
+        type: "error",
+        title: "Error",
+        message: response.message || "Failed to save entry.",
+      });
     }
+    setIsModalOpen(false);
   };
 
   const handleDeleteEntry = async () => {
     if (!entryToDelete || !timetable) return;
-     const result = await deleteEntry(entryToDelete.id);
-     if (result) {
-        showToast({ type: "success", title: "Success", message: "Entry deleted successfully." });
-        fetchSchoolTimetables(timetable.schoolId); // Refresh data
-     } else {
-        showToast({ type: "error", title: "Error", message: "Failed to delete entry." });
-     }
-     setIsDeleteEntryDialogOpen(false);
-     setEntryToDelete(null);
+    const response = await deleteEntry(entryToDelete.id);
+    if (response.success) {
+      showToast({
+        type: "success",
+        title: "Success",
+        message: response.message || "Entry deleted successfully.",
+      });
+      fetchSchoolTimetables(timetable.schoolId); // Refresh data
+    } else {
+      showToast({
+        type: "error",
+        title: "Error",
+        message: response.message || "Failed to delete entry.",
+      });
+    }
+    setIsDeleteEntryDialogOpen(false);
+    setEntryToDelete(null);
   };
 
   const openDeleteEntryDialog = (entry: TimetableEntry) => {
@@ -165,12 +184,20 @@ const { classes, fetchClasses } = useClassStore();
 
   const handleDeleteTimetable = async () => {
     if (!timetable) return;
-    const result = await deleteTimetable(timetable.id);
-    if(result) {
-        showToast({ type: "success", title: "Success", message: "Timetable deleted successfully." });
-        router.push("/academics/timetable");
+    const response = await deleteTimetable(timetable.id);
+    if (response.success) {
+      showToast({
+        type: "success",
+        title: "Success",
+        message: response.message || "Timetable deleted successfully.",
+      });
+      router.push("/academics/timetable");
     } else {
-        showToast({ type: "error", title: "Error", message: "Failed to delete timetable." });
+      showToast({
+        type: "error",
+        title: "Error",
+        message: response.message || "Failed to delete timetable.",
+      });
     }
     setIsDeleteDialogOpen(false);
   };
@@ -178,13 +205,23 @@ const { classes, fetchClasses } = useClassStore();
   const handleSaveChanges = async (values: z.infer<typeof formSchema>) => {
     if (!timetable) return;
 
-    const result = await updateTimetable(timetable.id, {
+    const response = await updateTimetable(timetable.id, {
       ...timetable,
       status: values.status,
     });
 
-    if (result) {
-      showToast({ type: "success", title: "Success", message: "Timetable updated successfully." });
+    if (response.success) {
+      showToast({
+        type: "success",
+        title: "Success",
+        message: response.message || "Timetable updated successfully.",
+      });
+    } else {
+      showToast({
+        type: "error",
+        title: "Error",
+        message: response.message || "Failed to update timetable.",
+      });
     }
   };
 
