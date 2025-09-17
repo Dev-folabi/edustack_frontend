@@ -20,11 +20,13 @@ const TimetablePage = () => {
   const { hasRole } = usePermissions();
   const canCreate = hasRole(UserRole.ADMIN) || hasRole(UserRole.SUPER_ADMIN);
 
+ const schoolId = selectedSchool?.schoolId || null;
+
   useEffect(() => {
-    if (selectedSchool?.schoolId) {
-      fetchSchoolTimetables(selectedSchool.schoolId);
+    if (schoolId) {
+      fetchSchoolTimetables(schoolId);
     }
-  }, [selectedSchool?.schoolId]);
+  }, [schoolId, fetchSchoolTimetables]);
 
   return (
     <div className="container mx-auto p-4 space-y-6">

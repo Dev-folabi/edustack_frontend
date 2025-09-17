@@ -67,12 +67,8 @@ const getTypeColor = (type: string) => {
   }
 };
 
-interface SchoolIdProps {
-  sectionId: string;
-}
-
-const TimetableGrid = ({ sectionId }: SchoolIdProps) => {
-  const { selectedTimetable, isLoading, fetchClassTimetable } =
+const TimetableGrid = () => {
+  const { selectedTimetable, isLoading } =
     useTimetableStore();
 
   const entries: TimetableEntry[] = selectedTimetable?.entries || [];
