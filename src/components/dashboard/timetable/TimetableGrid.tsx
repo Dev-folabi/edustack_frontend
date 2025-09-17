@@ -113,7 +113,7 @@ const TimetableGrid = ({ sectionId }: SchoolIdProps) => {
         return startMinutes >= slotMinutes && startMinutes < nextSlotMinutes;
       });
 
-      // if (matchingSlotIndex === -1) return;
+      if (matchingSlotIndex === -1) return;
 
       // Calculate span (# of slots the entry should cover)
       const durationMs = endTime.getTime() - startTime.getTime();
