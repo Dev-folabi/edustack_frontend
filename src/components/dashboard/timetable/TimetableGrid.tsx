@@ -75,12 +75,6 @@ const TimetableGrid = ({ sectionId }: SchoolIdProps) => {
   const { selectedTimetable, isLoading, fetchClassTimetable } =
     useTimetableStore();
 
-  useEffect(() => {
-    if (sectionId) {
-      fetchClassTimetable(sectionId);
-    }
-  }, [sectionId]);
-
   const entries: TimetableEntry[] = selectedTimetable?.entries || [];
 
   // Organize entries by day and time slot

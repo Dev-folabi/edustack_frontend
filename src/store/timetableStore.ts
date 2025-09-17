@@ -82,7 +82,7 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
     try {
       const response = await timetableService.getClassTimetable(sectionId);
       if (response.success && response.data) {
-        set({ selectedTimetable: response.data.data, isLoading: false });
+        set({ selectedTimetable: response.data, isLoading: false });
       } else {
         set({ selectedTimetable: null, isLoading: false, error: response.message });
       }

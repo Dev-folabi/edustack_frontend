@@ -21,10 +21,10 @@ const TimetablePage = () => {
   const canCreate = hasRole(UserRole.ADMIN) || hasRole(UserRole.SUPER_ADMIN);
 
   useEffect(() => {
-    if (selectedSchool?.schoolId) { // Check for schoolId directly
+    if (selectedSchool?.schoolId) {
       fetchSchoolTimetables(selectedSchool.schoolId);
     }
-  }, [selectedSchool?.schoolId, fetchSchoolTimetables]); // Depend on schoolId
+  }, [selectedSchool?.schoolId]);
 
   return (
     <div className="container mx-auto p-4 space-y-6">
@@ -55,8 +55,8 @@ const TimetablePage = () => {
       <div className="p-4 bg-white rounded-lg shadow-sm">
         <h2 className="text-lg font-semibold mb-4">All School Timetables</h2>
         <p className="text-sm text-gray-600 mb-4">
-          View and manage all timetables for your school. Click &quot;View&quot; to see
-          the detailed timetable or &quot;Edit&quot; to modify.
+          View and manage all timetables for your school. Click &quot;View&quot;
+          to see the detailed timetable or &quot;Edit&quot; to modify.
         </p>
         <TimetableList timetables={schoolTimetables} isLoading={isLoading} />
       </div>
