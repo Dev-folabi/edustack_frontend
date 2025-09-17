@@ -20,15 +20,19 @@ const ViewTimetablePage = () => {
   const { selectedTimetable, isLoading, fetchClassTimetable } = useTimetableStore();
   const { selectedSchool } = useAuthStore();
   const { classes, fetchClasses } = useClassStore();
+const schoolId = selectedSchool?.schoolId;
 
   useEffect(() => {
     if (sectionId) {
       fetchClassTimetable(sectionId);
     }
-    if (selectedSchool) {
-      fetchClasses(selectedSchool.schoolId);
+  }, [sectionId, fetchClassTimetable]);
+
+  useEffect(() => {
+    if (schoolId) {
+      fetchClasses(schoolId);
     }
-  }, [sectionId, fetchClassTimetable, selectedSchool, fetchClasses]);
+  }, [schoolId, fetchClasses]);
 
   const getClassName = (classId: string) => {
     const classInfo = classes.find((c) => c.id === classId);

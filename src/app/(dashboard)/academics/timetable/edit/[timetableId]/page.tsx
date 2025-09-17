@@ -102,7 +102,6 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
 
   useEffect(() => {
     if (selectedSchool) {
-      // Fetch subjects and teachers
       subjectService.getSubjects({ schoolId: selectedSchool.schoolId }).then((res) => {
         if (res.success && res.data) setSubjects(res.data.data);
       });

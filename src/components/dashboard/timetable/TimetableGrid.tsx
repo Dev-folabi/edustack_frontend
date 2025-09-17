@@ -79,7 +79,7 @@ const TimetableGrid = ({ sectionId }: SchoolIdProps) => {
     if (sectionId) {
       fetchClassTimetable(sectionId);
     }
-  }, [sectionId, fetchClassTimetable]);
+  }, [sectionId]);
 
   const entries: TimetableEntry[] = selectedTimetable?.entries || [];
 
