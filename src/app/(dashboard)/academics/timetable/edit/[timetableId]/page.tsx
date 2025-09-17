@@ -65,8 +65,10 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
   const { showToast } = useToast();
   const { selectedSchool } = useAuthStore();
   const {
-    schoolTimetables,
+    selectedTimetable,
+    fetchClassTimetable,
     fetchSchoolTimetables,
+    schoolTimetables,
     updateTimetable,
     updateEntry,
     createEntry,
@@ -75,10 +77,9 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
     isLoading,
   } = useTimetableStore();
 
-  const [timetable, setTimetable] = useState<Timetable | null>(null);
-  const [entries, setEntries] = useState<TimetableEntry[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [teachers, setTeachers] = useState<Staff[]>([]);
+  const [sectionId, setSectionId] = useState<string>("");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<TimetableEntry | undefined>(undefined);
@@ -93,14 +94,13 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
   const { classes, fetchClasses } = useClassStore();
 
   useEffect(() => {
-    if (selectedSchool) {
+    if (selectedSchool?.schoolId) {
       fetchClasses(selectedSchool.schoolId);
     }
-  }, [selectedSchool, fetchClasses]);
+  }, [selectedSchool?.schoolId]);
 
   useEffect(() => {
-    if (selectedSchool) {
-      fetchSchoolTimetables(selectedSchool.schoolId);
+    if (selectedSchool?.schoolId) {
       subjectService.getSubjects({ schoolId: selectedSchool.schoolId }).then(res => {
         if (res.success && res.data) setSubjects(res.data.data.data || []);
       });
@@ -111,30 +111,57 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
         }
       });
     }
-  }, [selectedSchool, fetchSchoolTimetables]);
+  }, [selectedSchool?.schoolId]);
 
+   useEffect(() => {
+     if (!selectedSchool?.schoolId) return;
+ fetchSchoolTimetables(selectedSchool.schoolId);
+  }, [selectedSchool?.schoolId]);
+
+     useEffect(() => {
+     if (!selectedSchool?.schoolId || !timetableId) return;
+ 
+    const findAndFetchTimetable = async () => {
+      
+      try {
+        const data = await schoolTimetables;
+        if (data) {
+          const timetable = data.find((t: Timetable) => t.id === timetableId);
+          if (timetable) {
+            setSectionId(timetable.sectionId);
+            fetchClassTimetable(timetable.sectionId);
+          }
+        }
+      } catch (error) {
+        console.error("Error finding timetable:", error);
+      }
+    };
+
+    findAndFetchTimetable();
+  }, [selectedSchool?.schoolId, timetableId]);
+  
+  
   useEffect(() => {
-    const tt = schoolTimetables.find((t) => t.id === timetableId);
-    if (tt) {
-      setTimetable(tt);
-      setEntries(tt.entries);
-      form.reset({ status: tt.status });
+    if (selectedTimetable && selectedTimetable.id === timetableId) {
+      form.reset({ status: selectedTimetable.status });
     }
-  }, [schoolTimetables, timetableId, form]);
+  }, [selectedTimetable, timetableId, form]);
 
   const handleEntrySubmit = async (data: EntryFormData) => {
-    if (!timetable) return;
+    if (!selectedTimetable) return;
 
     const { id, ...restOfData } = data;
 
     const entryData = {
       ...restOfData,
-      timetableId: timetable.id,
+      timetableId: selectedTimetable.id,
     };
 
     let response;
     if (editingEntry) {
-      response = await updateEntry(editingEntry.id, entryData);
+      // Fix 4: Create a proper entry ID - use array index as fallback
+      const entryId = editingEntry.id || "";
+      response = await updateEntry(entryId, entryData);
     } else {
       response = await createEntry(entryData);
     }
@@ -145,7 +172,10 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
         title: "Success",
         message: response.message || `Entry ${editingEntry ? "updated" : "created"} successfully.`,
       });
-      fetchSchoolTimetables(timetable.schoolId); // Refresh data
+      // Refresh the specific timetable
+      if (sectionId) {
+        fetchClassTimetable(sectionId);
+      }
     } else {
       showToast({
         type: "error",
@@ -157,15 +187,22 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
   };
 
   const handleDeleteEntry = async () => {
-    if (!entryToDelete || !timetable) return;
-    const response = await deleteEntry(entryToDelete.id);
+    if (!entryToDelete || !selectedTimetable) return;
+    
+    // Fix 5: Handle missing entry ID
+    const entryId = entryToDelete.id || ""
+    
+    const response = await deleteEntry(entryId);
     if (response.success) {
       showToast({
         type: "success",
         title: "Success",
         message: response.message || "Entry deleted successfully.",
       });
-      fetchSchoolTimetables(timetable.schoolId); // Refresh data
+      // Refresh the specific timetable
+      if (sectionId) {
+        fetchClassTimetable(sectionId);
+      }
     } else {
       showToast({
         type: "error",
@@ -183,8 +220,8 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
   };
 
   const handleDeleteTimetable = async () => {
-    if (!timetable) return;
-    const response = await deleteTimetable(timetable.id);
+    if (!selectedTimetable) return;
+    const response = await deleteTimetable(selectedTimetable.id);
     if (response.success) {
       showToast({
         type: "success",
@@ -203,10 +240,10 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
   };
 
   const handleSaveChanges = async (values: z.infer<typeof formSchema>) => {
-    if (!timetable) return;
+    if (!selectedTimetable) return;
 
-    const response = await updateTimetable(timetable.id, {
-      ...timetable,
+    const response = await updateTimetable(selectedTimetable.id, {
+      ...selectedTimetable,
       status: values.status,
     });
 
@@ -235,10 +272,7 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
     setIsModalOpen(true);
   };
 
-  const subjectMap = subjects.reduce((acc, subject) => ({...acc, [subject.id]: subject.name}), {});
-  const teacherMap = teachers.reduce((acc, teacher) => ({...acc, [teacher.id]: teacher.name}), {});
-
-  if (!timetable) {
+  if (!selectedTimetable || selectedTimetable.id !== timetableId) {
     return <div className="flex justify-center items-center h-64"><Loader className="animate-spin" /></div>;
   }
 
@@ -246,6 +280,10 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
     const classInfo = classes.find((c) => c.id === classId);
     return classInfo?.name || "N/A";
   };
+
+  // Fix 6: Use selectedTimetable entries directly
+  const entries = selectedTimetable.entries || [];
+
   return (
     <div className="container mx-auto p-4 space-y-6">
       <div className="flex justify-between items-center">
@@ -259,10 +297,10 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
         </CardHeader>
         <CardContent className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div><label className="text-sm font-medium">Class</label><p>{getClassName(
-                  timetable.classId
+                  selectedTimetable.classId
                 )}</p></div>
-            <div><label className="text-sm font-medium">Section</label><p>{timetable.section.name}</p></div>
-            <div><label className="text-sm font-medium">Term</label><p>{timetable.term?.name || 'N/A'}</p></div>
+            <div><label className="text-sm font-medium">Section</label><p>{selectedTimetable.section.name}</p></div>
+            <div><label className="text-sm font-medium">Term</label><p>{selectedTimetable.term?.name || 'N/A'}</p></div>
             <Form {...form}>
                 <FormField
                     control={form.control}
@@ -270,7 +308,7 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
                     render={({ field }) => (
                     <FormItem>
                         <FormLabel>Status</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} defaultValue={selectedTimetable.status}>
                         <FormControl>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                         </FormControl>
@@ -296,7 +334,7 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
           <Button onClick={openAddModal}>Add New Entry</Button>
         </CardHeader>
         <CardContent>
-          <EntriesList entries={entries} onEdit={openEditModal} onDelete={openDeleteEntryDialog} subjects={subjectMap} teachers={teacherMap} />
+          <EntriesList entries={entries} onEdit={openEditModal} onDelete={openDeleteEntryDialog} />
         </CardContent>
       </Card>
 

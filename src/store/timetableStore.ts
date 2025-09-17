@@ -82,6 +82,7 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
     try {
       const response = await timetableService.getClassTimetable(sectionId);
       if (response.success && response.data) {
+        // Fix: The class timetable endpoint returns { data: Timetable }, so access response.data.data
         set({ selectedTimetable: response.data, isLoading: false });
       } else {
         set({ selectedTimetable: null, isLoading: false, error: response.message });
@@ -115,6 +116,11 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
        set({ isLoading: false });
       if (response.success && data.schoolId) {
         await get().fetchSchoolTimetables(data.schoolId);
+        // Also refresh the selected timetable if it matches
+        const currentSelected = get().selectedTimetable;
+        if (currentSelected?.id === timetableId) {
+          await get().fetchClassTimetable(currentSelected.sectionId);
+        }
       }
       return response;
     } catch (err: any) {
@@ -150,6 +156,11 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
     try {
       const response = await timetableService.createEntry(data);
       set({ isLoading: false });
+      // Refresh the selected timetable after creating entry
+      const currentSelected = get().selectedTimetable;
+      if (response.success && currentSelected?.sectionId) {
+        await get().fetchClassTimetable(currentSelected.sectionId);
+      }
       return response;
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
@@ -162,6 +173,11 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
     try {
       const response = await timetableService.updateEntry(entryId, data);
       set({ isLoading: false });
+      // Refresh the selected timetable after updating entry
+      const currentSelected = get().selectedTimetable;
+      if (response.success && currentSelected?.sectionId) {
+        await get().fetchClassTimetable(currentSelected.sectionId);
+      }
       return response;
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
@@ -174,6 +190,11 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
     try {
       const response = await timetableService.deleteEntry(entryId);
       set({ isLoading: false });
+      // Refresh the selected timetable after deleting entry
+      const currentSelected = get().selectedTimetable;
+      if (response.success && currentSelected?.sectionId) {
+        await get().fetchClassTimetable(currentSelected.sectionId);
+      }
       return response;
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
