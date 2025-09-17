@@ -66,9 +66,7 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
   const { selectedSchool } = useAuthStore();
   const {
     schoolTimetables,
-    selectedTimetable,
     fetchSchoolTimetables,
-    fetchClassTimetable,
     updateTimetable,
     updateEntry,
     createEntry,
@@ -102,39 +100,27 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
 
   useEffect(() => {
     if (selectedSchool) {
-      subjectService.getSubjects({ schoolId: selectedSchool.schoolId }).then((res) => {
-        if (res.success && res.data) setSubjects(res.data.data);
+      fetchSchoolTimetables(selectedSchool.schoolId);
+      subjectService.getSubjects({ schoolId: selectedSchool.schoolId }).then(res => {
+        if (res.success && res.data) setSubjects(res.data.data.data || []);
       });
-      schoolService.getStaffBySchool(selectedSchool.schoolId, "teacher", true).then((res) => {
-        if (res.success) {
+      schoolService.getStaffBySchool(selectedSchool.schoolId, "teacher", true).then(res => {
+        if (res.success && res.data) {
             const teacherStaff = res.data.data.map((item: any) => item.user.staff);
             setTeachers(teacherStaff);
         }
       });
-
-      // If schoolTimetables are not yet fetched, fetch them.
-      if (schoolTimetables.length === 0) {
-        fetchSchoolTimetables(selectedSchool.schoolId);
-      }
     }
-  }, [selectedSchool, fetchSchoolTimetables, schoolTimetables.length]);
+  }, [selectedSchool, fetchSchoolTimetables]);
 
   useEffect(() => {
-    // This effect finds the sectionId from the school timetables and fetches the class timetable.
     const tt = schoolTimetables.find((t) => t.id === timetableId);
     if (tt) {
-      fetchClassTimetable(tt.section.id);
+      setTimetable(tt);
+      setEntries(tt.entries);
+      form.reset({ status: tt.status });
     }
-  }, [schoolTimetables, timetableId, fetchClassTimetable]);
-
-  useEffect(() => {
-    // This effect updates the local state when the selectedTimetable from the store changes.
-    if (selectedTimetable && selectedTimetable.id === timetableId) {
-      setTimetable(selectedTimetable);
-      setEntries(selectedTimetable.entries);
-      form.reset({ status: selectedTimetable.status });
-    }
-  }, [selectedTimetable, timetableId, form]);
+  }, [schoolTimetables, timetableId, form]);
 
   const handleEntrySubmit = async (data: EntryFormData) => {
     if (!timetable) return;
