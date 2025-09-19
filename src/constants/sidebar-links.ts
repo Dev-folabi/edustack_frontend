@@ -113,7 +113,7 @@ export const sidebarConfig: SidebarCategory[] = [
     ],
   },
   {
-    title: 'Student Management',
+    title: 'Student',
     isStaff: true,
     roles: [UserRole.ADMIN, UserRole.TEACHER],
     links: [

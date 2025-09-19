@@ -23,10 +23,10 @@ export const DASHBOARD_ROUTES = {
   ATTENDANCE_STAFF: '/academics/attendance/staff',
 
   // Student Management
-  STUDENT_ADMISSION: '/student-management/admission',
-  STUDENT_PROFILES: '/student-management/profiles',
-  STUDENT_PROMOTION: '/student-management/promotion',
-  STUDENT_TRANSFER: '/student-management/transfer',
+  STUDENT_ADMISSION: '/student/admissions',
+  STUDENT_PROFILES: '/student/profiles',
+  STUDENT_PROMOTION: '/student/promote',
+  STUDENT_TRANSFER: '/student/transfer',
 
   // Staff Management (Super Admin, Admin)
   STAFF_REGISTRATION: '/staff-management/register',
