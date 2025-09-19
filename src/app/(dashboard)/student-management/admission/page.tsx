@@ -4,7 +4,7 @@ import withAuth from '@/components/withAuth';
 import { UserRole } from '@/constants/roles';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AdmissionForm } from '@/components/dashboard/student-management/AdmissionForm';
+import AdmissionForm from '@/components/dashboard/student-management/AdmissionForm';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';

@@ -61,4 +61,5 @@ export interface StudentRegistrationPayload {
   guardian_email?: string;
   guardian_username?: string;
   guardian_password?: string;
+  guardian_emailOrUsername?: string;
 }
