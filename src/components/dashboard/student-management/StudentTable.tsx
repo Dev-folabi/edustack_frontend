@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth } from "@/store/authStore";
+import { useAuthStore } from "@/store/authStore";
 import { studentService, PaginatedStudents, StudentFilters } from "@/services/studentService";
 import { Student } from "@/types/student";
 import {
@@ -44,7 +44,7 @@ import { ADMINS_ROLES } from "@/constants/roles";
 
 export const StudentTable = () => {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const [students, setStudents] = useState<PaginatedStudents | null>(null);
   const [filters, setFilters] = useState<StudentFilters>({ page: 1, limit: 10 });
   const [isLoading, setIsLoading] = useState(false);

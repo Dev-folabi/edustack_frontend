@@ -25,11 +25,11 @@ import { studentService } from "@/services/studentService";
 import { StudentRegistrationPayload } from "@/types/student";
 import { useEffect, useState } from "react";
 import { Class, ClassSection } from "@/services/classService";
-import { useAuth } from "@/store/authStore";
 import { classService } from "@/services/classService";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { Switch } from "@/components/ui/switch";
+import { useSchoolStore } from "@/store/schoolStore";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -44,7 +44,7 @@ const formSchema = z.object({
   address: z.string().nonempty({ message: "Address is required." }),
   admission_date: z.date({ required_error: "Admission date is required." }),
   religion: z.string().nonempty({ message: "Religion is required." }),
-  blood_group: z.string().optional(),
+  blood_group: z.string().optional(), // Changed to optional as it will be a select
   father_name: z.string().nonempty({ message: "Father's name is required." }),
   mother_name: z.string().nonempty({ message: "Mother's name is required." }),
   father_occupation: z.string().nonempty({ message: "Father's occupation is required." }),
@@ -52,17 +52,16 @@ const formSchema = z.object({
   city: z.string().optional(),
   state: z.string().optional(),
   country: z.string().optional(),
-  photo_url: z.string().url().optional().or(z.literal('')),
+  // photo_url: z.string().url().optional().or(z.literal('')), // Removed photo_url
   exist_guardian: z.boolean().default(false),
-  guardian_name: z.string().optional(),
-  guardian_phone: z.array(z.string()).optional(),
-  guardian_email: z.string().email().optional().or(z.literal('')),
+  guardian_name: z.string().optional(), // Made optional
+  guardian_phone: z.array(z.string()).optional(), // Made optional
+  guardian_email: z.string().email().optional().or(z.literal('')), // Made optional
   guardian_username: z.string().optional(),
   guardian_password: z.string().optional(),
 });
 
 export const AdmissionForm = () => {
-  const { user } = useAuth();
   const [classes, setClasses] = useState<Class[]>([]);
   const [sections, setSections] = useState<ClassSection[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -84,20 +83,22 @@ export const AdmissionForm = () => {
       father_occupation: "",
       mother_occupation: "",
       exist_guardian: false,
+      // photo_url: "", // Removed photo_url
     },
   });
 
   const selectedClassId = form.watch("classId");
+  const { selectedSchool } = useSchoolStore();
 
   useEffect(() => {
-    if (user?.schoolId) {
-      classService.getClasses(user.schoolId).then((res) => {
+    if (selectedSchool) {
+      classService.getClasses(selectedSchool.schoolId).then((res) => {
         if (res.data) {
           setClasses(res.data.data);
         }
       });
     }
-  }, [user?.schoolId]);
+  }, [selectedSchool.schoolId]);
 
   useEffect(() => {
     if (selectedClassId) {
@@ -111,7 +112,7 @@ export const AdmissionForm = () => {
 
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!user?.schoolId) {
+    if (!selectedSchool.schoolId) {
       toast.error("School not selected. Please select a school.");
       return;
     }
@@ -119,14 +120,17 @@ export const AdmissionForm = () => {
     setIsLoading(true);
     const payload: StudentRegistrationPayload = {
       ...values,
-      schoolId: user.schoolId,
+      schoolId: selectedSchool.schoolId,
       dob: values.dob.toISOString().split("T")[0],
       admission_date: values.admission_date.toISOString().split("T")[0],
       guardian_phone: values.guardian_phone ? values.guardian_phone : undefined,
+      // Remove guardian_name, guardian_email if exist_guardian is true and they are not provided
+      guardian_name: values.exist_guardian ? undefined : values.guardian_name,
+      guardian_email: values.exist_guardian ? undefined : values.guardian_email,
     };
 
     try {
-      await studentService.registerStudent(user.schoolId, payload);
+      await studentService.registerStudent(selectedSchool.schoolId, payload);
       toast.success("Student registered successfully!");
       form.reset();
     } catch (error: any) {
@@ -150,12 +154,12 @@ export const AdmissionForm = () => {
             <FormField control={form.control} name="gender" render={({ field }) => (<FormItem><FormLabel>Gender</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger></FormControl><SelectContent><SelectItem value="male">Male</SelectItem><SelectItem value="female">Female</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
             <FormField control={form.control} name="dob" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Date of Birth</FormLabel><DatePicker field={field} /><FormMessage /></FormItem>)} />
             <FormField control={form.control} name="religion" render={({ field }) => (<FormItem><FormLabel>Religion</FormLabel><FormControl><Input placeholder="Religion" {...field} /></FormControl><FormMessage /></FormItem>)} />
-            <FormField control={form.control} name="blood_group" render={({ field }) => (<FormItem><FormLabel>Blood Group</FormLabel><FormControl><Input placeholder="Blood Group" {...field} /></FormControl><FormMessage /></FormItem>)} />
+            <FormField control={form.control} name="blood_group" render={({ field }) => (<FormItem><FormLabel>Blood Group</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select blood group" /></SelectTrigger></FormControl><SelectContent><SelectItem value="A+">A+</SelectItem><SelectItem value="A-">A-</SelectItem><SelectItem value="B+">B+</SelectItem><SelectItem value="B-">B-</SelectItem><SelectItem value="AB+">AB+</SelectItem><SelectItem value="AB-">AB-</SelectItem><SelectItem value="O+">O+</SelectItem><SelectItem value="O-">O-</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
             <FormField control={form.control} name="address" render={({ field }) => (<FormItem><FormLabel>Address</FormLabel><FormControl><Input placeholder="Address" {...field} /></FormControl><FormMessage /></FormItem>)} />
             <FormField control={form.control} name="city" render={({ field }) => (<FormItem><FormLabel>City</FormLabel><FormControl><Input placeholder="City" {...field} /></FormControl><FormMessage /></FormItem>)} />
             <FormField control={form.control} name="state" render={({ field }) => (<FormItem><FormLabel>State</FormLabel><FormControl><Input placeholder="State" {...field} /></FormControl><FormMessage /></FormItem>)} />
             <FormField control={form.control} name="country" render={({ field }) => (<FormItem><FormLabel>Country</FormLabel><FormControl><Input placeholder="Country" {...field} /></FormControl><FormMessage /></FormItem>)} />
-            <FormField control={form.control} name="photo_url" render={({ field }) => (<FormItem><FormLabel>Photo URL</FormLabel><FormControl><Input placeholder="http://example.com/photo.jpg" {...field} /></FormControl><FormMessage /></FormItem>)} />
+            {/* Removed photo_url field */}
           </CardContent>
         </Card>
 
@@ -181,14 +185,12 @@ export const AdmissionForm = () => {
         <Card>
           <CardHeader><CardTitle>Guardian Information</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <FormField control={form.control} name="exist_guardian" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel className="text-base">Use different guardian?</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
+            <FormField control={form.control} name="exist_guardian" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel className="text-base">Use existing guardian?</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
             {form.watch("exist_guardian") && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                <FormField control={form.control} name="guardian_name" render={({ field }) => (<FormItem><FormLabel>Guardian's Name</FormLabel><FormControl><Input placeholder="Guardian's Name" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                <FormField control={form.control} name="guardian_email" render={({ field }) => (<FormItem><FormLabel>Guardian's Email</FormLabel><FormControl><Input type="email" placeholder="Guardian's Email" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                {/* Only display username and password for existing guardian */}
                 <FormField control={form.control} name="guardian_username" render={({ field }) => (<FormItem><FormLabel>Guardian's Username</FormLabel><FormControl><Input placeholder="Guardian's Username" {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={form.control} name="guardian_password" render={({ field }) => (<FormItem><FormLabel>Guardian's Password</FormLabel><FormControl><Input type="password" placeholder="Guardian's Password" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                <FormField control={form.control} name="guardian_phone" render={({ field }) => (<FormItem><FormLabel>Guardian's Phone</FormLabel><FormControl><Input placeholder="Guardian's Phone (comma-separated)" {...field} onChange={e => field.onChange(e.target.value.split(','))} /></FormControl><FormMessage /></FormItem>)} />
               </div>
             )}
           </CardContent>

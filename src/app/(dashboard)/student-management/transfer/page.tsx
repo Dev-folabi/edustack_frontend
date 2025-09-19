@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import withAuth from "@/components/withAuth";
 import { UserRole, ADMINS_ROLES } from "@/constants/roles";
-import { useAuth } from "@/store/authStore";
+import { useAuthStore } from "@/store/authStore";
 import { classService, Class, ClassSection } from "@/services/classService";
 import { studentService } from "@/services/studentService";
 import { Student } from "@/types/student";
@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 const TransferStudentPage = () => {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const [classes, setClasses] = useState<Class[]>([]);
   const [fromClassId, setFromClassId] = useState<string>('');
   const [sections, setSections] = useState<ClassSection[]>([]);
