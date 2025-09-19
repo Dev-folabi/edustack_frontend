@@ -40,12 +40,12 @@ import {
   Mail,
   MapPin,
 } from "lucide-react";
-import { toast } from "sonner";
 import { studentService } from "@/services/studentService";
 import { StudentRegistrationPayload } from "@/types/student";
 import { Class, ClassSection } from "@/services/classService";
 import { classService } from "@/services/classService";
 import { useAuthStore } from "@/store/authStore";
+import { useToast } from "@/components/ui/Toast";
 
 const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
@@ -142,6 +142,7 @@ const AdmissionForm = () => {
   const selectedClassId = form.watch("classId");
   const useExistingGuardian = form.watch("exist_guardian");
 
+  const { showToast } = useToast();
   useEffect(() => {
     if (selectedSchool?.schoolId) {
       classService
@@ -152,7 +153,11 @@ const AdmissionForm = () => {
           }
         })
         .catch((error) => {
-          toast.error("Failed to load classes");
+          showToast({
+            type: "error",
+            title: "Failed to load classes",
+            message: error.message || "Failed to load classes",
+          });
           console.error("Error loading classes:", error);
         });
     }
@@ -170,7 +175,11 @@ const AdmissionForm = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!selectedSchool?.schoolId) {
-      toast.error("School not selected. Please select a school.");
+      showToast({
+        type: "error",
+        title: "School not selected",
+        message: "Please select a school.",
+      });
       return;
     }
 
@@ -181,15 +190,9 @@ const AdmissionForm = () => {
       dob: values.dob.toISOString().split("T")[0],
       admission_date: values.admission_date.toISOString().split("T")[0],
       exist_guardian: values.exist_guardian,
-      guardian_phone: values.exist_guardian
-        ? undefined
-        : values.guardian_phone,
-      guardian_name: values.exist_guardian
-        ? undefined
-        : values.guardian_name,
-      guardian_email: values.exist_guardian
-        ? undefined
-        : values.guardian_email,
+      guardian_phone: values.exist_guardian ? undefined : values.guardian_phone,
+      guardian_name: values.exist_guardian ? undefined : values.guardian_name,
+      guardian_email: values.exist_guardian ? undefined : values.guardian_email,
       guardian_emailOrUsername: values.exist_guardian
         ? values.guardian_emailOrUsername
         : undefined,
@@ -201,13 +204,25 @@ const AdmissionForm = () => {
         payload
       );
       if (response.success) {
-        toast.success("Student registered successfully!");
+        showToast({
+          type: "success",
+          title: "Student registered successfully",
+          message: "You can now log in with your credentials.",
+        });
         form.reset();
       } else {
-        toast.error(response.message || "Failed to register student.");
+        showToast({
+          type: "error",
+          title: "Registration failed",
+          message: response.message || "Failed to register student.",
+        });
       }
     } catch (error: any) {
-      toast.error(error.message || "Failed to register student.");
+      showToast({
+        type: "error",
+        title: "Registration failed",
+        message: error.message || "Failed to register student.",
+      });
       console.error("Registration error:", error);
     } finally {
       setIsLoading(false);
@@ -222,7 +237,11 @@ const AdmissionForm = () => {
 
   const handleBulkUpload = async () => {
     if (!csvFile) {
-      toast.error("Please select a CSV file to upload.");
+      showToast({
+        type: "error",
+        title: "Please select a CSV file to upload",
+        message: "Please select a CSV file to upload.",
+      });
       return;
     }
     setIsUploading(true);
@@ -230,15 +249,23 @@ const AdmissionForm = () => {
     try {
       // Simulate API call - replace with actual implementation
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      toast.success("Bulk upload completed successfully!");
+      showToast({
+        type: "success",
+        title: "Bulk upload completed successfully",
+        message: "You can now log in with your credentials.",
+      });
       setCsvFile(null);
       // Reset file input
       const fileInput = document.querySelector(
         'input[type="file"]'
       ) as HTMLInputElement;
       if (fileInput) fileInput.value = "";
-    } catch (error) {
-      toast.error("Bulk upload failed. Please try again.");
+    } catch (error: any) {
+      showToast({
+        type: "error",
+        title: "Bulk upload failed",
+        message: error.message || "Bulk upload failed. Please try again.",
+      });
     } finally {
       setIsUploading(false);
     }

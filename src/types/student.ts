@@ -43,6 +43,7 @@ export interface StudentRegistrationPayload {
   phone: string;
   address: string;
   admission_date: string;
+  isActive?: boolean;
   religion: string;
   blood_group?: string;
   father_name: string;

@@ -82,10 +82,11 @@ export const studentService = {
     studentId: string,
     termId: string,
     sessionId: string
-  ): Promise<Blob> => {
+  ): Promise<ApiResponse<Blob>> => {
     return apiClient.get(
       `/exam/reports/student-term-report?studentId=${studentId}&termId=${termId}&sessionId=${sessionId}&format=pdf`,
       { responseType: 'blob' }
     );
   },
+
 };
