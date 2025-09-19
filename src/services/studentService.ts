@@ -84,8 +84,7 @@ export const studentService = {
     sessionId: string
   ): Promise<ApiResponse<Blob>> => {
     return apiClient.get(
-      `/exam/reports/student-term-report?studentId=${studentId}&termId=${termId}&sessionId=${sessionId}&format=pdf`,
-      { responseType: 'blob' }
+      `/exam/reports/student-term-report?studentId=${studentId}&termId=${termId}&sessionId=${sessionId}&format=pdf`
     );
   },
 
