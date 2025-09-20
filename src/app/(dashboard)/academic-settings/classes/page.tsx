@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useAuthStore } from "@/store/authStore";
 import { useSchoolStore } from "@/store/schoolStore";
 import { useClassStore } from "@/store/classStore";
 import { Button } from "@/components/ui/button";
@@ -112,25 +113,32 @@ const EditClassModal = ({
         section: data.sections.map((s) => s.name).join(","),
       };
       await updateClass(classData.id, updatedData);
-      
+
       // Dispatch success toast event
-      window.dispatchEvent(new CustomEvent('showToast', {
-        detail: {
-          type: 'success',
-          message: 'Class updated successfully!'
-        }
-      }));
-      
+      window.dispatchEvent(
+        new CustomEvent("showToast", {
+          detail: {
+            type: "success",
+            message: "Class updated successfully!",
+          },
+        })
+      );
+
       onClassUpdated();
       onClose();
     } catch (error) {
       // Dispatch error toast event
-      window.dispatchEvent(new CustomEvent('showToast', {
-        detail: {
-          type: 'error',
-          message: 'Failed to update class. Please try again.'
-        }
-      }));
+      window.dispatchEvent(
+        new CustomEvent("showToast", {
+          detail: {
+            type: "error",
+            message:
+              error instanceof Error
+                ? error.message
+                : "Failed to update class. Please try again.",
+          },
+        })
+      );
     } finally {
       setIsLoading(false);
     }
@@ -187,7 +195,12 @@ const EditClassModal = ({
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={isLoading}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>
@@ -282,25 +295,32 @@ const CreateClassModal = ({
         section: data.sections.map((s) => s.name).join(","),
       };
       await createClass(classData);
-      
+
       // Dispatch success toast event
-      window.dispatchEvent(new CustomEvent('showToast', {
-        detail: {
-          type: 'success',
-          message: 'Class created successfully!'
-        }
-      }));
-      
+      window.dispatchEvent(
+        new CustomEvent("showToast", {
+          detail: {
+            type: "success",
+            message: "Class created successfully!",
+          },
+        })
+      );
+
       onClassCreated();
       onClose();
     } catch (error) {
       // Dispatch error toast event
-      window.dispatchEvent(new CustomEvent('showToast', {
-        detail: {
-          type: 'error',
-          message: 'Failed to create class. Please try again.'
-        }
-      }));
+      window.dispatchEvent(
+        new CustomEvent("showToast", {
+          detail: {
+            type: "error",
+            message:
+              error instanceof Error
+                ? error.message
+                : "Failed to create class. Please try again.",
+          },
+        })
+      );
     } finally {
       setIsLoading(false);
     }
@@ -378,7 +398,12 @@ const CreateClassModal = ({
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={isLoading}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>
@@ -399,7 +424,7 @@ const CreateClassModal = ({
 };
 
 const ClassesPage = () => {
-  const { selectedSchool } = useSchoolStore();
+  const { selectedSchool } = useAuthStore();
   const { classes, isLoading, error, fetchClasses, deleteClass } =
     useClassStore();
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
@@ -407,17 +432,18 @@ const ClassesPage = () => {
   const [isDeleteDialog, setDeleteDialog] = useState(false);
   const [selectedClass, setSelectedClass] = useState<Class | null>(null);
   const [isEditSectionModalOpen, setEditSectionModalOpen] = useState(false);
-  const [selectedSection, setSelectedSection] = useState<ClassSection | null>(null);
+  const [selectedSection, setSelectedSection] = useState<ClassSection | null>(
+    null
+  );
 
   useEffect(() => {
     if (selectedSchool) {
-      fetchClasses(selectedSchool.id);
+      fetchClasses(selectedSchool.schoolId);
     }
   }, [selectedSchool, fetchClasses]);
 
   const handleClassCreated = () => {
     if (selectedSchool) {
-      // No need to fetch again, the store is updated optimistically
     }
   };
 
@@ -448,12 +474,6 @@ const ClassesPage = () => {
   const handleEditSection = (section: ClassSection) => {
     setSelectedSection(section);
     setEditSectionModalOpen(true);
-  };
-
-  const handleSectionUpdated = () => {
-    if (selectedSchool) {
-      fetchClasses(selectedSchool.schoolId);
-    }
   };
 
   return (
@@ -500,12 +520,17 @@ const ClassesPage = () => {
                               classItem.sections.length > 0 ? (
                                 <div className="space-y-2">
                                   {classItem.sections.map((section) => (
-                                    <div key={section.id} className="flex items-center justify-between p-2 border rounded">
+                                    <div
+                                      key={section.id}
+                                      className="flex items-center justify-between p-2 border rounded"
+                                    >
                                       <span>{section.name}</span>
                                       <Button
                                         variant="outline"
                                         size="sm"
-                                        onClick={() => handleEditSection(section)}
+                                        onClick={() =>
+                                          handleEditSection(section)
+                                        }
                                         className="ml-2"
                                       >
                                         Edit Section

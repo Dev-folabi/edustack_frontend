@@ -59,14 +59,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   // Initialize auth state from localStorage
   initializeAuth: () => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('token');
-      const userData = localStorage.getItem('userData');
-      const userSchools = localStorage.getItem('userSchools');
-      const selectedSchool = localStorage.getItem('selectedSchool');
-      const staff = localStorage.getItem('staff');
-      const student = localStorage.getItem('student');
-      const parent = localStorage.getItem('parent');
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token");
+      const userData = localStorage.getItem("userData");
+      const userSchools = localStorage.getItem("userSchools");
+      const selectedSchool = localStorage.getItem("selectedSchool");
+      const staff = localStorage.getItem("staff");
+      const student = localStorage.getItem("student");
+      const parent = localStorage.getItem("parent");
 
       if (token && userData) {
         try {
@@ -81,17 +81,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           });
 
           // Set cookie for middleware
-          document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 60 * 60}`; // 7 days
+          document.cookie = `token=${token}; path=/; max-age=${
+            7 * 24 * 60 * 60
+          }`; // 7 days
         } catch (error) {
-          console.error('Error parsing stored auth data:', error);
+          console.error("Error parsing stored auth data:", error);
           // Clear corrupted data
-          localStorage.removeItem('token');
-          localStorage.removeItem('userData');
-          localStorage.removeItem('userSchools');
-          localStorage.removeItem('selectedSchool');
-          localStorage.removeItem('staff');
-          localStorage.removeItem('student');
-          localStorage.removeItem('parent');
+          localStorage.removeItem("token");
+          localStorage.removeItem("userData");
+          localStorage.removeItem("userSchools");
+          localStorage.removeItem("selectedSchool");
+          localStorage.removeItem("staff");
+          localStorage.removeItem("student");
+          localStorage.removeItem("parent");
         }
       }
       set({ isHydrated: true });
@@ -107,7 +109,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         const { userData, token, userSchools, staff, student, parent } =
           response.data;
 
-        const selectedSchool = userSchools && userSchools.length > 0 ? userSchools[0] : null;
+        const selectedSchool =
+          userSchools && userSchools.length > 0
+            ? userSchools.find((s) => s.school.isActive) || userSchools[0]
+            : null;
 
         set({
           user: userData,
@@ -123,8 +128,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         // Store in localStorage
         localStorage.setItem("token", token);
         localStorage.setItem("userData", JSON.stringify(userData));
-        if (userSchools) localStorage.setItem("userSchools", JSON.stringify(userSchools));
-        if (selectedSchool) localStorage.setItem("selectedSchool", JSON.stringify(selectedSchool));
+        if (userSchools)
+          localStorage.setItem("userSchools", JSON.stringify(userSchools));
+        if (selectedSchool)
+          localStorage.setItem(
+            "selectedSchool",
+            JSON.stringify(selectedSchool)
+          );
         if (staff) localStorage.setItem("staff", JSON.stringify(staff));
         if (student) localStorage.setItem("student", JSON.stringify(student));
         if (parent) localStorage.setItem("parent", JSON.stringify(parent));
@@ -152,7 +162,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     });
 
     // Clear localStorage
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       localStorage.removeItem("token");
       localStorage.removeItem("userData");
       localStorage.removeItem("userSchools");
@@ -162,16 +172,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       localStorage.removeItem("parent");
 
       // Clear cookie
-      document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+      document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
 
       // Hard redirect to login page
-      window.location.href = '/login';
+      window.location.href = "/login";
     }
   },
 
   setSelectedSchool: (school: UserSchool) => {
     set({ selectedSchool: school });
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       localStorage.setItem("selectedSchool", JSON.stringify(school));
     }
   },
