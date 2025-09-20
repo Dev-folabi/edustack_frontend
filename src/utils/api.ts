@@ -1,4 +1,6 @@
 import { config } from './config';
+import { useAuthStore } from '@/store/authStore';
+
 
 // Custom error class to include additional data from API responses
 export class ApiError extends Error {
@@ -11,7 +13,7 @@ export class ApiError extends Error {
   }
 }
 
-interface ApiResponse<T = any> {
+export interface ApiResponse<T = any> {
   success: boolean;
   message: string;
   data?: T;
@@ -26,7 +28,7 @@ class ApiClient {
   }
 
   private getAuthHeaders(): HeadersInit {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('token');
     return {
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),
@@ -36,10 +38,22 @@ class ApiClient {
   private async handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
     const data = await response.json();
     
-    if (!response.ok) {
-      throw new ApiError(data.message || 'An error occurred', data.data);
-    }
+    // Check for token expiration
+    if (!data.success && data.message && data.message.includes('Invalid or missing token')) {
+      // Get the logout function from auth store
+      const { logout } = useAuthStore.getState();
     
+      
+      logout();
+      
+      // Throw error to prevent further processing
+      throw new ApiError(data.message, data);
+    }
+
+    if (!response.ok) {
+      throw new ApiError(data.message || 'An error occurred',  data);
+    }
+
     return data;
   }
 

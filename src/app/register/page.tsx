@@ -10,9 +10,11 @@ import {
   Class,
   Section,
 } from "../../services/authService";
+import { schoolService } from "../../services/schoolService";
 import { useToast } from "../../components/ui/Toast";
 import { Loader, ButtonLoader } from "../../components/ui/Loader";
 import Link from "next/link";
+import { COLORS } from "@/constants/colors";
 
 type UserType = "staff" | "student";
 type StaffRole = "teacher" | "accountant" | "librarian";
@@ -106,7 +108,7 @@ const RegisterPage: React.FC = () => {
 
   const loadSchools = async () => {
     try {
-      const response = await authService.getSchools();
+      const response = await schoolService.getSchools();
       if (response.success && response.data && response.data.data) {
         setSchools(response.data.data);
       } else {
@@ -838,21 +840,25 @@ const RegisterPage: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center p-4">
+    <div className="min-h-screen flex flex-col justify-center items-center p-4" style={{ backgroundColor: COLORS.background.accent }}>
       <div className="max-w-4xl w-full py-8">
         <header className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Join EduStack</h1>
-          <p className="text-gray-600">Create your account to get started</p>
+          <h1 className="text-3xl font-bold" style={{ color: COLORS.primary[700] }}>Join EduStack</h1>
+          <p style={{ color: COLORS.gray[600] }}>Create your account to get started</p>
         </header>
         <div className="flex justify-center mb-8">
-          <div className="bg-gray-200 p-1 rounded-lg flex space-x-1">
+          <div className="p-1 rounded-lg flex space-x-1" style={{ backgroundColor: COLORS.gray[200] }}>
             <button
               onClick={() => setUserType("student")}
               className={`px-4 py-2 rounded-md font-medium text-sm transition-all ${
                 userType === "student"
-                  ? "bg-white text-gray-900 shadow"
-                  : "bg-transparent text-gray-600"
+                  ? "shadow"
+                  : "bg-transparent"
               }`}
+              style={{
+                backgroundColor: userType === "student" ? COLORS.background.primary : 'transparent',
+                color: userType === "student" ? COLORS.gray[900] : COLORS.gray[600]
+              }}
             >
               I am a Student
             </button>
@@ -860,24 +866,35 @@ const RegisterPage: React.FC = () => {
               onClick={() => setUserType("staff")}
               className={`px-4 py-2 rounded-md font-medium text-sm transition-all ${
                 userType === "staff"
-                  ? "bg-white text-gray-900 shadow"
-                  : "bg-transparent text-gray-600"
+                  ? "shadow"
+                  : "bg-transparent"
               }`}
+              style={{
+                backgroundColor: userType === "staff" ? COLORS.background.primary : 'transparent',
+                color: userType === "staff" ? COLORS.gray[900] : COLORS.gray[600]
+              }}
             >
               I am a Staff Member
             </button>
           </div>
         </div>
-        <div className="bg-white p-8 rounded-lg shadow-md">
+        <div className="p-8 rounded-lg shadow-md" style={{ backgroundColor: COLORS.background.primary }}>
           <AnimatePresence mode="wait">
             {userType === "staff" ? renderStaffForm() : renderStudentForm()}
           </AnimatePresence>
         </div>
-        <p className="mt-4 text-center text-sm text-gray-600">
+        <p className="mt-4 text-center text-sm" style={{ color: COLORS.gray[600] }}>
           Already have an account?{" "}
           <Link
             href="/login"
-            className="font-medium text-sky-600 hover:text-sky-500"
+            className="font-medium transition-colors duration-200"
+            style={{ color: COLORS.primary[600] }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = COLORS.primary[500];
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = COLORS.primary[600];
+            }}
           >
             Sign in here
           </Link>

@@ -123,14 +123,30 @@ interface ClassesResponse {
   data: Class[];
 }
 
-interface LoginResponse {
-  userData: {
-    id: string;
-    username: string;
-    email: string;
-    role: string;
-    isSuperAdmin?: boolean;
+// Types for the new login response structure
+interface UserSchool {
+  schoolId: string;
+  role: "super_admin" | "school_admin" | "teacher" | "staff";
+  school: {
+    name: string;
+    isActive: boolean;
   };
+}
+
+interface UserData {
+  id: string;
+  email: string;
+  username: string;
+  isSuperAdmin: boolean;
+  hasVerifiedEmail: boolean;
+}
+
+interface LoginResponse {
+  userData: UserData;
+  userSchools: UserSchool[];
+  staff: any | null;
+  student: any | null;
+  parent: any | null;
   token: string;
 }
 
@@ -158,11 +174,13 @@ interface InitializationResponse {
 
 export const authService = {
   // System onboarding check
-  checkOnboardingStatus: (): Promise<ApiResponse<OnboardingStatusResponse>> => 
+  checkOnboardingStatus: (): Promise<ApiResponse<OnboardingStatusResponse>> =>
     apiClient.get("/system/onboarding/check"),
 
   // System initialization
-  initializeSystem: (data: OnboardingData): Promise<ApiResponse<InitializationResponse>> => {
+  initializeSystem: (
+    data: OnboardingData
+  ): Promise<ApiResponse<InitializationResponse>> => {
     const backendData = {
       superAdminUsername: data.adminUsername,
       superAdminEmail: data.adminEmail,
@@ -187,9 +205,6 @@ export const authService = {
   studentSignup: (data: StudentSignupData) =>
     apiClient.post("/auth/student-signup", data),
 
-  // Get schools (for dropdowns)
-  getSchools: (): Promise<ApiResponse<SchoolsResponse>> => apiClient.get("/school/all"),
-
   // Get classes by school, which includes sections
   getClasses: (schoolId: string): Promise<ApiResponse<ClassesResponse>> =>
     apiClient.get(`/class?schoolId=${schoolId}`),
@@ -203,10 +218,8 @@ export const authService = {
     apiClient.post("/auth/verify-email-otp", { userId, otp }),
 
   // Resend OTP
-  resendOTP: (identifier: { userId?: string; email?: string }) => {
-    const payload = identifier.userId
-      ? { id: identifier.userId, type: "email_verification" }
-      : { email: identifier.email, type: "email_verification" };
+  resendOTP: (id: string) => {
+    const payload = { id: id, type: "email_verification" };
     return apiClient.post("/auth/resend-otp", payload);
   },
 };
@@ -219,6 +232,8 @@ export type {
   Class,
   Section,
   LoginResponse,
+  UserData,
+  UserSchool,
   OnboardingStatusResponse,
   InitializationResponse,
 };

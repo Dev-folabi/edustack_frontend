@@ -172,10 +172,13 @@ export default function ContactSection() {
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200"
+                    style={{
+                      '--tw-ring-color': COLORS.primary[500]
+                    } as React.CSSProperties}
                     placeholder="Your full name"
                   />
-                </div>
+                </div> 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Email Address *
@@ -186,8 +189,11 @@ export default function ContactSection() {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    placeholder="your.email@example.com"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200"
+                    style={{
+                      '--tw-ring-color': COLORS.primary[500]
+                    } as React.CSSProperties}
+                    placeholder="Your email address"
                   />
                 </div>
               </div>
@@ -202,7 +208,10 @@ export default function ContactSection() {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200"
+                    style={{
+                      '--tw-ring-color': COLORS.primary[500]
+                    } as React.CSSProperties}
                     placeholder="Your phone number"
                   />
                 </div>
@@ -215,7 +224,10 @@ export default function ContactSection() {
                     value={formData.subject}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200"
+                    style={{
+                      '--tw-ring-color': COLORS.primary[500]
+                    } as React.CSSProperties}
                   >
                     <option value="">Select a subject</option>
                     <option value="admission">Admission Inquiry</option>
@@ -237,8 +249,11 @@ export default function ContactSection() {
                   onChange={handleChange}
                   required
                   rows={5}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-vertical"
-                  placeholder="Please describe your inquiry or message..."
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 resize-vertical"
+                  style={{
+                    '--tw-ring-color': COLORS.primary[500]
+                  } as React.CSSProperties}
+                  placeholder="Your message"
                 />
               </div>
 
