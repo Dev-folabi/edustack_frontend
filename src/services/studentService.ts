@@ -31,7 +31,8 @@ export interface PromotionPayload {
   toClassId: string;
   sectionId: string;
   promoteSessionId: string;
-  isGraduate?: boolean;
+  promoteTermId: string;
+  isGraduate: boolean;
 }
 
 export interface TransferPayload {
@@ -43,12 +44,20 @@ export interface TransferPayload {
 }
 
 
-export const studentService = {
+export const  studentService = {
   registerStudent: (
     schoolId: string,
     data: StudentRegistrationPayload
   ): Promise<ApiResponse<any>> => {
     return apiClient.post(`/students/register/${schoolId}`, data);
+  },
+
+  getStudentsBySection: (
+    schoolId: string,
+    filters: StudentFilters = {}
+  ): Promise<ApiResponse<PaginatedStudents>> => {
+    const params = new URLSearchParams(filters as Record<string, any>);
+    return apiClient.get(`/students/${schoolId}/all?${params.toString()}`);
   },
 
   getStudentsBySchool: (

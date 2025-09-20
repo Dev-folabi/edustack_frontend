@@ -21,13 +21,9 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
-  Download,
-  Printer,
-  Plus,
   Users,
   Filter,
   Eye,
-  Edit,
   UserCheck,
   UserX,
   GraduationCap,
@@ -71,7 +67,6 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-// import { EditStudentForm } from "@/components/dashboard/student-management/EditStudentForm";
 
 // Define props to accept filter data
 interface StudentTableProps {
@@ -93,7 +88,6 @@ export const StudentTable = ({ classes = [] }: StudentTableProps) => {
   });
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
@@ -174,17 +168,11 @@ export const StudentTable = ({ classes = [] }: StudentTableProps) => {
     }
   };
 
-  const handleActionSuccess = () => {
-    setEditingStudent(null);
-    // Refresh data after successful edit
-    setFilters((prev) => ({ ...prev }));
-  };
-
   const paginationItems = useMemo(() => {
     if (!students || students.totalPages <= 1) return [];
     const { currentPage, totalPages } = students;
     const items: (number | string)[] = [];
-    const pageRange = 2; // Show 2 pages before and after current page
+    const pageRange = 2;
 
     // Always show page 1
     items.push(1);
@@ -195,7 +183,11 @@ export const StudentTable = ({ classes = [] }: StudentTableProps) => {
     }
 
     // Add pages around current page
-    for (let i = Math.max(2, currentPage - pageRange); i <= Math.min(totalPages - 1, currentPage + pageRange); i++) {
+    for (
+      let i = Math.max(2, currentPage - pageRange);
+      i <= Math.min(totalPages - 1, currentPage + pageRange);
+      i++
+    ) {
       items.push(i);
     }
 
@@ -241,7 +233,7 @@ export const StudentTable = ({ classes = [] }: StudentTableProps) => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            
+
             {/* Filter Selects */}
             <div className="flex gap-2">
               <Select
@@ -260,9 +252,11 @@ export const StudentTable = ({ classes = [] }: StudentTableProps) => {
                   ))}
                 </SelectContent>
               </Select>
-              
+
               <Select
-                onValueChange={(value) => handleFilterChange("sectionId", value)}
+                onValueChange={(value) =>
+                  handleFilterChange("sectionId", value)
+                }
                 value={filters.sectionId || "all"}
                 disabled={!selectedClassId}
               >
@@ -278,7 +272,7 @@ export const StudentTable = ({ classes = [] }: StudentTableProps) => {
                   ))}
                 </SelectContent>
               </Select>
-              
+
               <Select
                 onValueChange={(value) => handleFilterChange("gender", value)}
                 value={filters.gender || "all"}
@@ -303,9 +297,12 @@ export const StudentTable = ({ classes = [] }: StudentTableProps) => {
           <div className="px-6 py-4 bg-gray-50 border-b border-gray-100">
             <div className="flex items-center justify-between text-sm text-gray-600 pl-2 pr-2">
               <span>
-                Showing {((students.currentPage - 1) * filters.limit) + 1} to{" "}
-                {Math.min(students.currentPage * filters.limit, students.totalItems)} of{" "}
-                {students.totalItems} students
+                Showing {(students.currentPage - 1) * filters.limit + 1} to{" "}
+                {Math.min(
+                  students.currentPage * filters.limit,
+                  students.totalItems
+                )}{" "}
+                of {students.totalItems} students
               </span>
               <span>{students.totalPages} pages</span>
             </div>
@@ -317,12 +314,24 @@ export const StudentTable = ({ classes = [] }: StudentTableProps) => {
           <Table>
             <TableHeader>
               <TableRow className="bg-gray-50 hover:bg-gray-50">
-                <TableHead className="font-semibold text-gray-700">Student</TableHead>
-                <TableHead className="font-semibold text-gray-700">Class & Section</TableHead>
-                <TableHead className="font-semibold text-gray-700">Admission</TableHead>
-                <TableHead className="font-semibold text-gray-700">Contact</TableHead>
-                <TableHead className="font-semibold text-gray-700">Status</TableHead>
-                <TableHead className="text-right font-semibold text-gray-700">Actions</TableHead>
+                <TableHead className="font-semibold text-gray-700">
+                  Student
+                </TableHead>
+                <TableHead className="font-semibold text-gray-700">
+                  Class & Section
+                </TableHead>
+                <TableHead className="font-semibold text-gray-700">
+                  Admission
+                </TableHead>
+                <TableHead className="font-semibold text-gray-700">
+                  Contact
+                </TableHead>
+                <TableHead className="font-semibold text-gray-700">
+                  Status
+                </TableHead>
+                <TableHead className="text-right font-semibold text-gray-700">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -338,26 +347,44 @@ export const StudentTable = ({ classes = [] }: StudentTableProps) => {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell><Skeleton className="w-20 h-4" /></TableCell>
-                    <TableCell><Skeleton className="w-16 h-4" /></TableCell>
-                    <TableCell><Skeleton className="w-32 h-4" /></TableCell>
-                    <TableCell><Skeleton className="w-16 h-6 rounded-full" /></TableCell>
-                    <TableCell><Skeleton className="w-8 h-8 rounded ml-auto" /></TableCell>
+                    <TableCell>
+                      <Skeleton className="w-20 h-4" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="w-16 h-4" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="w-32 h-4" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="w-16 h-6 rounded-full" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="w-8 h-8 rounded ml-auto" />
+                    </TableCell>
                   </TableRow>
                 ))
               ) : students?.data.length ? (
                 students.data.map((student) => (
-                  <TableRow key={student.id} className="hover:bg-gray-50/50 transition-colors">
+                  <TableRow
+                    key={student.studentId}
+                    className="hover:bg-gray-50/50 transition-colors"
+                  >
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="w-10 h-10">
-                          <AvatarImage src={student.photo_url} alt={student.name} />
+                          <AvatarImage
+                            src={student.photo_url}
+                            alt={student.name}
+                          />
                           <AvatarFallback className="bg-gradient-to-br from-blue-300 to-indigo-300 text-white text-sm">
                             {student.name.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-medium text-gray-900">{student.name}</p>
+                          <p className="font-medium text-gray-900">
+                            {student.name}
+                          </p>
                         </div>
                       </div>
                     </TableCell>
@@ -392,12 +419,12 @@ export const StudentTable = ({ classes = [] }: StudentTableProps) => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge 
+                      <Badge
                         variant={student.isActive ? "default" : "outline"}
                         className={`${
-                          student.isActive 
-                            ? 'bg-green-100 text-green-700 border-green-200' 
-                            : 'bg-red-100 text-red-700 border-red-200'
+                          student.isActive
+                            ? "bg-green-100 text-green-700 border-green-200"
+                            : "bg-red-100 text-red-700 border-red-200"
                         }`}
                       >
                         {student.isActive ? "Active" : "Inactive"}
@@ -406,7 +433,10 @@ export const StudentTable = ({ classes = [] }: StudentTableProps) => {
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-gray-100">
+                          <Button
+                            variant="ghost"
+                            className="h-8 w-8 p-0 hover:bg-gray-100"
+                          >
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -425,21 +455,17 @@ export const StudentTable = ({ classes = [] }: StudentTableProps) => {
                           </DropdownMenuItem>
                           {canPerformActions && (
                             <>
-                              <DropdownMenuItem
-                                onSelect={() => setEditingStudent(student)}
-                                className="cursor-pointer"
-                              >
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit Student
-                              </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
                                 onSelect={() =>
-                                  handleStudentStatus(student, !student.isActive)
+                                  handleStudentStatus(
+                                    student,
+                                    !student.isActive
+                                  )
                                 }
                                 className={`cursor-pointer ${
-                                  student.isActive 
-                                    ? "text-red-600 focus:text-red-600" 
+                                  student.isActive
+                                    ? "text-red-600 focus:text-red-600"
                                     : "text-green-600 focus:text-green-600"
                                 }`}
                               >
@@ -463,7 +489,9 @@ export const StudentTable = ({ classes = [] }: StudentTableProps) => {
                     <div className="flex flex-col items-center gap-2 text-gray-500">
                       <Users className="w-8 h-8" />
                       <p>No students found</p>
-                      <p className="text-sm">Try adjusting your search or filters</p>
+                      <p className="text-sm">
+                        Try adjusting your search or filters
+                      </p>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -492,7 +520,9 @@ export const StudentTable = ({ classes = [] }: StudentTableProps) => {
                 typeof item === "number" ? (
                   <Button
                     key={index}
-                    variant={item === students.currentPage ? "default" : "outline"}
+                    variant={
+                      item === students.currentPage ? "default" : "outline"
+                    }
                     size="sm"
                     className="h-8 w-8 p-0"
                     onClick={() => handlePageChange(item)}
@@ -518,31 +548,6 @@ export const StudentTable = ({ classes = [] }: StudentTableProps) => {
           </div>
         )}
       </CardContent>
-
-      {/* Edit Student Dialog */}
-      {editingStudent && (
-        <Dialog
-          open={!!editingStudent}
-          onOpenChange={(isOpen) => !isOpen && setEditingStudent(null)}
-        >
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Edit className="w-5 h-5" />
-                Edit Student: {editingStudent.name}
-              </DialogTitle>
-            </DialogHeader>
-            {/* Placeholder for EditStudentForm - replace with actual form component */}
-            <div className="p-4 text-center text-gray-500">
-              <p>EditStudentForm component would be rendered here</p>
-              <p className="text-sm mt-2">Student: {editingStudent.name}</p>
-              <Button onClick={handleActionSuccess} className="mt-4">
-                Close (Demo)
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
     </Card>
   );
 };
