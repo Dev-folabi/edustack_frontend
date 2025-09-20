@@ -127,6 +127,10 @@ interface ClassesResponse {
 interface UserSchool {
   schoolId: string;
   role: "super_admin" | "school_admin" | "teacher" | "staff";
+  school: {
+    name: string;
+    isActive: boolean;
+  };
 }
 
 interface UserData {

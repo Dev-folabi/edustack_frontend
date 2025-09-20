@@ -1,7 +1,9 @@
 export interface Student {
-  id: string;
+  id?: string;
+  studentId?: string;
   name: string;
-  admission_number: string;
+  admission_number?: string;
+  admissionNumber?: string;
   admission_date: string;
   email: string;
   username: string;

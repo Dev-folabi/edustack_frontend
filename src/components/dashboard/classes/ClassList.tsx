@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useClassStore } from "@/store/classStore";
-import { useSchoolStore } from "@/store/schoolStore";
+import { useAuthStore } from "@/store/authStore";
 import {
   Accordion,
   AccordionContent,
@@ -18,7 +18,7 @@ import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog";
 
 export const ClassList = () => {
   const { classes, isLoading, error, fetchClasses, fetchTeachers, deleteClass } = useClassStore();
-  const { selectedSchool }   = useSchoolStore();
+  const { selectedSchool }   = useAuthStore();
 
   const [isCreateEditModalOpen, setIsCreateEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -27,8 +27,8 @@ export const ClassList = () => {
 
   useEffect(() => {
     if (selectedSchool) {
-      fetchClasses(selectedSchool.id);
-      fetchTeachers(selectedSchool.id);
+      fetchClasses(selectedSchool.schoolId);
+      fetchTeachers(selectedSchool.schoolId);
     }
   }, [selectedSchool, fetchClasses, fetchTeachers]);
 

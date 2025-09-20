@@ -43,8 +43,8 @@ const TransferStudentPage = () => {
   // Fetch initial data
   useEffect(() => {
     if (selectedSchool?.schoolId) {
-      classService.getClasses(selectedSchool.schoolId).then(res => setClasses(res.data.data));
-      schoolService.getSchools().then(res => setSchools(res.data.data));
+      classService.getClasses(selectedSchool.schoolId).then(res => setClasses(res.data?.data || []));
+      schoolService.getSchools().then(res => setSchools(res.data?.data || []));
     }
   }, [selectedSchool?.schoolId]);
 
@@ -58,7 +58,7 @@ const TransferStudentPage = () => {
   // Get destination school classes
   useEffect(() => {
     if (toSchoolId) {
-      classService.getClasses(toSchoolId).then(res => setToClasses(res.data.data));
+      classService.getClasses(toSchoolId).then(res => setToClasses(res.data?.data || []));
     } else {
       setToClasses([]);
     }
@@ -78,7 +78,7 @@ const TransferStudentPage = () => {
     if (fromSectionId && selectedSchool?.schoolId) {
       studentService
         .getStudentsBySection(selectedSchool.schoolId, {sectionId: fromSectionId})
-        .then(res => setStudents(res.data.data))
+        .then(res => setStudents(res.data?.data || []))
         .catch(() => setStudents([]));
     } else {
       setStudents([]);
@@ -128,10 +128,10 @@ const TransferStudentPage = () => {
       });
       setStudents([]);
       setSelectedStudents([]);
-    } catch (error: any) {
+    } catch (error: unknown) {
       showToast({
         title: "Error",
-        message: error.message || "Failed to transfer students.",
+        message: error instanceof Error ? error.message : "Failed to transfer students.",
         type: "error",
       });
     } finally {
@@ -200,7 +200,7 @@ const TransferStudentPage = () => {
                       checked={selectedStudents.length === students.length && students.length > 0}
                       onCheckedChange={(checked) =>
                         checked
-                          ? setSelectedStudents(students.map(s => s.studentId))
+                          ? setSelectedStudents(students.map(s => s?.studentId || ''))
                           : setSelectedStudents([])
                       }
                     />
@@ -214,12 +214,12 @@ const TransferStudentPage = () => {
                   <TableRow key={student.studentId} className="hover:bg-muted/20">
                     <TableCell>
                       <Checkbox
-                        checked={selectedStudents.includes(student.studentId)}
-                        onCheckedChange={() => handleSelectStudent(student.studentId)}
+                        checked={selectedStudents.includes(student.studentId || student.id || '')}
+                        onCheckedChange={() => handleSelectStudent(student.studentId || student.id || '')}
                       />
                     </TableCell>
                     <TableCell className="font-medium">{student.name}</TableCell>
-                    <TableCell>{student.admissionNumber}</TableCell>
+                    <TableCell>{student.admissionNumber || student.admission_number}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
