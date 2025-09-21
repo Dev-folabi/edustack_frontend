@@ -97,4 +97,20 @@ export const  studentService = {
     );
   },
 
+  // Placeholder for bulk report download
+  getSectionTermReport: (
+    sectionId: string,
+    termId: string,
+    sessionId: string
+  ): Promise<ApiResponse<Blob>> => {
+    // This should be replaced with a real API call when the backend is ready
+    return new Promise(resolve => {
+      // Simulate a delay
+      setTimeout(() => {
+        // Simulate a dummy PDF blob
+        const dummyPdf = new Blob(['This is a dummy PDF for the whole section'], { type: 'application/pdf' });
+        resolve({ data: { success: true, message: 'Dummy report generated', data: dummyPdf } } as any);
+      }, 1000);
+    });
+  },
 };

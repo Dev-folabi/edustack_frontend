@@ -36,6 +36,10 @@ export interface ExamPaper {
   questionBankId?: string;
   totalQuestions?: number;
   instructions?: string;
+  published?: boolean;
+  sectionId?: string;
+  termId?: string;
+  sessionId?: string;
 }
 
 export interface ApiResponse<T> {

@@ -1,10 +1,13 @@
 import { create } from 'zustand';
-import { getAllExams, getExamById } from '@/services/examService';
+import { getAllExams, getExamById, getExamPaperById } from '@/services/examService';
 import { Exam } from '@/types/exam';
+
+import { ExamPaper } from '@/types/exam';
 
 interface ExamState {
   exams: Exam[];
   selectedExam: Exam | null;
+  selectedPaper: ExamPaper | null;
   totalItems: number;
   totalPages: number;
   currentPage: number;
@@ -12,11 +15,13 @@ interface ExamState {
   error: string | null;
   fetchExams: (schoolId: string, page?: number, limit?: number) => Promise<void>;
   fetchExamById: (examId: string) => Promise<void>;
+  fetchExamPaperById: (paperId: string) => Promise<void>;
 }
 
 export const useExamStore = create<ExamState>((set) => ({
   exams: [],
   selectedExam: null,
+  selectedPaper: null,
   totalItems: 0,
   totalPages: 0,
   currentPage: 1,
@@ -51,6 +56,20 @@ export const useExamStore = create<ExamState>((set) => ({
       }
     } catch (error) {
       set({ loading: false, error: 'Failed to fetch exam details' });
+    }
+  },
+  fetchExamPaperById: async (paperId: string) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await getExamPaperById(paperId);
+      if (response.success) {
+        set({
+          selectedPaper: response.data,
+          loading: false,
+        });
+      }
+    } catch (error) {
+      set({ loading: false, error: 'Failed to fetch exam paper details' });
     }
   },
 }));

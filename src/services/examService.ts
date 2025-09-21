@@ -44,6 +44,67 @@ export const updateExam = async (examId: string, examData: Partial<Omit<Exam, 'i
     }
 };
 
+export const publishResults = async (paperId: string, publish: boolean): Promise<ApiResponse<any>> => {
+    try {
+        const response = await api.post(`/exam/results/publish/${paperId}`, { publish });
+        return response.data;
+    } catch (error) {
+        handleApiError(error);
+        throw error;
+    }
+};
+
+export const getEssayResponses = async (paperId: string): Promise<ApiResponse<any[]>> => {
+    try {
+        const response = await api.get(`/exam/results/essays-for-grading/${paperId}`);
+        return response.data;
+    } catch (error) {
+        handleApiError(error);
+        throw error;
+    }
+};
+
+export const gradeEssayResponse = async (responseId: string, marks: number): Promise<ApiResponse<any>> => {
+    try {
+        const response = await api.post(`/exam/results/grade-essay/${responseId}`, { marksAwarded: marks });
+        return response.data;
+    } catch (error) {
+        handleApiError(error);
+        throw error;
+    }
+};
+
+export const saveManualResults = async (paperId: string, results: { studentId: string; marks: number }[]): Promise<ApiResponse<any>> => {
+    try {
+        const response = await api.post(`/exam/results/manual-entry`, { paperId, results });
+        return response.data;
+    } catch (error) {
+        handleApiError(error);
+        throw error;
+    }
+};
+
+export const getExamPaperById = async (paperId: string): Promise<ApiResponse<ExamPaper>> => {
+    try {
+        const response = await api.get(`/exam/papers/${paperId}`);
+        return response.data;
+    } catch (error) {
+        handleApiError(error);
+        throw error;
+    }
+};
+
+export const getExamPapers = async (filters: { termId: string; sectionId: string; }): Promise<ApiResponse<ExamPaper[]>> => {
+    try {
+        const query = new URLSearchParams(filters).toString();
+        const response = await api.get(`/exam/papers?${query}`);
+        return response.data;
+    } catch (error) {
+        handleApiError(error);
+        throw error;
+    }
+};
+
 export const deleteExam = async (examId: string): Promise<ApiResponse<null>> => {
     try {
         const response = await api.delete(`${EXAM_BASE_URL}/${examId}`);
