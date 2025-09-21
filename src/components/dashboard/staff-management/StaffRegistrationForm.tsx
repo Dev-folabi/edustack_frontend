@@ -107,6 +107,7 @@ const StaffRegistrationForm = () => {
 
     setIsLoading(true);
     const payload: StaffRegistrationPayload = {
+      schoolId: selectedSchool.schoolId,
       ...values,
       dob: values.dob.toISOString().split("T")[0],
       joining_date: values.joining_date.toISOString().split("T")[0],
@@ -114,7 +115,6 @@ const StaffRegistrationForm = () => {
 
     try {
       const response = await staffService.createStaff(
-        selectedSchool.schoolId,
         payload
       );
       if (response.success) {

@@ -84,17 +84,18 @@ export const StaffTable = () => {
       if (!selectedSchool?.schoolId) return;
       setIsLoading(true);
       try {
-        const currentFilters = { ...filters, name: debouncedSearchQuery, email: debouncedSearchQuery };
+        const currentFilters = { ...filters };
         const res = await staffService.getStaffBySchool(
           selectedSchool.schoolId,
           currentFilters
         );
         setStaff(res.data || null);
-      } catch (error: any) {
+      } catch (error: unknown) {
         showToast({
           type: "error",
           title: "Error",
-          message: error.message || "Failed to fetch staff.",
+          message:
+            error instanceof Error ? error.message : "Failed to fetch staff.",
         });
       } finally {
         setIsLoading(false);
@@ -117,7 +118,9 @@ export const StaffTable = () => {
 
   const handleStaffStatus = async (staffMember: Staff, isActive: boolean) => {
     try {
-      await staffService.updateStaff(staffMember.id, { isActive });
+      await staffService.updateStaff(staffMember?.user?.staff?.id, {
+        isActive,
+      });
       showToast({
         type: "success",
         title: "Success",
@@ -126,9 +129,13 @@ export const StaffTable = () => {
         } successfully.`,
       });
       // Refresh the data
-      const currentFilters = { ...filters, name: debouncedSearchQuery, email: debouncedSearchQuery };
+      const currentFilters = {
+        ...filters,
+        name: debouncedSearchQuery,
+        email: debouncedSearchQuery,
+      };
       const res = await staffService.getStaffBySchool(
-        selectedSchool?.schoolId!,
+selectedSchool?.schoolId || '',
         currentFilters
       );
       setStaff(res.data || null);
@@ -214,10 +221,7 @@ export const StaffTable = () => {
             <div className="flex items-center justify-between text-sm text-gray-600 pl-2 pr-2">
               <span>
                 Showing {(staff.currentPage - 1) * filters.limit! + 1} to{" "}
-                {Math.min(
-                  staff.currentPage * filters.limit!,
-                  staff.totalItems
-                )}{" "}
+                {Math.min(staff.currentPage * filters.limit!, staff.totalItems)}{" "}
                 of {staff.totalItems} staff
               </span>
               <span>{staff.totalPages} pages</span>
@@ -230,7 +234,7 @@ export const StaffTable = () => {
             <TableHeader>
               <TableRow className="bg-gray-50 hover:bg-gray-50">
                 <TableHead>Staff</TableHead>
-                <TableHead>Role & Designation</TableHead>
+                <TableHead>Role</TableHead>
                 <TableHead>Contact</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -263,25 +267,26 @@ export const StaffTable = () => {
                   </TableRow>
                 ))
               ) : staff?.data.length ? (
+                (console.log(staff.data),
                 staff.data.map((staffMember) => (
                   <TableRow
-                    key={staffMember.id}
+                    key={staffMember?.user?.staff?.id}
                     className="hover:bg-gray-50/50 transition-colors"
                   >
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="w-10 h-10">
                           <AvatarImage
-                            src={staffMember.photo_url}
-                            alt={staffMember.name}
+                            src={staffMember?.user?.staff?.photo_url}
+                            alt={staffMember?.user?.staff?.name}
                           />
                           <AvatarFallback>
-                            {staffMember.name.charAt(0)}
+                            {staffMember?.user?.staff?.name.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
                         <div>
                           <p className="font-medium text-gray-900">
-                            {staffMember.name}
+                            {staffMember?.user?.staff?.name}
                           </p>
                         </div>
                       </div>
@@ -292,33 +297,36 @@ export const StaffTable = () => {
                         <span className="text-sm font-medium">
                           {staffMember.role}
                         </span>
-                        <Badge variant="outline" className="text-xs">
-                          {staffMember.designation}
-                        </Badge>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="space-y-1">
                         <div className="flex items-center gap-1 text-sm text-gray-600">
                           <Mail className="w-3 h-3" />
-                          {staffMember.email}
+                          {staffMember?.user?.staff?.email}
                         </div>
                         <div className="flex items-center gap-1 text-xs text-gray-500">
                           <Phone className="w-3 h-3" />
-                          {staffMember.phone.join(", ")}
+                          {staffMember?.user?.staff?.phone.join(", ")}
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
                       <Badge
-                        variant={staffMember.isActive ? "default" : "outline"}
+                        variant={
+                          staffMember?.user?.staff?.isActive
+                            ? "default"
+                            : "outline"
+                        }
                         className={`${
-                          staffMember.isActive
+                          staffMember?.user?.staff?.isActive
                             ? "bg-green-100 text-green-700"
                             : "bg-red-100 text-red-700"
                         }`}
                       >
-                        {staffMember.isActive ? "Active" : "Inactive"}
+                        {staffMember?.user?.staff?.isActive
+                          ? "Active"
+                          : "Inactive"}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
@@ -333,7 +341,7 @@ export const StaffTable = () => {
                           <DropdownMenuItem
                             onSelect={() =>
                               router.push(
-                                `/staff-management/profiles/${staffMember.id}`
+                                `/staff-management/profiles/${staffMember?.user.staff.id}`
                               )
                             }
                           >
@@ -347,21 +355,21 @@ export const StaffTable = () => {
                                 onSelect={() =>
                                   handleStaffStatus(
                                     staffMember,
-                                    !staffMember.isActive
+                                    !staffMember?.user?.staff?.isActive
                                   )
                                 }
                                 className={
-                                  staffMember.isActive
+                                  staffMember?.user?.staff?.isActive
                                     ? "text-red-500"
                                     : "text-green-500"
                                 }
                               >
-                                {staffMember.isActive ? (
+                                {staffMember?.user?.staff?.isActive ? (
                                   <UserX className="mr-2 h-4 w-4" />
                                 ) : (
                                   <UserCheck className="mr-2 h-4 w-4" />
                                 )}
-                                {staffMember.isActive
+                                {staffMember?.user?.staff?.isActive
                                   ? "Deactivate"
                                   : "Activate"}
                               </DropdownMenuItem>
@@ -371,7 +379,7 @@ export const StaffTable = () => {
                       </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                ))
+                )))
               ) : (
                 <TableRow>
                   <TableCell colSpan={5} className="h-32 text-center">

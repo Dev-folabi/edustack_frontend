@@ -21,10 +21,9 @@ export interface StaffFilters {
 
 export const staffService = {
   createStaff: (
-    schoolId: string,
     data: StaffRegistrationPayload
   ): Promise<ApiResponse<any>> => {
-    return apiClient.post(`/staff?schoolId=${schoolId}`, data);
+    return apiClient.post(`/staff`, data);
   },
 
   getStaffBySchool: (
