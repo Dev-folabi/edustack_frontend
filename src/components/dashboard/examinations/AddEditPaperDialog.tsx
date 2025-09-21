@@ -34,7 +34,7 @@ import { useSubjectStore } from "@/store/subjectStore";
 import { useQuestionBankStore } from "@/store/questionBankStore";
 import { useEffect } from "react";
 import { useExamStore } from "@/store/examStore";
-import { addExamPaper } from "@/services/examService";
+import { addExamPaper, updateExamPaper } from "@/services/examService";
 import { toast } from "sonner";
 import { ExamPaper } from "@/types/exam";
 

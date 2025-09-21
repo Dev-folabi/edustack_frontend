@@ -1,0 +1,4 @@
+type,questionText,marks,difficulty,options,correctAnswer
+MCQ,"What is the capital of France?",5,EASY,"Paris,London,Berlin,Madrid","Paris"
+ESSAY,"Explain the theory of relativity.",10,HARD,,
+FILL_IN_BLANKS,"The chemical symbol for water is ____.",2,EASY,,"H2O"
