@@ -15,6 +15,7 @@ import { useStudentStore } from '@/store/studentStore';
 import { ImportResultsDialog } from '@/components/dashboard/examinations/ImportResultsDialog';
 import { Upload } from 'lucide-react';
 import { saveManualResults, publishResults } from '@/services/examService';
+import { studentService } from '@/services/studentService';
 import { toast } from 'sonner';
 
 const ResultEntryPage = () => {
