@@ -1,0 +1,56 @@
+import { create } from 'zustand';
+import { getAllExams, getExamById } from '@/services/examService';
+import { Exam } from '@/types/exam';
+
+interface ExamState {
+  exams: Exam[];
+  selectedExam: Exam | null;
+  totalItems: number;
+  totalPages: number;
+  currentPage: number;
+  loading: boolean;
+  error: string | null;
+  fetchExams: (schoolId: string, page?: number, limit?: number) => Promise<void>;
+  fetchExamById: (examId: string) => Promise<void>;
+}
+
+export const useExamStore = create<ExamState>((set) => ({
+  exams: [],
+  selectedExam: null,
+  totalItems: 0,
+  totalPages: 0,
+  currentPage: 1,
+  loading: false,
+  error: null,
+  fetchExams: async (schoolId, page = 1, limit = 10) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await getAllExams(schoolId, page, limit);
+      if (response.success) {
+        set({
+          exams: response.data,
+          totalItems: response.totalItems,
+          totalPages: response.totalPages,
+          currentPage: response.currentPage,
+          loading: false,
+        });
+      }
+    } catch (error) {
+      set({ loading: false, error: 'Failed to fetch exams' });
+    }
+  },
+  fetchExamById: async (examId: string) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await getExamById(examId);
+      if (response.success) {
+        set({
+          selectedExam: response.data,
+          loading: false,
+        });
+      }
+    } catch (error) {
+      set({ loading: false, error: 'Failed to fetch exam details' });
+    }
+  },
+}));
