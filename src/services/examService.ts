@@ -44,6 +44,71 @@ export const updateExam = async (examId: string, examData: Partial<Omit<Exam, 'i
     }
 };
 
+export const getStudentResult = async (paperId: string): Promise<ApiResponse<any>> => {
+    try {
+        const response = await api.get(`/student/results/${paperId}`);
+        return response.data;
+    } catch (error) {
+        handleApiError(error);
+        throw error;
+    }
+};
+
+export const submitExam = async (attemptId: string): Promise<ApiResponse<any>> => {
+    try {
+        const response = await api.post(`/exam/cbt/attempts/${attemptId}/submit`);
+        return response.data;
+    } catch (error) {
+        handleApiError(error);
+        throw error;
+    }
+};
+
+export const startExam = async (paperId: string): Promise<ApiResponse<{ attemptId: string }>> => {
+    try {
+        const response = await api.post(`/exam/cbt/attempts/start`, { examPaperId: paperId });
+        return response.data;
+    } catch (error) {
+        handleApiError(error);
+        throw error;
+    }
+};
+
+export const getExamAttempt = async (attemptId: string): Promise<ApiResponse<any>> => {
+    try {
+        const response = await api.get(`/exam/cbt/attempts/${attemptId}`);
+        return response.data;
+    } catch (error) {
+        handleApiError(error);
+        throw error;
+    }
+};
+
+export const saveAnswer = async (attemptId: string, questionId: string, answer: any): Promise<ApiResponse<any>> => {
+    try {
+        const response = await api.post(`/exam/cbt/attempts/${attemptId}/responses`, { questionId, studentAnswer: answer });
+        return response.data;
+    } catch (error) {
+        handleApiError(error);
+        throw error;
+    }
+};
+
+export const getStudentExams = async (): Promise<ApiResponse<{
+    upcoming: ExamPaper[];
+    ongoing: ExamPaper[];
+    completed: ExamPaper[];
+    published: ExamPaper[];
+}>> => {
+    try {
+        const response = await api.get('/student/exams');
+        return response.data;
+    } catch (error) {
+        handleApiError(error);
+        throw error;
+    }
+};
+
 export const publishResults = async (paperId: string, publish: boolean): Promise<ApiResponse<any>> => {
     try {
         const response = await api.post(`/exam/results/publish/${paperId}`, { publish });
