@@ -33,8 +33,11 @@ import { useAuthStore } from "@/store/authStore";
 import { useSubjectStore } from "@/store/subjectStore";
 import { useEffect } from "react";
 import { useQuestionBankStore } from "@/store/questionBankStore";
-import { createQuestionBank, updateQuestionBank } from "@/services/questionBankService";
-import { toast } from "sonner";
+import {
+  createQuestionBank,
+  updateQuestionBank,
+} from "@/services/questionBankService";
+import { useToast } from "@/components/ui/Toast";
 import { QuestionBank } from "@/types/questionBank";
 
 const questionBankSchema = z.object({
@@ -51,10 +54,15 @@ interface CreateEditQuestionBankDialogProps {
   bank?: QuestionBank;
 }
 
-export const CreateEditQuestionBankDialog = ({ isOpen, onClose, bank }: CreateEditQuestionBankDialogProps) => {
+export const CreateEditQuestionBankDialog = ({
+  isOpen,
+  onClose,
+  bank,
+}: CreateEditQuestionBankDialogProps) => {
   const { selectedSchool } = useAuthStore();
   const { subjects, fetchSubjects } = useSubjectStore();
   const { fetchAllQuestionBanks } = useQuestionBankStore();
+  const { showToast } = useToast();
 
   const form = useForm<QuestionBankFormValues>({
     resolver: zodResolver(questionBankSchema),
@@ -81,14 +89,31 @@ export const CreateEditQuestionBankDialog = ({ isOpen, onClose, bank }: CreateEd
         : await createQuestionBank(data);
 
       if (response.success) {
-        toast.success(`Question bank ${bank ? 'updated' : 'created'} successfully!`);
+        showToast({
+          type: "success",
+          title: "Success",
+          message: `Question bank ${
+            bank ? "updated" : "created"
+          } successfully!`,
+        });
         fetchAllQuestionBanks(selectedSchool.schoolId);
         onClose();
       } else {
-        toast.error(response.message || "Failed to save question bank");
+        showToast({
+          type: "error",
+          title: "Error",
+          message: response.message || "Failed to save question bank",
+        });
       }
     } catch (error) {
-      toast.error("An error occurred while saving the question bank.");
+      showToast({
+        type: "error",
+        title: "Error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "An error occurred while saving the question bank.",
+      });
     }
   };
 
@@ -110,7 +135,10 @@ export const CreateEditQuestionBankDialog = ({ isOpen, onClose, bank }: CreateEd
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Grade 10 Mathematics" {...field} />
+                    <Input
+                      placeholder="e.g., Grade 10 Mathematics"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -123,7 +151,10 @@ export const CreateEditQuestionBankDialog = ({ isOpen, onClose, bank }: CreateEd
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="A brief description of the question bank" {...field} />
+                    <Textarea
+                      placeholder="A brief description of the question bank"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -135,15 +166,20 @@ export const CreateEditQuestionBankDialog = ({ isOpen, onClose, bank }: CreateEd
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Subject</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a subject" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {subjects.map(s => (
-                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                      {subjects.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.name}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -152,7 +188,9 @@ export const CreateEditQuestionBankDialog = ({ isOpen, onClose, bank }: CreateEd
               )}
             />
             <DialogFooter>
-              <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
+              <Button type="button" variant="ghost" onClick={onClose}>
+                Cancel
+              </Button>
               <Button type="submit" disabled={form.formState.isSubmitting}>
                 {form.formState.isSubmitting ? "Saving..." : "Save"}
               </Button>

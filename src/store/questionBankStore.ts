@@ -1,6 +1,10 @@
-import { create } from 'zustand';
-import { getAllQuestionBanks, getQuestionBanksBySubject, getQuestionBankById } from '@/services/questionBankService';
-import { QuestionBank } from '@/types/questionBank';
+import { create } from "zustand";
+import {
+  getAllQuestionBanks,
+  getQuestionBanksBySubject,
+  getQuestionBankById,
+} from "@/services/questionBankService";
+import { QuestionBank } from "@/types/questionBank";
 
 interface QuestionBankState {
   questionBanks: QuestionBank[];
@@ -28,13 +32,14 @@ export const useQuestionBankStore = create<QuestionBankState>((set) => ({
         });
       }
     } catch (error) {
-      set({ loading: false, error: 'Failed to fetch question banks' });
+      set({ loading: false, error: "Failed to fetch question banks" });
     }
   },
   fetchAllQuestionBanks: async (schoolId: string) => {
     set({ loading: true, error: null });
     try {
       const response = await getAllQuestionBanks(schoolId);
+
       if (response.success) {
         set({
           questionBanks: response.data,
@@ -42,7 +47,7 @@ export const useQuestionBankStore = create<QuestionBankState>((set) => ({
         });
       }
     } catch (error) {
-      set({ loading: false, error: 'Failed to fetch question banks' });
+      set({ loading: false, error: "Failed to fetch question banks" });
     }
   },
   fetchQuestionBankById: async (id: string) => {
@@ -56,7 +61,7 @@ export const useQuestionBankStore = create<QuestionBankState>((set) => ({
         });
       }
     } catch (error) {
-      set({ loading: false, error: 'Failed to fetch question bank' });
+      set({ loading: false, error: "Failed to fetch question bank" });
     }
   },
 }));

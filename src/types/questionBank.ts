@@ -4,7 +4,7 @@ import { Subject } from "./subject";
 export interface QuestionBank {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   subjectId: string;
   schoolId: string;
   questions?: Question[];

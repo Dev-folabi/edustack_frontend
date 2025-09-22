@@ -1,8 +1,12 @@
-import { create } from 'zustand';
-import { getAllExams, getExamById, getExamPaperById } from '@/services/examService';
-import { Exam } from '@/types/exam';
+import { create } from "zustand";
+import {
+  getAllExams,
+  getExamById,
+  getExamPaperById,
+} from "@/services/examService";
+import { Exam } from "@/types/exam";
 
-import { ExamPaper } from '@/types/exam';
+import { ExamPaper } from "@/types/exam";
 
 interface ExamState {
   exams: Exam[];
@@ -13,7 +17,12 @@ interface ExamState {
   currentPage: number;
   loading: boolean;
   error: string | null;
-  fetchExams: (schoolId: string, page?: number, limit?: number) => Promise<void>;
+  fetchExams: (
+    schoolId: string,
+    sessionId: string,
+    page?: number,
+    limit?: number
+  ) => Promise<void>;
   fetchExamById: (examId: string) => Promise<void>;
   fetchExamPaperById: (paperId: string) => Promise<void>;
 }
@@ -27,10 +36,10 @@ export const useExamStore = create<ExamState>((set) => ({
   currentPage: 1,
   loading: false,
   error: null,
-  fetchExams: async (schoolId, page = 1, limit = 10) => {
+  fetchExams: async (schoolId, sessionId, page = 1, limit = 10) => {
     set({ loading: true, error: null });
     try {
-      const response = await getAllExams(schoolId, page, limit);
+      const response = await getAllExams(schoolId, sessionId, page, limit);
       if (response.success) {
         set({
           exams: response.data,
@@ -41,7 +50,7 @@ export const useExamStore = create<ExamState>((set) => ({
         });
       }
     } catch (error) {
-      set({ loading: false, error: 'Failed to fetch exams' });
+      set({ loading: false, error: "Failed to fetch exams" });
     }
   },
   fetchExamById: async (examId: string) => {
@@ -55,7 +64,7 @@ export const useExamStore = create<ExamState>((set) => ({
         });
       }
     } catch (error) {
-      set({ loading: false, error: 'Failed to fetch exam details' });
+      set({ loading: false, error: "Failed to fetch exam details" });
     }
   },
   fetchExamPaperById: async (paperId: string) => {
@@ -69,7 +78,7 @@ export const useExamStore = create<ExamState>((set) => ({
         });
       }
     } catch (error) {
-      set({ loading: false, error: 'Failed to fetch exam paper details' });
+      set({ loading: false, error: "Failed to fetch exam paper details" });
     }
   },
 }));

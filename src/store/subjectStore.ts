@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import { subjectService } from '@/services/subjectService';
-import { Subject } from '@/types/subject';
+import { create } from "zustand";
+import { subjectService } from "@/services/subjectService";
+import { Subject } from "@/types/subject";
 
 interface SubjectState {
   subjects: Subject[];
@@ -16,15 +16,20 @@ export const useSubjectStore = create<SubjectState>((set) => ({
   fetchSubjects: async (schoolId: string) => {
     set({ loading: true, error: null });
     try {
-      const response = await subjectService.getSubjects({ schoolId, isActive: 'true', limit: 1000 });
-      if (response.data.success) {
+      const response = await subjectService.getSubjects({
+        schoolId,
+        isActive: "true",
+        limit: 1000,
+      });
+
+      if (response.success) {
         set({
-          subjects: response.data.data.data,
+          subjects: response.data.data,
           loading: false,
         });
       }
     } catch (error) {
-      set({ loading: false, error: 'Failed to fetch subjects' });
+      set({ loading: false, error: "Failed to fetch subjects" });
     }
   },
 }));
