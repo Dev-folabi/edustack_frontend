@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -48,7 +48,7 @@ const questionSchema = z
     options: z
       .array(z.object({ value: z.string().min(1, "Option cannot be empty") }))
       .optional(),
-    correctAnswer: z.any().optional(),
+    correctAnswer: z.string().optional(),
   })
   .refine(
     (data) => {
@@ -65,31 +65,19 @@ const questionSchema = z
     {
       message:
         "MCQ questions must have at least 2 options and a correct answer.",
-      path: ["options"],
+      path: ["correctAnswer"],
     }
   )
   .refine(
     (data) => {
       if (data.type === "FillInBlanks") {
-        return !!data.correctAnswer && data.correctAnswer !== "";
+        return !!data.correctAnswer && data.correctAnswer.trim() !== "";
       }
       return true;
     },
     {
       message: "Fill in the blanks questions must have a correct answer.",
       path: ["correctAnswer"],
-    }
-  )
-  .refine(
-    (data) => {
-      if (data.type === "Essay") {
-        return !data.options;
-      }
-      return true;
-    },
-    {
-      message: "Essay questions should not have options.",
-      path: ["options"],
     }
   );
 
@@ -109,16 +97,16 @@ export const AddEditQuestionDialog = ({
   question,
 }: AddEditQuestionDialogProps) => {
   const form = useForm<QuestionFormValues>({
-    resolver: zodResolver(questionSchema) as Resolver<QuestionFormValues>,
+    resolver: zodResolver(questionSchema),
     defaultValues: question
       ? {
           type: question.type as "MCQ" | "Essay" | "FillInBlanks",
           questionText: question.questionText,
           marks: question.marks,
           difficulty: question.difficulty as "Easy" | "Medium" | "Hard",
-          options: question.type === "MCQ" ? question.options : undefined,
+          options: question.type === "MCQ" ? question.options?.map(opt => ({ value: opt })) : undefined,
           correctAnswer:
-            question.type === "Essay" ? "" : question.correctAnswer,
+            question.type === "Essay" ? undefined : String(question.correctAnswer || ""),
         }
       : {
           type: "MCQ",
@@ -140,9 +128,30 @@ export const AddEditQuestionDialog = ({
   const { fetchQuestionBankById } = useQuestionBankStore();
   const { showToast } = useToast();
 
+  // Reset form when question type changes
+  const handleTypeChange = (value: "MCQ" | "Essay" | "FillInBlanks") => {
+    form.setValue("type", value);
+    
+    if (value === "MCQ") {
+      form.setValue("options", [{ value: "" }, { value: "" }]);
+      form.setValue("correctAnswer", "");
+    } else if (value === "FillInBlanks") {
+      form.setValue("options", undefined);
+      form.setValue("correctAnswer", "");
+    } else if (value === "Essay") {
+      form.setValue("options", undefined);
+      form.setValue("correctAnswer", undefined);
+    }
+  };
+
   const onSubmit = async (values: QuestionFormValues) => {
+    console.log("Form values:", values); // Debug log
+
     const payload: Omit<Question, "id"> = {
-      ...values,
+      type: values.type,
+      questionText: values.questionText,
+      marks: values.marks,
+      difficulty: values.difficulty,
       options:
         values.type === "MCQ"
           ? values.options?.map((opt) => opt.value)
@@ -154,6 +163,8 @@ export const AddEditQuestionDialog = ({
           ? values.correctAnswer
           : undefined,
     };
+
+    console.log("Payload:", payload); // Debug log
 
     try {
       const response = question
@@ -168,6 +179,7 @@ export const AddEditQuestionDialog = ({
         });
         fetchQuestionBankById(bankId);
         onClose();
+        form.reset();
       } else {
         showToast({
           title: "Error",
@@ -176,6 +188,7 @@ export const AddEditQuestionDialog = ({
         });
       }
     } catch (error) {
+      console.error("Submit error:", error); // Debug log
       showToast({
         title: "Error",
         message:
@@ -205,7 +218,7 @@ export const AddEditQuestionDialog = ({
                 <FormItem>
                   <FormLabel>Question Type</FormLabel>
                   <Select
-                    onValueChange={field.onChange}
+                    onValueChange={handleTypeChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
@@ -317,6 +330,7 @@ export const AddEditQuestionDialog = ({
                       <Input
                         placeholder="Enter the correct answer"
                         {...field}
+                        value={field.value || ""}
                       />
                     </FormControl>
                     <FormMessage />
