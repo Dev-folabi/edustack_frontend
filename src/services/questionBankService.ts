@@ -22,26 +22,14 @@ export const deleteQuestion = async (
   return response as ApiResponse<null>;
 };
 
-export const bulkAddQuestionsToBank = async (
-  bankId: string,
-  questions: Partial<Question>[]
-): Promise<ApiResponse<Question[]>> => {
-  const response = await apiClient.post(
-    `${QB_BASE_URL}/${bankId}/questions/bulk`,
-    { questions }
-  );
-  return response as ApiResponse<Question[]>;
-};
-
 export const addQuestionToBank = async (
   bankId: string,
-  questionData: Partial<Question>
-): Promise<ApiResponse<Question>> => {
-  const response = await apiClient.post(
-    `${QB_BASE_URL}/${bankId}/questions`,
-    questionData
-  );
-  return response as ApiResponse<Question>;
+  questionData: Omit<Question, "id">[]
+): Promise<ApiResponse<Question[]>> => {
+  const response = await apiClient.post(`${QB_BASE_URL}/${bankId}/questions`, {
+    questions: questionData,
+  });
+  return response as ApiResponse<Question[]>;
 };
 
 export const updateQuestion = async (

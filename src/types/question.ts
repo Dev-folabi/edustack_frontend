@@ -1,9 +1,17 @@
 export interface Question {
   id: string;
-  type: 'MCQ' | 'ESSAY' | 'FILL_IN_BLANKS';
+  type: QuestionType;
   questionText: string;
   options?: string[];
-  correctAnswer?: any;
+  correctAnswer?: string | string[];
   marks: number;
-  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
+  difficulty: QuestionDifficulty;
 }
+
+export type QuestionType =
+  | "MCQ"
+  | "Essay"
+  | "FillInBlanks"
+  | "TrueFalse"
+  | "Matching";
+export type QuestionDifficulty = "Easy" | "Medium" | "Hard";
