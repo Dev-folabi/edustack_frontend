@@ -40,8 +40,8 @@ import { Exam } from "@/types/exam";
 
 const examSchema = z.object({
   title: z.string().min(1, "Title is required"),
-  startDate: z.date({ required_error: "Start date is required" }),
-  endDate: z.date({ required_error: "End date is required" }),
+  startDate: z.date().refine((d) => !!d, { message: "Start date is required" }),
+  endDate: z.date().refine((d) => !!d, { message: "End date is required" }),
   classId: z.string().min(1, "Class is required"),
   sectionId: z.string().min(1, "Section is required"),
   termId: z.string().min(1, "Term is required"),
@@ -63,10 +63,10 @@ export const EditExamDialog = ({
 }: EditExamDialogProps) => {
   const { selectedSchool } = useAuthStore();
   const { classes, fetchClasses } = useClassStore();
-  const { selectedSession, fetchSessions, fetchTerms } = useSessionStore();
+  const { selectedSession, fetchTerms } = useSessionStore();
   const { fetchExams } = useExamStore();
-  const [selectedClass, setSelectedClass] = useState<string>(exam.class.id);
   const { showToast } = useToast();
+  const [selectedClass, setSelectedClass] = useState<string>(exam.class.id);
 
   const form = useForm<ExamFormValues>({
     resolver: zodResolver(examSchema),
@@ -77,25 +77,23 @@ export const EditExamDialog = ({
       classId: exam.class.id,
       sectionId: exam.section.id,
       termId: exam.term.id,
-      sessionId: exam.session.id,
+      sessionId: selectedSession?.id || "", // always lock to selectedSession
     },
   });
 
+  // Fetch data when dialog opens
   useEffect(() => {
-    if (selectedSchool) {
+    if (isOpen && selectedSchool) {
       fetchClasses(selectedSchool.schoolId);
-      fetchSessions();
+      if (selectedSession?.id) {
+        fetchTerms(selectedSession.id);
+      }
     }
-  }, [selectedSchool, fetchClasses, fetchSessions]);
+  }, [isOpen, selectedSchool, selectedSession, fetchClasses, fetchTerms]);
 
+  // Reset form whenever exam or session changes
   useEffect(() => {
-    if (form.watch("sessionId")) {
-      fetchTerms(form.watch("sessionId"));
-    }
-  }, [form.watch("sessionId"), fetchTerms]);
-
-  useEffect(() => {
-    if (exam) {
+    if (exam && selectedSession) {
       form.reset({
         title: exam.title,
         startDate: new Date(exam.startDate),
@@ -103,28 +101,30 @@ export const EditExamDialog = ({
         classId: exam.class.id,
         sectionId: exam.section.id,
         termId: exam.term.id,
-        sessionId: exam.session.id,
+        sessionId: selectedSession.id, // force current session
       });
       setSelectedClass(exam.class.id);
     }
-  }, [exam, form]);
+  }, [exam, selectedSession, form]);
 
   const onSubmit = async (values: ExamFormValues) => {
-    if (!selectedSchool) return;
+    if (!selectedSchool || !selectedSession) return;
 
     try {
       const response = await updateExam(exam.id, {
         ...values,
+        sessionId: selectedSession.id,
         startDate: values.startDate.toISOString(),
         endDate: values.endDate.toISOString(),
       });
+
       if (response.success) {
         showToast({
           title: "Success",
           type: "success",
           message: "Exam updated successfully!",
         });
-        fetchExams(selectedSchool.schoolId, selectedSession?.id!);
+        fetchExams(selectedSchool.schoolId, selectedSession.id);
         onClose();
       } else {
         showToast({
@@ -133,7 +133,7 @@ export const EditExamDialog = ({
           message: response.message || "Failed to update exam",
         });
       }
-    } catch (error) {
+    } catch {
       showToast({
         title: "Error",
         type: "error",
@@ -155,6 +155,7 @@ export const EditExamDialog = ({
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {/* Title */}
             <FormField
               control={form.control}
               name="title"
@@ -168,6 +169,8 @@ export const EditExamDialog = ({
                 </FormItem>
               )}
             />
+
+            {/* Dates */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -202,59 +205,62 @@ export const EditExamDialog = ({
                 )}
               />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="sessionId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Session</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a session" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {selectedSession?.id && (
-                          <SelectItem
-                            key={selectedSession?.id!}
-                            value={selectedSession?.id}
-                          >
-                            {selectedSession?.name}
-                          </SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="termId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Term</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a term" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {selectedSession?.terms?.map((term) => (
-                          <SelectItem key={term.id} value={term.id}>
-                            {term.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+
+            {/* Session (locked to selectedSession) */}
+            <FormField
+              control={form.control}
+              name="sessionId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Session</FormLabel>
+                  <Select disabled value={selectedSession?.id}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue>
+                          {selectedSession?.name || "No session selected"}
+                        </SelectValue>
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {selectedSession && (
+                        <SelectItem value={selectedSession.id}>
+                          {selectedSession.name}
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Term */}
+            <FormField
+              control={form.control}
+              name="termId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Term</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a term" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {selectedSession?.terms?.map((term) => (
+                        <SelectItem key={term.id} value={term.id}>
+                          {term.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Class + Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -263,9 +269,9 @@ export const EditExamDialog = ({
                   <FormItem>
                     <FormLabel>Class</FormLabel>
                     <Select
-                      onValueChange={(value) => {
-                        field.onChange(value);
-                        setSelectedClass(value);
+                      onValueChange={(val) => {
+                        field.onChange(val);
+                        setSelectedClass(val);
                         form.setValue("sectionId", "");
                       }}
                       value={field.value}
@@ -304,9 +310,9 @@ export const EditExamDialog = ({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {sections.map((section) => (
-                          <SelectItem key={section.id} value={section.id}>
-                            {section.name}
+                        {sections.map((s) => (
+                          <SelectItem key={s.id} value={s.id}>
+                            {s.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -316,6 +322,8 @@ export const EditExamDialog = ({
                 )}
               />
             </div>
+
+            {/* Footer */}
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={onClose}>
                 Cancel

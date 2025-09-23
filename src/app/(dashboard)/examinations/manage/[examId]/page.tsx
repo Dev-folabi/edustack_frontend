@@ -23,9 +23,37 @@ const ExamDetailsPage = () => {
     }
   }, [examId, fetchExamById]);
 
-  if (loading) return <p>Loading exam details...</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
-  if (!selectedExam) return <p>No exam found.</p>;
+  if (loading) return (
+    <div className="max-w-7xl mx-auto p-6 space-y-6 animate-pulse">
+      <div className="h-48 bg-gray-200 rounded-lg">
+        <div className="h-10 bg-gray-300 rounded-t-lg px-6 flex items-center">
+          <div className="h-4 w-1/4 bg-gray-400 rounded"></div>
+        </div>
+        <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i}>
+              <div className="h-3 w-20 bg-gray-300 rounded mb-2"></div>
+              <div className="h-4 w-24 bg-gray-400 rounded"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="h-64 bg-gray-200 rounded-lg"></div>
+    </div>
+  );
+  if (error) return (
+    <div className="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50">
+      <p className="font-medium">Error</p>
+      <p>{error}</p>
+    </div>
+  );
+
+  if (!selectedExam) return (
+    <div className="p-4 mb-4 text-sm text-gray-800 rounded-lg bg-gray-50">
+      <p className="font-medium">No Data</p>
+      <p>No examination record was found.</p>
+    </div>
+  );
 
   return (
     <>

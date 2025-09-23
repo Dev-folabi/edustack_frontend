@@ -3,6 +3,10 @@ export interface Exam {
   title: string;
   startDate: string;
   endDate: string;
+  classId: string;
+  sectionId: string;
+  termId: string;
+  sessionId: string;
   class: {
     id: string;
     name: string;
@@ -30,9 +34,10 @@ export interface ExamPaper {
   };
   maxMarks: number;
   passMarks: number;
+  paperDate: string;
   startTime: string;
   endTime: string;
-  mode: 'PAPER_BASED' | 'CBT';
+  mode: 'PaperBased' | 'CBT';
   questionBankId?: string;
   totalQuestions?: number;
   instructions?: string;

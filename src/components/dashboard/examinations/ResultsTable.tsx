@@ -58,7 +58,7 @@ export const ResultsTable = ({ paper, students, onMarksChange }: ResultsTablePro
               <TableCell className="font-medium">{student.name}</TableCell>
               <TableCell>{student.admissionNumber}</TableCell>
               <TableCell>
-                {paper.mode === 'PAPER_BASED' ? (
+                {paper.mode === 'PaperBased' ? (
                   <Input
                     type="number"
                     className="w-24"

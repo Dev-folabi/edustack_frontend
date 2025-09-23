@@ -107,7 +107,7 @@ const ResultEntryPage = () => {
               <Download className="mr-2 h-4 w-4" />
               Download All Reports
             </Button>
-            {selectedPaper.mode === 'PAPER_BASED' && (
+            {selectedPaper.mode === 'PaperBased' && (
               <>
                 <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
                   <Upload className="mr-2 h-4 w-4" />
@@ -124,7 +124,7 @@ const ResultEntryPage = () => {
           </div>
         </CardHeader>
         <CardContent>
-          {selectedPaper.mode === 'PAPER_BASED' ? (
+          {selectedPaper.mode === 'PaperBased' ? (
             <ResultsTable paper={selectedPaper} students={students} onMarksChange={handleMarksChange} />
           ) : (
             <EssayGrading paperId={paperId} />
