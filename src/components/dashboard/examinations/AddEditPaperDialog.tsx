@@ -3,6 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -28,37 +29,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DateTimePicker } from "@/components/ui/DateTimePicker";
+import { DateTimePicker } from "@/components/ui/DateTimePicker"; // Assume it supports mode prop
 import { useAuthStore } from "@/store/authStore";
 import { useSubjectStore } from "@/store/subjectStore";
 import { useQuestionBankStore } from "@/store/questionBankStore";
-import { useEffect } from "react";
 import { useExamStore } from "@/store/examStore";
 import { addExamPaper, updateExamPaper } from "@/services/examService";
 import { useToast } from "@/components/ui/Toast";
 import { ExamPaper } from "@/types/exam";
 
-// ✅ Fixed schema with proper number types
+/* ------------------ Validation Schema ------------------ */
 const paperSchema = z
   .object({
     subjectId: z.string().min(1, "Subject is required"),
     maxMarks: z.coerce.number().min(1, "Max marks are required"),
     passMarks: z.coerce.number().min(1, "Pass marks are required"),
-    paperDate: z.date().refine((d) => !!d, { message: "Paper date is required" }),
-    startTime: z.date().refine((d) => !!d, { message: "Start time is required" }),
-    endTime: z.date().refine((d) => !!d, { message: "End time is required" }),
+    paperDate: z.date(),
+    startTime: z.date(),
+    endTime: z.date(),
     mode: z.enum(["PaperBased", "CBT"]),
     questionBankId: z.string().optional(),
     totalQuestions: z.coerce.number().positive().optional(),
     instructions: z.string().optional(),
   })
   .refine(
-    (data) => {
-      if (data.mode === "CBT") {
-        return !!data.questionBankId && !!data.totalQuestions;
-      }
-      return true;
-    },
+    (data) =>
+      data.mode === "PaperBased" ||
+      (!!data.questionBankId && !!data.totalQuestions),
     {
       message: "Question bank and total questions are required for CBT mode",
       path: ["questionBankId"],
@@ -74,6 +71,56 @@ interface AddEditPaperDialogProps {
   paper?: ExamPaper;
 }
 
+/* ------------------ Reusable Field Components ------------------ */
+const NumberField = ({
+  name,
+  label,
+}: {
+  name: keyof PaperFormValues;
+  label: string;
+}) => (
+  <FormField
+    name={name}
+    render={({ field }) => (
+      <FormItem>
+        <FormLabel>{label}</FormLabel>
+        <FormControl>
+          <Input type="number" {...field} />
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+);
+
+const DateField = ({
+  name,
+  label,
+  mode = "date",
+}: {
+  name: keyof PaperFormValues;
+  label: string;
+  mode?: "date" | "time";
+}) => (
+  <FormField
+    name={name}
+    render={({ field }) => (
+      <FormItem>
+        <FormLabel>{label}</FormLabel>
+        <FormControl>
+          <DateTimePicker
+            date={field.value}
+            setDate={field.onChange}
+            mode={mode}
+          />
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+);
+
+/* ------------------ Main Component ------------------ */
 export const AddEditPaperDialog = ({
   isOpen,
   onClose,
@@ -86,10 +133,8 @@ export const AddEditPaperDialog = ({
   const { fetchExamById } = useExamStore();
   const { showToast } = useToast();
 
-
-  const form = useForm<PaperFormValues>({
-    resolver: zodResolver(paperSchema),
-    defaultValues: {
+  const defaultValues = useMemo<PaperFormValues>(
+    () => ({
       subjectId: paper?.subject?.id || "",
       maxMarks: paper?.maxMarks || 0,
       passMarks: paper?.passMarks || 0,
@@ -98,30 +143,33 @@ export const AddEditPaperDialog = ({
       endTime: paper?.endTime ? new Date(paper.endTime) : new Date(),
       mode: paper?.mode || "PaperBased",
       questionBankId: paper?.questionBankId || "",
-      totalQuestions: paper?.totalQuestions || undefined,
+      totalQuestions: paper?.totalQuestions,
       instructions: paper?.instructions || "",
-    },
+    }),
+    [paper]
+  );
+
+  const form = useForm<PaperFormValues>({
+    resolver: zodResolver(paperSchema),
+    defaultValues,
   });
 
   const selectedSubjectId = form.watch("subjectId");
   const selectedMode = form.watch("mode");
 
+  /* Fetch Data */
   useEffect(() => {
-    if (selectedSchool) {
-      fetchSubjects(selectedSchool.schoolId);
-    }
+    if (selectedSchool) fetchSubjects(selectedSchool.schoolId);
   }, [selectedSchool, fetchSubjects]);
 
   useEffect(() => {
-    if (selectedSubjectId) {
-      fetchQuestionBanksBySubject(selectedSubjectId);
-    }
+    if (selectedSubjectId) fetchQuestionBanksBySubject(selectedSubjectId);
   }, [selectedSubjectId, fetchQuestionBanksBySubject]);
 
-  // ✅ Properly typed onSubmit function
+  /* Submit Handler */
   const onSubmit = async (values: PaperFormValues) => {
     try {
-      const data = {
+      const payload = {
         ...values,
         paperDate: values.paperDate.toISOString(),
         startTime: values.startTime.toISOString(),
@@ -129,12 +177,12 @@ export const AddEditPaperDialog = ({
       };
 
       const response = paper
-        ? await updateExamPaper(examId, paper.id, data)
-        : await addExamPaper(examId, data);
+        ? await updateExamPaper(examId, paper.id, payload)
+        : await addExamPaper(examId, payload);
 
       if (response.success) {
         showToast({
-          title: `Success`,
+          title: "Success",
           message: `Exam paper ${paper ? "updated" : "added"} successfully!`,
           type: "success",
         });
@@ -147,7 +195,7 @@ export const AddEditPaperDialog = ({
           type: "error",
         });
       }
-    } catch (error) {
+    } catch {
       showToast({
         title: "Error",
         message: "An error occurred while saving the exam paper.",
@@ -158,18 +206,18 @@ export const AddEditPaperDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[525px]">
+      <DialogContent className="sm:max-w-[525px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{paper ? "Edit" : "Add"} Exam Paper</DialogTitle>
           <DialogDescription>
             Fill in the details for the exam paper.
           </DialogDescription>
         </DialogHeader>
+
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Subject */}
             <FormField
-              control={form.control}
               name="subjectId"
               render={({ field }) => (
                 <FormItem>
@@ -198,96 +246,19 @@ export const AddEditPaperDialog = ({
 
             {/* Marks */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="maxMarks"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Max Marks</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.value)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="passMarks"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Pass Marks</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.value)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <NumberField name="maxMarks" label="Max Marks" />
+              <NumberField name="passMarks" label="Pass Marks" />
             </div>
 
-            {/* Paper Date */}
-            <FormField
-              control={form.control}
-              name="paperDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Paper Date</FormLabel>
-                  <FormControl>
-                    <DateTimePicker date={field.value} setDate={field.onChange} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Start & End Time */}
+            {/* Schedule */}
+            <DateField name="paperDate" label="Paper Date" mode="date" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="startTime"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Start Time</FormLabel>
-                    <FormControl>
-                      <DateTimePicker
-                        date={field.value}
-                        setDate={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="endTime"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>End Time</FormLabel>
-                    <FormControl>
-                      <DateTimePicker
-                        date={field.value}
-                        setDate={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <DateField name="startTime" label="Start Time" mode="time" />
+              <DateField name="endTime" label="End Time" mode="time" />
             </div>
 
             {/* Mode */}
             <FormField
-              control={form.control}
               name="mode"
               render={({ field }) => (
                 <FormItem>
@@ -313,11 +284,10 @@ export const AddEditPaperDialog = ({
               )}
             />
 
-            {/* CBT Extra Fields */}
+            {/* CBT Extra */}
             {selectedMode === "CBT" && (
               <div className="space-y-4 p-4 border rounded-md">
                 <FormField
-                  control={form.control}
                   name="questionBankId"
                   render={({ field }) => (
                     <FormItem>
@@ -344,29 +314,12 @@ export const AddEditPaperDialog = ({
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="totalQuestions"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Total Questions to Display</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          {...field}
-                          onChange={(e) => field.onChange(e.target.value)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <NumberField name="totalQuestions" label="Total Questions" />
               </div>
             )}
 
             {/* Instructions */}
             <FormField
-              control={form.control}
               name="instructions"
               render={({ field }) => (
                 <FormItem>
@@ -382,6 +335,7 @@ export const AddEditPaperDialog = ({
               )}
             />
 
+            {/* Actions */}
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={onClose}>
                 Cancel

@@ -1,9 +1,8 @@
 "use client";
 
-import { useForm, useFieldArray, Resolver } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -14,30 +13,31 @@ import {
 } from "@/components/ui/dialog";
 import {
   Form,
-  FormControl,
   FormField,
   FormItem,
   FormLabel,
+  FormControl,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import {
   Select,
-  SelectContent,
-  SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectContent,
+  SelectItem,
 } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { PlusCircle, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 import { Question } from "@/types/question";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   addQuestionToBank,
   updateQuestion,
 } from "@/services/questionBankService";
 import { useQuestionBankStore } from "@/store/questionBankStore";
-import { PlusCircle, Trash2 } from "lucide-react";
 
 const questionSchema = z
   .object({
@@ -45,57 +45,44 @@ const questionSchema = z
     questionText: z.string().min(1, "Question text is required"),
     marks: z.coerce.number().min(1, "Marks are required"),
     difficulty: z.enum(["Easy", "Medium", "Hard"]),
-    options: z
-      .array(z.object({ value: z.string().min(1, "Option cannot be empty") }))
-      .optional(),
+    options: z.array(z.object({ value: z.string().min(1) })).optional(),
     correctAnswer: z.string().optional(),
   })
   .refine(
-    (data) => {
-      if (data.type === "MCQ") {
-        return (
-          !!data.options &&
-          data.options.length >= 2 &&
-          data.correctAnswer !== undefined &&
-          data.correctAnswer !== ""
-        );
-      }
-      return true;
-    },
+    (data) =>
+      data.type !== "MCQ" ||
+      (!!data.options && data.options.length >= 2 && !!data.correctAnswer),
     {
-      message:
-        "MCQ questions must have at least 2 options and a correct answer.",
+      message: "MCQ must have ≥2 options and a correct answer.",
       path: ["correctAnswer"],
     }
   )
   .refine(
-    (data) => {
-      if (data.type === "FillInBlanks") {
-        return !!data.correctAnswer && data.correctAnswer.trim() !== "";
-      }
-      return true;
-    },
+    (data) => data.type !== "FillInBlanks" || !!data.correctAnswer?.trim(),
     {
-      message: "Fill in the blanks questions must have a correct answer.",
+      message: "Fill in the blanks must have a correct answer.",
       path: ["correctAnswer"],
     }
   );
 
 type QuestionFormValues = z.infer<typeof questionSchema>;
 
-interface AddEditQuestionDialogProps {
+interface Props {
   isOpen: boolean;
   onClose: () => void;
   bankId: string;
   question?: Question;
 }
 
-export const AddEditQuestionDialog = ({
+export function AddEditQuestionDialog({
   isOpen,
   onClose,
   bankId,
   question,
-}: AddEditQuestionDialogProps) => {
+}: Props) {
+  const { showToast } = useToast();
+  const { fetchQuestionBankById } = useQuestionBankStore();
+
   const form = useForm<QuestionFormValues>({
     resolver: zodResolver(questionSchema),
     defaultValues: question
@@ -104,9 +91,14 @@ export const AddEditQuestionDialog = ({
           questionText: question.questionText,
           marks: question.marks,
           difficulty: question.difficulty as "Easy" | "Medium" | "Hard",
-          options: question.type === "MCQ" ? question.options?.map(opt => ({ value: opt })) : undefined,
+          options:
+            question.type === "MCQ"
+              ? question.options?.map((opt) => ({ value: opt }))
+              : undefined,
           correctAnswer:
-            question.type === "Essay" ? undefined : String(question.correctAnswer || ""),
+            question.type === "Essay"
+              ? undefined
+              : String(question.correctAnswer || ""),
         }
       : {
           type: "MCQ",
@@ -122,40 +114,33 @@ export const AddEditQuestionDialog = ({
     control: form.control,
     name: "options",
   });
-
   const questionType = form.watch("type");
 
-  const { fetchQuestionBankById } = useQuestionBankStore();
-  const { showToast } = useToast();
-
-  // Reset form when question type changes
   const handleTypeChange = (value: "MCQ" | "Essay" | "FillInBlanks") => {
-    form.setValue("type", value);
-    
-    if (value === "MCQ") {
-      form.setValue("options", [{ value: "" }, { value: "" }]);
-      form.setValue("correctAnswer", "");
-    } else if (value === "FillInBlanks") {
-      form.setValue("options", undefined);
-      form.setValue("correctAnswer", "");
-    } else if (value === "Essay") {
-      form.setValue("options", undefined);
-      form.setValue("correctAnswer", undefined);
-    }
+    const resetMap = {
+      MCQ: {
+        type: "MCQ",
+        options: [{ value: "" }, { value: "" }],
+        correctAnswer: "",
+      },
+      FillInBlanks: {
+        type: "FillInBlanks",
+        options: undefined,
+        correctAnswer: "",
+      },
+      Essay: { type: "Essay", options: undefined, correctAnswer: undefined },
+    };
+    form.reset({ ...form.getValues(), ...resetMap[value] });
   };
 
   const onSubmit = async (values: QuestionFormValues) => {
-    console.log("Form values:", values); // Debug log
-
     const payload: Omit<Question, "id"> = {
       type: values.type,
       questionText: values.questionText,
       marks: values.marks,
       difficulty: values.difficulty,
       options:
-        values.type === "MCQ"
-          ? values.options?.map((opt) => opt.value)
-          : undefined,
+        values.type === "MCQ" ? values.options?.map((o) => o.value) : undefined,
       correctAnswer:
         values.type === "MCQ"
           ? values.options?.[Number(values.correctAnswer)]?.value
@@ -164,37 +149,27 @@ export const AddEditQuestionDialog = ({
           : undefined,
     };
 
-    console.log("Payload:", payload); // Debug log
-
     try {
-      const response = question
+      const res = question
         ? await updateQuestion(bankId, question.id, payload)
         : await addQuestionToBank(bankId, [payload]);
 
-      if (response.success) {
+      if (res.success) {
         showToast({
           title: "Success",
-          message: `Question ${question ? "updated" : "added"} successfully!`,
+          message: `Question ${question ? "updated" : "added"}!`,
           type: "success",
         });
         fetchQuestionBankById(bankId);
         onClose();
         form.reset();
       } else {
-        showToast({
-          title: "Error",
-          message: response.message || "Failed to save question",
-          type: "error",
-        });
+        throw new Error(res.message || "Failed to save question.");
       }
-    } catch (error) {
-      console.error("Submit error:", error); // Debug log
+    } catch (err) {
       showToast({
         title: "Error",
-        message:
-          error instanceof Error
-            ? error.message
-            : "An error occurred while saving the question.",
+        message: err instanceof Error ? err.message : "Unexpected error",
         type: "error",
       });
     }
@@ -202,195 +177,200 @@ export const AddEditQuestionDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="flex max-h-[90vh] flex-col sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{question ? "Edit" : "Add"} Question</DialogTitle>
           <DialogDescription>
             Fill in the details for the question.
           </DialogDescription>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Question Type</FormLabel>
-                  <Select
-                    onValueChange={handleTypeChange}
-                    defaultValue={field.value}
-                  >
+
+        {/* scrollable body */}
+        <div className="flex-1 overflow-y-auto pr-2">
+          <Form {...form}>
+            <form
+              id="question-form"
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-4 pb-4"
+            >
+              {/* Type selector */}
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Type</FormLabel>
+                    <Select
+                      onValueChange={handleTypeChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="MCQ">Multiple Choice</SelectItem>
+                        <SelectItem value="Essay">Essay</SelectItem>
+                        <SelectItem value="FillInBlanks">
+                          Fill in the Blanks
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+
+              {/* Question text */}
+              <FormField
+                control={form.control}
+                name="questionText"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Question</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a type" />
-                      </SelectTrigger>
+                      <Textarea
+                        placeholder="Enter the question text"
+                        {...field}
+                      />
                     </FormControl>
-                    <SelectContent>
-                      <SelectItem value="MCQ">Multiple Choice (MCQ)</SelectItem>
-                      <SelectItem value="Essay">Essay</SelectItem>
-                      <SelectItem value="FillInBlanks">
-                        Fill in the Blanks
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="questionText"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Question</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Enter the question text here"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              {/* MCQ block */}
+              {questionType === "MCQ" && (
+                <div className="rounded-md border p-4 space-y-3">
+                  <FormLabel>Options</FormLabel>
+                  <FormField
+                    control={form.control}
+                    name="correctAnswer"
+                    render={({ field }) => (
+                      <RadioGroup
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        className="space-y-2"
+                      >
+                        {fields.map((item, i) => (
+                          <div
+                            key={item.id}
+                            className="flex items-center gap-3"
+                          >
+                            <RadioGroupItem value={String(i)} />
+                            <FormField
+                              control={form.control}
+                              name={`options.${i}.value`}
+                              render={({ field: optionField }) => (
+                                <FormControl>
+                                  <Input
+                                    {...optionField}
+                                    placeholder={`Option ${i + 1}`}
+                                  />
+                                </FormControl>
+                              )}
+                            />
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => remove(i)}
+                              disabled={fields.length <= 2}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </RadioGroup>
+                    )}
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => append({ value: "" })}
+                  >
+                    <PlusCircle className="mr-2 h-4 w-4" /> Add Option
+                  </Button>
+                </div>
               )}
-            />
 
-            {questionType === "MCQ" && (
-              <div className="space-y-4 p-4 border rounded-md">
-                <FormLabel>Options</FormLabel>
+              {/* Fill in blanks block */}
+              {questionType === "FillInBlanks" && (
                 <FormField
                   control={form.control}
                   name="correctAnswer"
                   render={({ field }) => (
                     <FormItem>
+                      <FormLabel>Correct Answer</FormLabel>
                       <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="space-y-2"
-                        >
-                          {fields.map((item, index) => (
-                            <div key={item.id} className="flex items-center space-x-3">
-                              <FormControl>
-                                <RadioGroupItem value={String(index)} />
-                              </FormControl>
-                              <FormField
-                                control={form.control}
-                                name={`options.${index}.value`}
-                                render={({ field: optionField }) => (
-                                  <FormItem className="flex-grow">
-                                    <FormControl>
-                                      <Input
-                                        {...optionField}
-                                        placeholder={`Option ${index + 1}`}
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => remove(index)}
-                                disabled={fields.length <= 2}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ))}
-                        </RadioGroup>
+                        <Input
+                          placeholder="Enter correct answer"
+                          {...field}
+                          value={field.value || ""}
+                        />
                       </FormControl>
-                      <FormMessage />
                     </FormItem>
                   )}
                 />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => append({ value: "" })}
-                >
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Add Option
-                </Button>
-              </div>
-            )}
+              )}
 
-            {questionType === "FillInBlanks" && (
-              <FormField
-                control={form.control}
-                name="correctAnswer"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Correct Answer</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter the correct answer"
-                        {...field}
-                        value={field.value || ""}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="marks"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Marks</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="difficulty"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Difficulty</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+              {/* Marks + Difficulty */}
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="marks"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Marks</FormLabel>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select difficulty" />
-                        </SelectTrigger>
+                        <Input type="number" {...field} />
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Easy">Easy</SelectItem>
-                        <SelectItem value="Medium">Medium</SelectItem>
-                        <SelectItem value="Hard">Hard</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="difficulty"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Difficulty</FormLabel>
+                      <Select
+                        defaultValue={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Easy">Easy</SelectItem>
+                          <SelectItem value="Medium">Medium</SelectItem>
+                          <SelectItem value="Hard">Hard</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </form>
+          </Form>
+        </div>
 
-            <DialogFooter>
-              <Button type="button" variant="ghost" onClick={onClose}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? "Saving..." : "Save Question"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+        {/* fixed footer */}
+        <DialogFooter>
+          <Button type="button" variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            form="question-form"
+            type="submit"
+            disabled={form.formState.isSubmitting}
+          >
+            {form.formState.isSubmitting ? "Saving..." : "Save Question"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-};
+}
