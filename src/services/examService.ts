@@ -13,7 +13,7 @@ export const getAllExams = async (
     const response = await apiClient.get(
       `${EXAM_BASE_URL}?schoolId=${schoolId}&sessionId=${sessionId}&page=${page}&limit=${limit}`
     );
-    return response.data as ApiResponse<Exam[]>;
+    return response as ApiResponse<Exam[]>;
  
 };
 
@@ -21,7 +21,7 @@ export const getExamById = async (
   examId: string
 ): Promise<ApiResponse<Exam>> => {
     const response = await apiClient.get(`${EXAM_BASE_URL}/${examId}`);
-    return response.data as ApiResponse<Exam>;
+    return response as ApiResponse<Exam>;
  
 };
 
@@ -44,7 +44,7 @@ export const createExam = async (
       ...examData,
       schoolId,
     });
-    return response.data as ApiResponse<Exam>;
+    return response as ApiResponse<Exam>;
  
 };
 
@@ -59,7 +59,7 @@ export const updateExam = async (
       `${EXAM_BASE_URL}/${examId}`,
       examData
     );
-    return response.data as ApiResponse<Exam>;
+    return response as ApiResponse<Exam>;
  
 };
 
@@ -68,7 +68,7 @@ export const getStudentResult = async (
 ): Promise<ApiResponse<any>> => {
   
     const response = await apiClient.get(`/student/results/${paperId}`);
-    return response.data as ApiResponse<any>;
+    return response as ApiResponse<any>;
  
 };
 
@@ -79,7 +79,7 @@ export const submitExam = async (
     const response = await apiClient.post(
       `/exam/cbt/attempts/${attemptId}/submit`
     );
-    return response.data as ApiResponse<any>;
+    return response as ApiResponse<any>;
  
 };
 
@@ -90,7 +90,7 @@ export const startExam = async (
     const response = await apiClient.post(`/exam/cbt/attempts/start`, {
       examPaperId: paperId,
     });
-    return response.data as ApiResponse<{ attemptId: string }>;
+    return response as ApiResponse<{ attemptId: string }>;
  
 };
 
@@ -99,7 +99,7 @@ export const getExamAttempt = async (
 ): Promise<ApiResponse<any>> => {
   
     const response = await apiClient.get(`/exam/cbt/attempts/${attemptId}`);
-    return response.data as ApiResponse<any>;
+    return response as ApiResponse<any>;
  
 };
 
@@ -113,7 +113,7 @@ export const saveAnswer = async (
       `/exam/cbt/attempts/${attemptId}/responses`,
       { questionId, studentAnswer: answer }
     );
-    return response.data as ApiResponse<any>;
+    return response as ApiResponse<any>;
  
 };
 
@@ -127,7 +127,7 @@ export const getStudentExams = async (): Promise<
 > => {
   
     const response = await apiClient.get("/student/exams");
-    return response.data as ApiResponse<{
+    return response as ApiResponse<{
       upcoming: ExamPaper[];
       ongoing: ExamPaper[];
       completed: ExamPaper[];
@@ -144,7 +144,7 @@ export const publishResults = async (
     const response = await apiClient.post(`/exam/results/publish/${paperId}`, {
       publish,
     });
-    return response.data as ApiResponse<any>;
+    return response as ApiResponse<any>;
  
 };
 
@@ -155,7 +155,7 @@ export const getEssayResponses = async (
     const response = await apiClient.get(
       `/exam/results/essays-for-grading/${paperId}`
     );
-    return response.data as ApiResponse<any[]>;
+    return response as ApiResponse<any[]>;
  
 };
 
@@ -168,7 +168,7 @@ export const gradeEssayResponse = async (
       `/exam/results/grade-essay/${responseId}`,
       { marksAwarded: marks }
     );
-    return response.data as ApiResponse<any>;
+    return response as ApiResponse<any>;
  
 };
 
@@ -181,7 +181,7 @@ export const saveManualResults = async (
       paperId,
       results,
     });
-    return response.data as ApiResponse<any>;
+    return response as ApiResponse<any>;
  
 };
 
@@ -190,7 +190,7 @@ export const getExamPaperById = async (
 ): Promise<ApiResponse<ExamPaper>> => {
   
     const response = await apiClient.get(`/exam/papers/${paperId}`);
-    return response.data as ApiResponse<ExamPaper>;
+    return response as ApiResponse<ExamPaper>;
  
 };
 
@@ -201,7 +201,7 @@ export const getExamPapers = async (filters: {
   
     const query = new URLSearchParams(filters).toString();
     const response = await apiClient.get(`/exam/papers?${query}`);
-    return response.data as ApiResponse<ExamPaper[]>;
+    return response as ApiResponse<ExamPaper[]>;
  
 };
 
@@ -210,7 +210,7 @@ export const deleteExam = async (
 ): Promise<ApiResponse<null>> => {
   
     const response = await apiClient.delete(`${EXAM_BASE_URL}/${examId}`);
-    return response.data as ApiResponse<null>;
+    return response as ApiResponse<null>;
  
 };
 
@@ -223,7 +223,7 @@ export const addExamPaper = async (
       `${EXAM_BASE_URL}/${examId}/papers`,
       paperData
     );
-    return response.data as ApiResponse<ExamPaper>;
+    return response as ApiResponse<ExamPaper>;
  
 };
 
@@ -237,7 +237,7 @@ export const updateExamPaper = async (
       `${EXAM_BASE_URL}/${examId}/papers/${paperId}`,
       paperData
     );
-    return response.data as ApiResponse<ExamPaper>;
+    return response as ApiResponse<ExamPaper>;
  
 };
 
@@ -249,6 +249,6 @@ export const deleteExamPaper = async (
     const response = await apiClient.delete(
       `${EXAM_BASE_URL}/${examId}/papers/${paperId}`
     );
-    return response.data as ApiResponse<null>;
+    return response as ApiResponse<null>;
  
 };

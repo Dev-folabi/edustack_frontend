@@ -32,7 +32,9 @@ export const useQuestionBankStore = create<QuestionBankState>((set) => ({
         });
       }
     } catch (error) {
-      set({ loading: false, error: "Failed to fetch question banks" });
+      set({ questionBanks: [], error: "Failed to fetch question banks" });
+    } finally {
+      set({ loading: false });
     }
   },
   fetchAllQuestionBanks: async (schoolId: string) => {
@@ -47,7 +49,9 @@ export const useQuestionBankStore = create<QuestionBankState>((set) => ({
         });
       }
     } catch (error) {
-      set({ loading: false, error: "Failed to fetch question banks" });
+      set({ questionBanks: [], error: "Failed to fetch question banks" });
+    } finally {
+      set({ loading: false });
     }
   },
   fetchQuestionBankById: async (id: string) => {
@@ -61,7 +65,12 @@ export const useQuestionBankStore = create<QuestionBankState>((set) => ({
         });
       }
     } catch (error) {
-      set({ loading: false, error: "Failed to fetch question bank" });
+      set({
+        selectedQuestionBank: null,
+        error: "Failed to fetch question bank",
+      });
+    } finally {
+      set({ loading: false });
     }
   },
 }));

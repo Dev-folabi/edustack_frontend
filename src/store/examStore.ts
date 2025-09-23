@@ -37,22 +37,23 @@ export const useExamStore = create<ExamState>((set) => ({
   loading: false,
   error: null,
   fetchExams: async (schoolId, sessionId, page = 1, limit = 10) => {
-    set({ loading: true, error: null });
-    try {
-      const response = await getAllExams(schoolId, sessionId, page, limit);
-      if (response.success) {
-        set({
-          exams: response.data,
-          totalItems: response.totalItems,
-          totalPages: response.totalPages,
-          currentPage: response.currentPage,
-          loading: false,
-        });
-      }
-    } catch (error) {
-      set({ loading: false, error: "Failed to fetch exams" });
-    }
-  },
+  set({ loading: true, error: null });
+  try {
+    const response = await getAllExams(schoolId, sessionId, page, limit);
+    if (response.success) {
+      set({
+        exams: response.data || [],
+        totalItems: response.totalItems,
+        totalPages: response.totalPages,
+        currentPage: response.currentPage,
+      });
+    } 
+  } catch (error) {
+    set({ exams: [], error: "Failed to fetch exams" });
+  } finally {
+    set({ loading: false });
+  }
+},
   fetchExamById: async (examId: string) => {
     set({ loading: true, error: null });
     try {
@@ -65,6 +66,8 @@ export const useExamStore = create<ExamState>((set) => ({
       }
     } catch (error) {
       set({ loading: false, error: "Failed to fetch exam details" });
+    } finally {
+      set({ loading: false });
     }
   },
   fetchExamPaperById: async (paperId: string) => {
@@ -76,9 +79,13 @@ export const useExamStore = create<ExamState>((set) => ({
           selectedPaper: response.data,
           loading: false,
         });
+      } else {
+        set({ selectedPaper: null, error: response.message || "Failed to fetch exam paper details" });
       }
     } catch (error) {
-      set({ loading: false, error: "Failed to fetch exam paper details" });
+      set({ selectedPaper: null, error: "Failed to fetch exam paper details" });
+    } finally {
+      set({ loading: false });
     }
   },
 }));

@@ -35,7 +35,7 @@ import { useSessionStore } from "@/store/sessionStore";
 import { useEffect, useState } from "react";
 import { useExamStore } from "@/store/examStore";
 import { updateExam } from "@/services/examService";
-import { toast } from "sonner";
+import { useToast } from "@/components/ui/Toast";
 import { Exam } from "@/types/exam";
 
 const examSchema = z.object({
@@ -56,12 +56,17 @@ interface EditExamDialogProps {
   exam: Exam;
 }
 
-export const EditExamDialog = ({ isOpen, onClose, exam }: EditExamDialogProps) => {
+export const EditExamDialog = ({
+  isOpen,
+  onClose,
+  exam,
+}: EditExamDialogProps) => {
   const { selectedSchool } = useAuthStore();
   const { classes, fetchClasses } = useClassStore();
-  const { sessions, fetchSessions, terms, fetchTerms } = useSessionStore();
+  const { selectedSession, fetchSessions, fetchTerms } = useSessionStore();
   const { fetchExams } = useExamStore();
   const [selectedClass, setSelectedClass] = useState<string>(exam.class.id);
+  const { showToast } = useToast();
 
   const form = useForm<ExamFormValues>({
     resolver: zodResolver(examSchema),
@@ -89,6 +94,21 @@ export const EditExamDialog = ({ isOpen, onClose, exam }: EditExamDialogProps) =
     }
   }, [form.watch("sessionId"), fetchTerms]);
 
+  useEffect(() => {
+    if (exam) {
+      form.reset({
+        title: exam.title,
+        startDate: new Date(exam.startDate),
+        endDate: new Date(exam.endDate),
+        classId: exam.class.id,
+        sectionId: exam.section.id,
+        termId: exam.term.id,
+        sessionId: exam.session.id,
+      });
+      setSelectedClass(exam.class.id);
+    }
+  }, [exam, form]);
+
   const onSubmit = async (values: ExamFormValues) => {
     if (!selectedSchool) return;
 
@@ -99,18 +119,30 @@ export const EditExamDialog = ({ isOpen, onClose, exam }: EditExamDialogProps) =
         endDate: values.endDate.toISOString(),
       });
       if (response.success) {
-        toast.success("Exam updated successfully!");
-        fetchExams(selectedSchool.schoolId);
+        showToast({
+          title: "Success",
+          type: "success",
+          message: "Exam updated successfully!",
+        });
+        fetchExams(selectedSchool.schoolId, selectedSession?.id!);
         onClose();
       } else {
-        toast.error(response.message || "Failed to update exam");
+        showToast({
+          title: "Error",
+          type: "error",
+          message: response.message || "Failed to update exam",
+        });
       }
     } catch (error) {
-      toast.error("An error occurred while updating the exam.");
+      showToast({
+        title: "Error",
+        type: "error",
+        message: "An error occurred while updating the exam.",
+      });
     }
   };
 
-  const sections = classes.find(c => c.id === selectedClass)?.sections || [];
+  const sections = classes.find((c) => c.id === selectedClass)?.sections || [];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -144,7 +176,10 @@ export const EditExamDialog = ({ isOpen, onClose, exam }: EditExamDialogProps) =
                   <FormItem>
                     <FormLabel>Start Date</FormLabel>
                     <FormControl>
-                      <DateTimePicker date={field.value} setDate={field.onChange} />
+                      <DateTimePicker
+                        date={field.value}
+                        setDate={field.onChange}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -157,7 +192,10 @@ export const EditExamDialog = ({ isOpen, onClose, exam }: EditExamDialogProps) =
                   <FormItem>
                     <FormLabel>End Date</FormLabel>
                     <FormControl>
-                      <DateTimePicker date={field.value} setDate={field.onChange} />
+                      <DateTimePicker
+                        date={field.value}
+                        setDate={field.onChange}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -171,16 +209,21 @@ export const EditExamDialog = ({ isOpen, onClose, exam }: EditExamDialogProps) =
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Session</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a session" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {sessions.map(session => (
-                          <SelectItem key={session.id} value={session.id}>{session.name}</SelectItem>
-                        ))}
+                        {selectedSession?.id && (
+                          <SelectItem
+                            key={selectedSession?.id!}
+                            value={selectedSession?.id}
+                          >
+                            {selectedSession?.name}
+                          </SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -193,15 +236,17 @@ export const EditExamDialog = ({ isOpen, onClose, exam }: EditExamDialogProps) =
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Term</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!form.watch("sessionId")}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a term" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {terms.map(term => (
-                          <SelectItem key={term.id} value={term.id}>{term.name}</SelectItem>
+                        {selectedSession?.terms?.map((term) => (
+                          <SelectItem key={term.id} value={term.id}>
+                            {term.name}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -217,19 +262,24 @@ export const EditExamDialog = ({ isOpen, onClose, exam }: EditExamDialogProps) =
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Class</FormLabel>
-                    <Select onValueChange={(value) => {
-                      field.onChange(value);
-                      setSelectedClass(value);
-                      form.setValue("sectionId", "");
-                    }} defaultValue={field.value}>
+                    <Select
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        setSelectedClass(value);
+                        form.setValue("sectionId", "");
+                      }}
+                      value={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a class" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {classes.map(c => (
-                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                        {classes.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>
+                            {c.name}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -243,15 +293,21 @@ export const EditExamDialog = ({ isOpen, onClose, exam }: EditExamDialogProps) =
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Section</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!selectedClass}>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      disabled={!selectedClass}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a section" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {sections.map(section => (
-                          <SelectItem key={section.id} value={section.id}>{section.name}</SelectItem>
+                        {sections.map((section) => (
+                          <SelectItem key={section.id} value={section.id}>
+                            {section.name}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -261,7 +317,9 @@ export const EditExamDialog = ({ isOpen, onClose, exam }: EditExamDialogProps) =
               />
             </div>
             <DialogFooter>
-              <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
+              <Button type="button" variant="ghost" onClick={onClose}>
+                Cancel
+              </Button>
               <Button type="submit" disabled={form.formState.isSubmitting}>
                 {form.formState.isSubmitting ? "Saving..." : "Save Changes"}
               </Button>

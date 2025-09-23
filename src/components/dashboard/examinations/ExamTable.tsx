@@ -1,11 +1,18 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { useExamStore } from '@/store/examStore';
-import { useAuthStore } from '@/store/authStore';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { MoreHorizontal } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { useExamStore } from "@/store/examStore";
+import { useAuthStore } from "@/store/authStore";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,10 +20,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useRouter } from 'next/navigation';
-import { EditExamDialog } from './EditExamDialog';
-import { Exam } from '@/types/exam';
+} from "@/components/ui/dropdown-menu";
+import { useRouter } from "next/navigation";
+import { EditExamDialog } from "./EditExamDialog";
+import { Exam } from "@/types/exam";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,8 +34,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { deleteExam } from '@/services/examService';
-import { toast } from 'sonner';
+import { deleteExam } from "@/services/examService";
+import { useToast } from "@/components/ui/Toast";
+import { useSessionStore } from "@/store/sessionStore";
 
 export const ExamTable = () => {
   const router = useRouter();
@@ -38,12 +46,14 @@ export const ExamTable = () => {
   const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [examToDelete, setExamToDelete] = useState<Exam | null>(null);
+  const { selectedSession } = useSessionStore();
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (selectedSchool?.schoolId) {
-      fetchExams(selectedSchool.schoolId);
+      fetchExams(selectedSchool.schoolId, selectedSession?.id!);
     }
-  }, [selectedSchool?.schoolId, fetchExams]);
+  }, [selectedSchool?.schoolId, selectedSession?.id, fetchExams]);
 
   const handleViewExam = (examId: string) => {
     router.push(`/examinations/manage/${examId}`);
@@ -63,10 +73,18 @@ export const ExamTable = () => {
     if (examToDelete && selectedSchool) {
       try {
         await deleteExam(examToDelete.id);
-        toast.success("Exam deleted successfully!");
-        fetchExams(selectedSchool.schoolId);
+        showToast({
+          title: "Success",
+          message: "Exam deleted successfully!",
+          type: "success",
+        });
+        fetchExams(selectedSchool.schoolId, selectedSession?.id!);
       } catch (error) {
-        toast.error("Failed to delete exam.");
+        showToast({
+          title: "Error",
+          message: "Failed to delete exam.",
+          type: "error",
+        });
       } finally {
         setDeleteDialogOpen(false);
         setExamToDelete(null);
@@ -74,8 +92,35 @@ export const ExamTable = () => {
     }
   };
 
-  if (loading) return <p>Loading exams...</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
+  if (loading)
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center space-x-4">
+          <div className="h-6 w-1/4 bg-gray-200 rounded animate-pulse" />
+          <div className="h-6 w-24 bg-gray-200 rounded animate-pulse" />
+          <div className="h-6 w-24 bg-gray-200 rounded animate-pulse" />
+          <div className="h-6 w-32 bg-gray-200 rounded animate-pulse" />
+          <div className="h-6 w-32 bg-gray-200 rounded animate-pulse" />
+          <div className="h-6 w-8 bg-gray-200 rounded animate-pulse" />
+        </div>
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="flex items-center space-x-4">
+            <div className="h-4 w-1/4 bg-gray-100 rounded animate-pulse" />
+            <div className="h-4 w-24 bg-gray-100 rounded animate-pulse" />
+            <div className="h-4 w-24 bg-gray-100 rounded animate-pulse" />
+            <div className="h-4 w-32 bg-gray-100 rounded animate-pulse" />
+            <div className="h-4 w-32 bg-gray-100 rounded animate-pulse" />
+            <div className="h-4 w-8 bg-gray-100 rounded animate-pulse" />
+          </div>
+        ))}
+      </div>
+    );
+  if (error)
+    return (
+      <div className="p-4 rounded-lg bg-red-50 border border-red-200">
+        <p className="text-red-600 font-medium text-sm">{error}</p>
+      </div>
+    );
 
   return (
     <>
@@ -94,36 +139,57 @@ export const ExamTable = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {exams.map((exam) => (
-              <TableRow key={exam.id}>
-                <TableCell className="font-medium">{exam.title}</TableCell>
-                <TableCell>{exam.class.name} - {exam.section.name}</TableCell>
-                <TableCell>{exam.term.name}</TableCell>
-                <TableCell>{new Date(exam.startDate).toLocaleDateString()}</TableCell>
-                <TableCell>{new Date(exam.endDate).toLocaleDateString()}</TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => handleViewExam(exam.id)}>
-                        View/Manage Papers
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => handleEditExam(exam)}>Edit Exam</DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteExam(exam)}>
-                        Delete Exam
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+            {!loading && exams.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center">
+                  No exams found.
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              exams.map((exam) => (
+                <TableRow key={exam.id}>
+                  <TableCell className="font-medium">{exam.title}</TableCell>
+                  <TableCell>
+                    {exam.class.name} - {exam.section.name}
+                  </TableCell>
+                  <TableCell>{exam.term.name}</TableCell>
+                  <TableCell>
+                    {new Date(exam.startDate).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    {new Date(exam.endDate).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem
+                          onClick={() => handleViewExam(exam.id)}
+                        >
+                          View/Manage Papers
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => handleEditExam(exam)}>
+                          Edit Exam
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-red-600"
+                          onClick={() => handleDeleteExam(exam)}
+                        >
+                          Delete Exam
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>
@@ -139,13 +205,15 @@ export const ExamTable = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the exam
-              and all its associated papers and results.
+              This action cannot be undone. This will permanently delete the
+              exam and all its associated papers and results.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+            <AlertDialogAction onClick={confirmDelete}>
+              Delete
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

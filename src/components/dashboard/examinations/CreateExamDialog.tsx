@@ -36,13 +36,19 @@ import { useSessionStore } from "@/store/sessionStore";
 import { useEffect } from "react";
 import { useExamStore } from "@/store/examStore";
 import { createExam } from "@/services/examService";
-import { toast } from "sonner";
+import { useToast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
 
 const examSchema = z.object({
   title: z.string().min(1, "Title is required"),
-  startDate: z.date({ required_error: "Start date is required" }),
-  endDate: z.date({ required_error: "End date is required" }),
+   startDate: z.date({
+    required_error: "Start date is required",
+    invalid_type_error: "Must be a valid date",
+  }),
+  endDate: z.date({
+    required_error: "End date is required",
+    invalid_type_error: "Must be a valid date",
+  }),
   classId: z.string().min(1, "Class is required"),
   sectionId: z.string().min(1, "Section is required"),
   termId: z.string().min(1, "Term is required"),
@@ -56,13 +62,17 @@ interface CreateExamDialogProps {
   onClose: () => void;
 }
 
-export const CreateExamDialog = ({ isOpen, onClose }: CreateExamDialogProps) => {
+export const CreateExamDialog = ({
+  isOpen,
+  onClose,
+}: CreateExamDialogProps) => {
   const router = useRouter();
   const { selectedSchool } = useAuthStore();
   const { classes, fetchClasses } = useClassStore();
-  const { sessions, fetchSessions, terms, fetchTerms } = useSessionStore();
+  const { selectedSession, fetchSessions, fetchTerms } = useSessionStore();
   const { fetchExams } = useExamStore();
   const [selectedClass, setSelectedClass] = useState<string>("");
+  const { showToast } = useToast();
 
   const form = useForm<ExamFormValues>({
     resolver: zodResolver(examSchema),
@@ -91,19 +101,31 @@ export const CreateExamDialog = ({ isOpen, onClose }: CreateExamDialogProps) => 
         endDate: values.endDate.toISOString(),
       });
       if (response.success) {
-        toast.success("Exam created successfully!");
-        fetchExams(selectedSchool.schoolId);
+        showToast({
+          title: "Success",
+          message: "Exam created successfully!",
+          type: "success",
+        });
+        fetchExams(selectedSchool.schoolId, selectedSession?.id!);
         onClose();
         router.push(`/examinations/manage/${response.data.id}`);
       } else {
-        toast.error(response.message || "Failed to create exam");
+        showToast({
+          title: "Error",
+          message: response.message || "Failed to create exam",
+          type: "error",
+        });
       }
     } catch (error) {
-      toast.error("An error occurred while creating the exam.");
+      showToast({
+        title: "Error",
+        message: "An error occurred while creating the exam.",
+        type: "error",
+      });
     }
   };
 
-  const sections = classes.find(c => c.id === selectedClass)?.sections || [];
+  const sections = classes.find((c) => c.id === selectedClass)?.sections || [];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -123,7 +145,10 @@ export const CreateExamDialog = ({ isOpen, onClose }: CreateExamDialogProps) => 
                 <FormItem>
                   <FormLabel>Exam Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Mid-Term Examination" {...field} />
+                    <Input
+                      placeholder="e.g., Mid-Term Examination"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -137,7 +162,10 @@ export const CreateExamDialog = ({ isOpen, onClose }: CreateExamDialogProps) => 
                   <FormItem>
                     <FormLabel>Start Date</FormLabel>
                     <FormControl>
-                      <DateTimePicker date={field.value} setDate={field.onChange} />
+                      <DateTimePicker
+                        date={field.value}
+                        setDate={field.onChange}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -150,7 +178,10 @@ export const CreateExamDialog = ({ isOpen, onClose }: CreateExamDialogProps) => 
                   <FormItem>
                     <FormLabel>End Date</FormLabel>
                     <FormControl>
-                      <DateTimePicker date={field.value} setDate={field.onChange} />
+                      <DateTimePicker
+                        date={field.value}
+                        setDate={field.onChange}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -164,16 +195,24 @@ export const CreateExamDialog = ({ isOpen, onClose }: CreateExamDialogProps) => 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Session</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={selectedSession?.id || ""}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a session" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {sessions.map(session => (
-                          <SelectItem key={session.id} value={session.id}>{session.name}</SelectItem>
-                        ))}
+                        {selectedSession?.id && (
+                          <SelectItem
+                            key={selectedSession?.id!}
+                            value={selectedSession?.id}
+                          >
+                            {selectedSession?.name}
+                          </SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -181,27 +220,33 @@ export const CreateExamDialog = ({ isOpen, onClose }: CreateExamDialogProps) => 
                 )}
               />
               <FormField
-                control={form.control}
-                name="termId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Term</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!form.watch("sessionId")}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a term" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {terms.map(term => (
-                          <SelectItem key={term.id} value={term.id}>{term.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+  control={form.control}
+  name="termId"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Term</FormLabel>
+      <Select
+        onValueChange={field.onChange}
+        value={field.value} 
+      >
+        <FormControl>
+          <SelectTrigger>
+            <SelectValue placeholder="Select a term" />
+          </SelectTrigger>
+        </FormControl>
+        <SelectContent>
+          {selectedSession?.terms?.map((term) => (
+            <SelectItem key={term.id} value={term.id}>
+              {term.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
@@ -210,19 +255,24 @@ export const CreateExamDialog = ({ isOpen, onClose }: CreateExamDialogProps) => 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Class</FormLabel>
-                    <Select onValueChange={(value) => {
-                      field.onChange(value);
-                      setSelectedClass(value);
-                      form.setValue("sectionId", "");
-                    }} defaultValue={field.value}>
+                    <Select
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        setSelectedClass(value);
+                        form.setValue("sectionId", "");
+                      }}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a class" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {classes.map(c => (
-                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                        {classes.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>
+                            {c.name}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -236,15 +286,21 @@ export const CreateExamDialog = ({ isOpen, onClose }: CreateExamDialogProps) => 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Section</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!selectedClass}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      disabled={!selectedClass}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a section" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {sections.map(section => (
-                          <SelectItem key={section.id} value={section.id}>{section.name}</SelectItem>
+                        {sections.map((section) => (
+                          <SelectItem key={section.id} value={section.id}>
+                            {section.name}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -254,7 +310,9 @@ export const CreateExamDialog = ({ isOpen, onClose }: CreateExamDialogProps) => 
               />
             </div>
             <DialogFooter>
-              <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
+              <Button type="button" variant="ghost" onClick={onClose}>
+                Cancel
+              </Button>
               <Button type="submit" disabled={form.formState.isSubmitting}>
                 {form.formState.isSubmitting ? "Creating..." : "Create Exam"}
               </Button>

@@ -1,6 +1,5 @@
 import { apiClient } from "../utils/api";
 
-// Re-defining interfaces here for clarity, can be shared if needed
 export interface Term {
   id: string;
   name: string;
@@ -18,8 +17,7 @@ export interface Session {
   terms: Term[];
 }
 
-// Based on Postman `GET /api/session/all` response
-// The `data` property is directly an array of sessions
+
 interface SessionsResponse {
     data: Session[];
 }
