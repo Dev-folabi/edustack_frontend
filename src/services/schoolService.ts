@@ -7,8 +7,6 @@ export interface CreateSchoolData {
   address: string;
   email: string;
   phone: string[];
-  // principal assignment might be handled separately or be a simple string
-  principalName?: string;
   isActive?: boolean;
 }
 
