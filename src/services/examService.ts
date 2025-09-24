@@ -136,6 +136,28 @@ export const getStudentExams = async (): Promise<
  
 };
 
+export const getStudentExamTimetable = async (): Promise<ApiResponse<ExamPaper[]>> => {
+  const response = await apiClient.get("/student/exams/timetable");
+  return response as ApiResponse<ExamPaper[]>;
+};
+
+export const getStudentTermReport = async (termId: string, sessionId: string): Promise<ApiResponse<any>> => {
+    const response = await apiClient.get(`/exam/reports/student-term-report?termId=${termId}&sessionId=${sessionId}`);
+    return response as ApiResponse<any>;
+}
+
+export const getTermReportByPaper = async (paperId: string): Promise<ApiResponse<any>> => {
+    // First, get the paper to find the termId and sessionId
+    const paperResponse = await getExamPaperById(paperId);
+    if (!paperResponse.success || !paperResponse.data.termId || !paperResponse.data.sessionId) {
+        throw new Error("Could not find necessary details to fetch term report.");
+    }
+    const { termId, sessionId } = paperResponse.data;
+
+    // Then, fetch the full term report
+    return getStudentTermReport(termId, sessionId);
+};
+
 export const publishResults = async (
   paperId: string,
   publish: boolean

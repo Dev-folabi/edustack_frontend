@@ -28,6 +28,7 @@ export interface Exam {
 
 export interface ExamPaper {
   id: string;
+  title?: string; // Added this field to distinguish papers like "1st CA" vs "Final Exam"
   subject: {
     id: string;
     name: string;
@@ -37,6 +38,7 @@ export interface ExamPaper {
   paperDate: string;
   startTime: string;
   endTime: string;
+  duration?: number; // Duration in seconds
   mode: 'PaperBased' | 'CBT';
   questionBankId?: string;
   totalQuestions?: number;

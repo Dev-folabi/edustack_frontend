@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import withAuth from '@/components/withAuth';
 import { UserRole } from '@/constants/roles';
@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { Flag } from 'lucide-react';
 
 const CBTPage = () => {
   const params = useParams();
@@ -22,7 +23,9 @@ const CBTPage = () => {
   const { currentAttempt, fetchExamAttempt, loading, error } = useStudentExamStore();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [flagged, setFlagged] = useState<Record<string, boolean>>({});
   const [timeLeft, setTimeLeft] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (attemptId) {
@@ -31,6 +34,7 @@ const CBTPage = () => {
   }, [attemptId, fetchExamAttempt]);
 
   const timeToSeconds = (timeStr: string) => {
+    if (!timeStr) return 0;
     const [hours, minutes, seconds] = timeStr.split(':').map(Number);
     return hours * 3600 + minutes * 60 + seconds;
   };
@@ -45,16 +49,31 @@ const CBTPage = () => {
     }
   }, [currentAttempt]);
 
+  const handleSubmit = useCallback(async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      await submitExam(attemptId);
+      toast.success("Exam submitted successfully!");
+      router.push('/student/examinations');
+    } catch (error) {
+      toast.error("Failed to submit exam.");
+      setIsSubmitting(false);
+    }
+  }, [attemptId, router, isSubmitting]);
+
   useEffect(() => {
-    if (timeLeft <= 0) {
-        if(currentAttempt) handleSubmit();
-      return;
+    if (timeLeft <= 0 && currentAttempt) {
+        handleSubmit();
+        return;
     }
     const timer = setInterval(() => {
       setTimeLeft(prev => prev - 1);
     }, 1000);
     return () => clearInterval(timer);
-  }, [timeLeft]);
+  }, [timeLeft, currentAttempt, handleSubmit]);
+
+  const [dirtyAnswers, setDirtyAnswers] = useState<Set<string>>(new Set());
 
   const currentQuestion = useMemo(() => {
     return currentAttempt?.examPaper.questions[currentQuestionIndex];
@@ -62,30 +81,29 @@ const CBTPage = () => {
 
   useEffect(() => {
     const saveInterval = setInterval(() => {
-      if (Object.keys(answers).length > 0) {
-        // This would ideally save all changed answers in one batch
-        // For simplicity, we save the current answer
-        const currentAnswer = answers[currentQuestion.id];
-        if(currentAnswer !== undefined) {
-            saveAnswer(attemptId, currentQuestion.id, currentAnswer);
-        }
+      if (dirtyAnswers.size > 0) {
+        toast.info("Auto-saving your progress...");
+        const promises = Array.from(dirtyAnswers).map(questionId => {
+          return saveAnswer(attemptId, questionId, answers[questionId]);
+        });
+        Promise.all(promises).then(() => {
+          setDirtyAnswers(new Set()); // Clear the set after saving
+          toast.success("Progress saved!");
+        }).catch(() => {
+            toast.error("Failed to save some of your answers. Please check your connection.")
+        })
       }
-    }, 15000); // Auto-save every 15 seconds
+    }, 30000); // Auto-save every 30 seconds
     return () => clearInterval(saveInterval);
-  }, [answers, attemptId, currentQuestion]);
+  }, [answers, attemptId, dirtyAnswers]);
 
   const handleAnswerChange = (questionId: string, answer: any) => {
     setAnswers(prev => ({ ...prev, [questionId]: answer }));
+    setDirtyAnswers(prev => new Set(prev).add(questionId));
   };
 
-  const handleSubmit = async () => {
-    try {
-      await submitExam(attemptId);
-      toast.success("Exam submitted successfully!");
-      router.push('/student/examinations');
-    } catch (error) {
-      toast.error("Failed to submit exam.");
-    }
+  const toggleFlag = (questionId: string) => {
+    setFlagged(prev => ({ ...prev, [questionId]: !prev[questionId] }));
   };
 
   if (loading) return <p>Loading exam...</p>;
@@ -98,12 +116,17 @@ const CBTPage = () => {
         <Card>
           <CardHeader>
             <CardTitle>{currentAttempt.examPaper.subject.name}</CardTitle>
-            <CardDescription>Question {currentQuestionIndex + 1} of {currentAttempt.examPaper.questions.length}</CardDescription>
+            <div className="flex justify-between items-center">
+                <CardDescription>Question {currentQuestionIndex + 1} of {currentAttempt.examPaper.questions.length}</CardDescription>
+                <Button variant="ghost" size="icon" onClick={() => toggleFlag(currentQuestion.id)}>
+                    <Flag className={flagged[currentQuestion.id] ? "text-yellow-500" : ""} />
+                </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <p className="font-semibold mb-4">{currentQuestion.questionText}</p>
             {currentQuestion.type === 'MCQ' && (
-              <RadioGroup onValueChange={(value) => handleAnswerChange(currentQuestion.id, value)}>
+              <RadioGroup onValueChange={(value) => handleAnswerChange(currentQuestion.id, value)} value={answers[currentQuestion.id]}>
                 {currentQuestion.options.map((option, index) => (
                   <div key={index} className="flex items-center space-x-2">
                     <RadioGroupItem value={String(index)} id={`option-${index}`} />
@@ -115,11 +138,25 @@ const CBTPage = () => {
             {currentQuestion.type === 'ESSAY' && (
               <Textarea
                 rows={10}
+                value={answers[currentQuestion.id] || ''}
                 onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
               />
             )}
+            {currentQuestion.type === 'TRUE_FALSE' && (
+                <RadioGroup onValueChange={(value) => handleAnswerChange(currentQuestion.id, value === 'true')} value={String(answers[currentQuestion.id])}>
+                    <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="true" id="true" />
+                        <Label htmlFor="true">True</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="false" id="false" />
+                        <Label htmlFor="false">False</Label>
+                    </div>
+                </RadioGroup>
+            )}
             {currentQuestion.type === 'FILL_IN_BLANKS' && (
               <Input
+                value={answers[currentQuestion.id] || ''}
                 onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
               />
             )}
@@ -149,14 +186,17 @@ const CBTPage = () => {
                         key={q.id}
                         variant={currentQuestionIndex === index ? 'default' : (answers[q.id] !== undefined ? 'secondary' : 'outline')}
                         onClick={() => setCurrentQuestionIndex(index)}
-                        className="h-10 w-10"
+                        className={`h-10 w-10 relative ${flagged[q.id] ? 'border-2 border-yellow-500' : ''}`}
                     >
                         {index + 1}
+                        {flagged[q.id] && <Flag className="h-3 w-3 absolute top-1 right-1 text-yellow-500" />}
                     </Button>
                 ))}
             </CardContent>
         </Card>
-        <Button className="w-full mt-6" variant="destructive" onClick={handleSubmit}>Submit Exam</Button>
+        <Button className="w-full mt-6" variant="destructive" onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting ? 'Submitting...' : 'Submit Exam'}
+        </Button>
       </div>
     </div>
   );
