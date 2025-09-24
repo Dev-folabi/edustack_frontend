@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, BookOpen, FolderOpen } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -97,102 +97,126 @@ export const QuestionBankTable = () => {
 
   if (loading)
     return (
-      <div className="space-y-2">
-        <Skeleton className="h-8 w-full" />
-        <Skeleton className="h-8 w-full" />
-        <Skeleton className="h-8 w-full" />
-        <Skeleton className="h-8 w-full" />
-        <Skeleton className="h-8 w-full" />
+      <div className="space-y-3 bg-white p-6 rounded-xl shadow-sm">
+        {[...Array(5)].map((_, i) => (
+          <Skeleton key={i} className="h-10 w-full rounded-md" />
+        ))}
       </div>
     );
 
-  if (error) return <p>Error: {error || "Failed to load question banks."}</p>;
-console.log({questionBanks, loading});
- return (
-  <div className="bg-white shadow-md rounded-lg overflow-hidden">
-    <Table>
-      <TableHeader className="bg-gray-50">
-        <TableRow>
-          <TableHead>Name</TableHead>
-          <TableHead>Subject</TableHead>
-          <TableHead>No. of Questions</TableHead>
-          <TableHead>
-            <span className="sr-only">Actions</span>
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {!loading && questionBanks.length === 0 ? (
+  if (error)
+    return (
+      <div className="p-6 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+        Failed to load question banks.
+      </div>
+    );
+
+  return (
+    <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+      <Table>
+        <TableHeader className="bg-slate-50">
           <TableRow>
-            <TableCell colSpan={4} className="text-center text-gray-500">
-              No question banks found.
-            </TableCell>
+            <TableHead className="font-semibold text-slate-700">Name</TableHead>
+            <TableHead className="font-semibold text-slate-700">Subject</TableHead>
+            <TableHead className="font-semibold text-slate-700">
+              No. of Questions
+            </TableHead>
+            <TableHead>
+              <span className="sr-only">Actions</span>
+            </TableHead>
           </TableRow>
-        ) : (
-          questionBanks.map((bank) => (
-            <TableRow key={bank.id}>
-              <TableCell className="font-medium">{bank.name}</TableCell>
-              <TableCell>
-                {subjects.find((s) => s.id === bank.subjectId)?.name || "N/A"}
-              </TableCell>
-              <TableCell>{bank._count?.questions || 0}</TableCell>
-              <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
-                      <span className="sr-only">Open menu</span>
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem
-                      onClick={() => handleViewQuestionBank(bank.id)}
-                    >
-                      View/Manage Questions
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => handleEditBank(bank)}>
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="text-red-600"
-                      onClick={() => handleDeleteBank(bank)}
-                    >
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+        </TableHeader>
+
+        <TableBody>
+          {questionBanks.length === 0 ? (
+            <TableRow>
+              <TableCell
+                colSpan={4}
+                className="text-center py-10 text-slate-500"
+              >
+                <FolderOpen className="w-6 h-6 mx-auto mb-2 text-slate-400" />
+                No question banks found.
               </TableCell>
             </TableRow>
-          ))
-        )}
-      </TableBody>
-    </Table>
+          ) : (
+            questionBanks.map((bank) => (
+              <TableRow
+                key={bank.id}
+                className="hover:bg-slate-50 transition-colors"
+              >
+                <TableCell className="font-medium flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-indigo-500" />
+                  {bank.name}
+                </TableCell>
+                <TableCell>
+                  {subjects.find((s) => s.id === bank.subjectId)?.name || "N/A"}
+                </TableCell>
+                <TableCell>{bank._count?.questions || 0}</TableCell>
+                <TableCell>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="h-8 w-8 p-0 hover:bg-slate-100"
+                      >
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="end"
+                      className="rounded-lg shadow-lg"
+                    >
+                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      <DropdownMenuItem
+                        onClick={() => handleViewQuestionBank(bank.id)}
+                      >
+                        View / Manage Questions
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => handleEditBank(bank)}>
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="text-red-600"
+                        onClick={() => handleDeleteBank(bank)}
+                      >
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
 
-    {selectedBank && (
-      <CreateEditQuestionBankDialog
-        isOpen={isEditDialogOpen}
-        onClose={() => setEditDialogOpen(false)}
-        bank={selectedBank}
-      />
-    )}
+      {selectedBank && (
+        <CreateEditQuestionBankDialog
+          isOpen={isEditDialogOpen}
+          onClose={() => setEditDialogOpen(false)}
+          bank={selectedBank}
+        />
+      )}
 
-    <AlertDialog open={isDeleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-          <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the
-            question bank.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  </div>
-);
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              question bank and its associated questions.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
 };

@@ -120,7 +120,6 @@ const DateField = ({
   />
 );
 
-/* ------------------ Main Component ------------------ */
 export const AddEditPaperDialog = ({
   isOpen,
   onClose,

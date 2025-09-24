@@ -130,7 +130,12 @@ export function AddEditQuestionDialog({
       },
       Essay: { type: "Essay", options: undefined, correctAnswer: undefined },
     };
-    form.reset({ ...form.getValues(), ...resetMap[value] });
+    form.reset({
+      ...form.getValues(),
+      type: value,
+      options: resetMap[value].options,
+      correctAnswer: resetMap[value].correctAnswer,
+    });
   };
 
   const onSubmit = async (values: QuestionFormValues) => {
@@ -177,21 +182,23 @@ export function AddEditQuestionDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="flex max-h-[90vh] flex-col sm:max-w-2xl">
+      <DialogContent className="flex max-h-[90vh] flex-col sm:max-w-2xl rounded-2xl border border-white/20 bg-white/05 backdrop-blur-lg shadow-xl">
         <DialogHeader>
-          <DialogTitle>{question ? "Edit" : "Add"} Question</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-lg font-semibold text-gray-100">
+            {question ? "Edit" : "Add"} Question
+          </DialogTitle>
+          <DialogDescription className="text-gray-300">
             Fill in the details for the question.
           </DialogDescription>
         </DialogHeader>
 
         {/* scrollable body */}
-        <div className="flex-1 overflow-y-auto pr-2">
+        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
           <Form {...form}>
             <form
               id="question-form"
               onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-4 pb-4"
+              className="space-y-5 pb-4"
             >
               {/* Type selector */}
               <FormField
@@ -199,17 +206,17 @@ export function AddEditQuestionDialog({
                 name="type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Type</FormLabel>
+                    <FormLabel className="text-gray-200">Type</FormLabel>
                     <Select
                       onValueChange={handleTypeChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="rounded-lg border-white/20 bg-white/10 text-gray-100">
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="rounded-lg border-white/20 bg-white/10 backdrop-blur-md text-gray-100">
                         <SelectItem value="MCQ">Multiple Choice</SelectItem>
                         <SelectItem value="Essay">Essay</SelectItem>
                         <SelectItem value="FillInBlanks">
@@ -227,9 +234,10 @@ export function AddEditQuestionDialog({
                 name="questionText"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Question</FormLabel>
+                    <FormLabel className="text-gray-200">Question</FormLabel>
                     <FormControl>
                       <Textarea
+                        className="rounded-lg border-white/20 bg-white/10 text-gray-100 placeholder-gray-400"
                         placeholder="Enter the question text"
                         {...field}
                       />
@@ -240,8 +248,8 @@ export function AddEditQuestionDialog({
 
               {/* MCQ block */}
               {questionType === "MCQ" && (
-                <div className="rounded-md border p-4 space-y-3">
-                  <FormLabel>Options</FormLabel>
+                <div className="rounded-xl border border-white/20 bg-white/5 p-4 space-y-3">
+                  <FormLabel className="text-gray-200">Options</FormLabel>
                   <FormField
                     control={form.control}
                     name="correctAnswer"
@@ -249,7 +257,7 @@ export function AddEditQuestionDialog({
                       <RadioGroup
                         value={field.value}
                         onValueChange={field.onChange}
-                        className="space-y-2"
+                        className="space-y-3"
                       >
                         {fields.map((item, i) => (
                           <div
@@ -265,6 +273,7 @@ export function AddEditQuestionDialog({
                                   <Input
                                     {...optionField}
                                     placeholder={`Option ${i + 1}`}
+                                    className="rounded-lg border-white/20 bg-white/10 text-gray-100 placeholder-gray-400"
                                   />
                                 </FormControl>
                               )}
@@ -273,6 +282,7 @@ export function AddEditQuestionDialog({
                               type="button"
                               size="icon"
                               variant="ghost"
+                              className="text-red-400 hover:bg-red-500/20"
                               onClick={() => remove(i)}
                               disabled={fields.length <= 2}
                             >
@@ -287,6 +297,7 @@ export function AddEditQuestionDialog({
                     type="button"
                     size="sm"
                     variant="outline"
+                    className="rounded-lg border-white/20 bg-white/10 text-gray-100 hover:bg-white/20"
                     onClick={() => append({ value: "" })}
                   >
                     <PlusCircle className="mr-2 h-4 w-4" /> Add Option
@@ -301,12 +312,15 @@ export function AddEditQuestionDialog({
                   name="correctAnswer"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Correct Answer</FormLabel>
+                      <FormLabel className="text-gray-200">
+                        Correct Answer
+                      </FormLabel>
                       <FormControl>
                         <Input
                           placeholder="Enter correct answer"
                           {...field}
                           value={field.value || ""}
+                          className="rounded-lg border-white/20 bg-white/10 text-gray-100 placeholder-gray-400"
                         />
                       </FormControl>
                     </FormItem>
@@ -321,9 +335,13 @@ export function AddEditQuestionDialog({
                   name="marks"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Marks</FormLabel>
+                      <FormLabel className="text-gray-200">Marks</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} />
+                        <Input
+                          type="number"
+                          {...field}
+                          className="rounded-lg border-white/20 bg-white/10 text-gray-100 placeholder-gray-400"
+                        />
                       </FormControl>
                     </FormItem>
                   )}
@@ -333,17 +351,19 @@ export function AddEditQuestionDialog({
                   name="difficulty"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Difficulty</FormLabel>
+                      <FormLabel className="text-gray-200">
+                        Difficulty
+                      </FormLabel>
                       <Select
                         defaultValue={field.value}
                         onValueChange={field.onChange}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="rounded-lg border-white/20 bg-white/10 text-gray-100">
                             <SelectValue placeholder="Select" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
+                        <SelectContent className="rounded-lg border-white/20 bg-white/10 backdrop-blur-md text-gray-100">
                           <SelectItem value="Easy">Easy</SelectItem>
                           <SelectItem value="Medium">Medium</SelectItem>
                           <SelectItem value="Hard">Hard</SelectItem>
@@ -358,14 +378,20 @@ export function AddEditQuestionDialog({
         </div>
 
         {/* fixed footer */}
-        <DialogFooter>
-          <Button type="button" variant="ghost" onClick={onClose}>
+        <DialogFooter className="mt-4 border-t border-white/10 pt-4">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onClose}
+            className="rounded-lg border border-white/20 bg-white/5 text-gray-300 hover:bg-white/10"
+          >
             Cancel
           </Button>
           <Button
             form="question-form"
             type="submit"
             disabled={form.formState.isSubmitting}
+            className="rounded-lg bg-blue-600 text-white hover:bg-blue-700"
           >
             {form.formState.isSubmitting ? "Saving..." : "Save Question"}
           </Button>

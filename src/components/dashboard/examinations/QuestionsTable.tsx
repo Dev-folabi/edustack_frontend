@@ -1,20 +1,11 @@
 "use client";
 
-import { useState } from 'react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { MoreHorizontal } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Question } from '@/types/question';
-import { Badge } from '@/components/ui/badge';
-import { AddEditQuestionDialog } from './AddEditQuestionDialog';
+import { useState } from "react";
+import { Question } from "@/types/question";
+import { AddEditQuestionDialog } from "./AddEditQuestionDialog";
+import { deleteQuestion } from "@/services/questionBankService";
+import { useQuestionBankStore } from "@/store/questionBankStore";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,9 +16,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { deleteQuestion } from '@/services/questionBankService';
-import { useQuestionBankStore } from '@/store/questionBankStore';
-import { toast } from 'sonner';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { MoreHorizontal } from "lucide-react";
 
 interface QuestionsTableProps {
   questions: Question[];
@@ -37,9 +33,13 @@ interface QuestionsTableProps {
 export const QuestionsTable = ({ questions, bankId }: QuestionsTableProps) => {
   const { fetchQuestionBankById } = useQuestionBankStore();
   const [isAddEditDialogOpen, setAddEditDialogOpen] = useState(false);
-  const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
+  const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(
+    null
+  );
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [questionToDelete, setQuestionToDelete] = useState<Question | null>(null);
+  const [questionToDelete, setQuestionToDelete] = useState<Question | null>(
+    null
+  );
 
   const handleEditQuestion = (question: Question) => {
     setSelectedQuestion(question);
@@ -68,86 +68,131 @@ export const QuestionsTable = ({ questions, bankId }: QuestionsTableProps) => {
 
   if (!questions || questions.length === 0) {
     return (
-      <div className="text-center p-8 bg-white rounded-lg shadow-md">
-        <p className="text-gray-500">No questions have been added to this question bank yet.</p>
+      <div className="text-center p-10 bg-white rounded-xl border border-gray-200 shadow-sm">
+        <p className="text-gray-500">
+          No questions have been added to this question bank yet.
+        </p>
       </div>
     );
   }
 
   return (
     <>
-      <div className="bg-white shadow-md rounded-lg overflow-hidden">
-        <Table>
-          <TableHeader className="bg-gray-50">
-            <TableRow>
-              <TableHead>Question</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Marks</TableHead>
-              <TableHead>Difficulty</TableHead>
-              <TableHead>
-                <span className="sr-only">Actions</span>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+      <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white p-3">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50 text-left text-gray-600">
+            <tr>
+              <th className="px-6 py-3 font-medium w-[45%]">Question</th>
+              <th className="px-6 py-3 font-medium w-[15%]">Type</th>
+              <th className="px-6 py-3 font-medium w-[10%]">Marks</th>
+              <th className="px-6 py-3 font-medium w-[15%]">Difficulty</th>
+              <th className="px-6 py-3 font-medium w-[15%] text-right">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
             {questions.map((question) => (
-              <TableRow key={question.id}>
-                <TableCell className="font-medium truncate max-w-xs">{question.questionText}</TableCell>
-                <TableCell>
-                  <Badge>{question.type}</Badge>
-                </TableCell>
-                <TableCell>{question.marks}</TableCell>
-                <TableCell>
-                  <Badge variant={
-                      question.difficulty === 'EASY' ? 'default' :
-                      question.difficulty === 'MEDIUM' ? 'secondary' :
-                      'destructive'
-                  }>
-                    {question.difficulty}
-                  </Badge>
-                </TableCell>
-                <TableCell>
+              <tr
+                key={question.id}
+                className="hover:bg-gray-50 transition-colors"
+              >
+                <td className="px-6 py-4 font-medium text-gray-800 truncate max-w-md">
+                  {question.questionText}
+                </td>
+                <td className="px-6 py-4">
+                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                    {question.type}
+                  </span>
+                </td>
+                <td className="px-6 py-4 text-gray-700">{question.marks}</td>
+                <td className="px-6 py-4">
+                  {question.difficulty === "Easy" && (
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                      Easy
+                    </span>
+                  )}
+                  {question.difficulty === "Medium" && (
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                      Medium
+                    </span>
+                  )}
+                  {question.difficulty === "Hard" && (
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                      Hard
+                    </span>
+                  )}
+                </td>
+                <td className="px-6 py-4 text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
+                      <Button
+                        variant="ghost"
+                        className="h-8 w-8 p-0 hover:bg-gray-100"
+                      >
                         <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
+                        <MoreHorizontal className="h-4 w-4 text-gray-500" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => handleEditQuestion(question)}>Edit</DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteQuestion(question)}>Delete</DropdownMenuItem>
+                    <DropdownMenuContent
+                      align="end"
+                      className="rounded-lg shadow-md border border-gray-200 bg-white"
+                    >
+                      <DropdownMenuItem
+                        onClick={() => handleEditQuestion(question)}
+                        className="cursor-pointer text-gray-700 hover:bg-gray-50"
+                      >
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleDeleteQuestion(question)}
+                        className="cursor-pointer text-red-600 hover:bg-red-50"
+                      >
+                        Delete
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                </TableCell>
-              </TableRow>
+                </td>
+              </tr>
             ))}
-          </TableBody>
-        </Table>
+          </tbody>
+        </table>
       </div>
+
+      {/* Add/Edit Dialog */}
       {isAddEditDialogOpen && (
         <AddEditQuestionDialog
-            isOpen={isAddEditDialogOpen}
-            onClose={() => {
-                setAddEditDialogOpen(false);
-                setSelectedQuestion(null);
-            }}
-            bankId={bankId}
-            question={selectedQuestion}
+          isOpen={isAddEditDialogOpen}
+          onClose={() => {
+            setAddEditDialogOpen(false);
+            setSelectedQuestion(null);
+          }}
+          bankId={bankId}
+          question={selectedQuestion || undefined}
         />
       )}
+
+      {/* Delete Confirm Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-xl shadow-lg border border-gray-200">
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the question.
+            <AlertDialogTitle className="text-lg font-semibold text-gray-800">
+              Are you sure?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-600">
+              This action cannot be undone. This will permanently delete the
+              question.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+            <AlertDialogCancel className="rounded-lg border border-gray-200 px-4 py-2 text-gray-700 hover:bg-gray-50">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction className="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+              onClick={confirmDelete}
+            >
+              Delete
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
