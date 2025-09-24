@@ -45,8 +45,8 @@ export interface ExamPaper {
   instructions?: string;
   published?: boolean;
   sectionId?: string;
-  termId?: string;
-  sessionId?: string;
+  termId: string;
+  sessionId: string;
 }
 
 export interface ApiResponse<T> {

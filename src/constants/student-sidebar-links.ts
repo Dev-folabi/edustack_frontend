@@ -1,10 +1,9 @@
 import {
-  FaTachometerAlt, FaUserCircle, FaBook, FaClipboardList, FaFileInvoiceDollar, FaBell
+  FaTachometerAlt, FaUserCircle, FaBook, FaClipboardList, FaFileInvoiceDollar, FaBell, FaCalendarAlt
 } from 'react-icons/fa';
 import { UserRole } from './roles';
 import { DASHBOARD_ROUTES } from './routes';
-import { IconType } from 'react-icons';
-import { SidebarCategory } from './sidebar-links'; // Re-use the interface
+import { SidebarCategory } from './sidebar-links';
 
 export const studentSidebarConfig: SidebarCategory[] = [
   {
@@ -31,20 +30,14 @@ export const studentSidebarConfig: SidebarCategory[] = [
     links: [
       {
         href: DASHBOARD_ROUTES.TIMETABLE,
-        label: 'Timetable',
-        icon: FaClipboardList,
+        label: 'Class Timetable',
+        icon: FaCalendarAlt,
         roles: [UserRole.STUDENT, UserRole.PARENT],
       },
       {
         href: DASHBOARD_ROUTES.SUBJECTS,
-        label: 'Subjects',
+        label: 'My Subjects',
         icon: FaBook,
-        roles: [UserRole.STUDENT, UserRole.PARENT],
-      },
-      {
-        href: DASHBOARD_ROUTES.ATTENDANCE_STUDENT,
-        label: 'Attendance',
-        icon: FaClipboardList,
         roles: [UserRole.STUDENT, UserRole.PARENT],
       },
     ],
@@ -54,21 +47,15 @@ export const studentSidebarConfig: SidebarCategory[] = [
     roles: [UserRole.STUDENT, UserRole.PARENT],
     links: [
       {
-        href: DASHBOARD_ROUTES.EXAMS_MANAGE,
-        label: 'Exam Schedule',
+        href: DASHBOARD_ROUTES.STUDENT_EXAMS_HOME,
+        label: 'My Exams',
         icon: FaClipboardList,
         roles: [UserRole.STUDENT, UserRole.PARENT],
       },
       {
-        href: DASHBOARD_ROUTES.STUDENT_EXAMS_CBT,
-        label: 'CBT Exam',
-        icon: FaBook,
-        roles: [UserRole.STUDENT, UserRole.PARENT],
-      },
-      {
-        href: DASHBOARD_ROUTES.EXAMS_RESULTS,
-        label: 'Results',
-        icon: FaClipboardList,
+        href: DASHBOARD_ROUTES.STUDENT_EXAMS_TIMETABLE,
+        label: 'Exam Timetable',
+        icon: FaCalendarAlt,
         roles: [UserRole.STUDENT, UserRole.PARENT],
       },
     ],

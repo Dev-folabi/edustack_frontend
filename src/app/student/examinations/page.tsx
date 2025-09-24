@@ -9,11 +9,13 @@ import { useStudentExamStore } from '@/store/studentExamStore';
 import { ExamCard } from '@/components/student-dashboard/ExamCard';
 
 const ExamList = ({ papers, status }) => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
         {papers.length > 0 ? (
             papers.map(paper => <ExamCard key={paper.id} paper={paper} status={status} />)
         ) : (
-            <p>No exams in this category.</p>
+            <div className="col-span-full text-center py-12 text-gray-500">
+                <p>No exams in this category.</p>
+            </div>
         )}
     </div>
 );
@@ -34,8 +36,8 @@ const StudentExaminationsPage = () => {
             <BookOpen className="w-8 h-8 text-blue-600" />
             <h1 className="text-3xl font-bold text-gray-800">My Examinations</h1>
         </div>
-      <Tabs defaultValue="upcoming">
-        <TabsList>
+      <Tabs defaultValue="upcoming" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
           <TabsTrigger value="ongoing">Ongoing</TabsTrigger>
           <TabsTrigger value="completed">Completed</TabsTrigger>

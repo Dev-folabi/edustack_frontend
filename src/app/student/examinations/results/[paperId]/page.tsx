@@ -25,6 +25,7 @@ const StudentResultPage = () => {
         try {
           setLoading(true);
           setError(null);
+          // The function getTermReportByPaper already uses the paperId to fetch the report
           const response = await getTermReportByPaper(paperId);
           if (response.success) {
             setReportData(response.data);

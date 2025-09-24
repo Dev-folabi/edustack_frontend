@@ -131,4 +131,4 @@ const PreAttemptPage = () => {
   );
 };
 
-export default withAuth(PreAttemptPage, [UserRole.STUDENT, UserRole.PARENT]);
+export default withAuth(PreAttemptPage, [UserRole.STUDENT]);

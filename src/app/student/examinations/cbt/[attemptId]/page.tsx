@@ -15,6 +15,53 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Flag } from 'lucide-react';
 
+const QuestionRenderer = ({ question, answer, onAnswerChange }) => {
+    switch (question.type) {
+        case 'MCQ':
+            return (
+              <RadioGroup onValueChange={(value) => onAnswerChange(question.id, value)} value={answer}>
+                {question.options.map((option, index) => (
+                  <div key={index} className="flex items-center space-x-2">
+                    <RadioGroupItem value={String(index)} id={`option-${index}`} />
+                    <Label htmlFor={`option-${index}`}>{option}</Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            );
+        case 'ESSAY':
+            return (
+              <Textarea
+                rows={10}
+                value={answer || ''}
+                onChange={(e) => onAnswerChange(question.id, e.target.value)}
+              />
+            );
+        case 'TRUE_FALSE':
+            return (
+                <RadioGroup onValueChange={(value) => onAnswerChange(question.id, value === 'true')} value={String(answer)}>
+                    <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="true" id="true" />
+                        <Label htmlFor="true">True</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="false" id="false" />
+                        <Label htmlFor="false">False</Label>
+                    </div>
+                </RadioGroup>
+            );
+        case 'FILL_IN_BLANKS':
+            return (
+              <Input
+                value={answer || ''}
+                onChange={(e) => onAnswerChange(question.id, e.target.value)}
+              />
+            );
+        default:
+            return <p>Unsupported question type: {question.type}</p>;
+    }
+};
+
+
 const CBTPage = () => {
   const params = useParams();
   const router = useRouter();
@@ -26,6 +73,7 @@ const CBTPage = () => {
   const [flagged, setFlagged] = useState<Record<string, boolean>>({});
   const [timeLeft, setTimeLeft] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [dirtyAnswers, setDirtyAnswers] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (attemptId) {
@@ -33,10 +81,10 @@ const CBTPage = () => {
     }
   }, [attemptId, fetchExamAttempt]);
 
-  const timeToSeconds = (timeStr: string) => {
+  const timeToSeconds = (timeStr: string | undefined) => {
     if (!timeStr) return 0;
     const [hours, minutes, seconds] = timeStr.split(':').map(Number);
-    return hours * 3600 + minutes * 60 + seconds;
+    return (hours || 0) * 3600 + (minutes || 0) * 60 + (seconds || 0);
   };
 
   useEffect(() => {
@@ -73,27 +121,25 @@ const CBTPage = () => {
     return () => clearInterval(timer);
   }, [timeLeft, currentAttempt, handleSubmit]);
 
-  const [dirtyAnswers, setDirtyAnswers] = useState<Set<string>>(new Set());
-
   const currentQuestion = useMemo(() => {
     return currentAttempt?.examPaper.questions[currentQuestionIndex];
   }, [currentAttempt, currentQuestionIndex]);
 
   useEffect(() => {
     const saveInterval = setInterval(() => {
-      if (dirtyAnswers.size > 0) {
-        toast.info("Auto-saving your progress...");
-        const promises = Array.from(dirtyAnswers).map(questionId => {
-          return saveAnswer(attemptId, questionId, answers[questionId]);
-        });
-        Promise.all(promises).then(() => {
-          setDirtyAnswers(new Set()); // Clear the set after saving
-          toast.success("Progress saved!");
-        }).catch(() => {
-            toast.error("Failed to save some of your answers. Please check your connection.")
-        })
-      }
-    }, 30000); // Auto-save every 30 seconds
+        if (dirtyAnswers.size > 0) {
+            toast.info("Auto-saving your progress...");
+            const promises = Array.from(dirtyAnswers).map(questionId => {
+              return saveAnswer(attemptId, questionId, answers[questionId]);
+            });
+            Promise.all(promises).then(() => {
+              setDirtyAnswers(new Set());
+              toast.success("Progress saved!");
+            }).catch(() => {
+                toast.error("Failed to save some answers.")
+            })
+          }
+    }, 30000);
     return () => clearInterval(saveInterval);
   }, [answers, attemptId, dirtyAnswers]);
 
@@ -125,41 +171,11 @@ const CBTPage = () => {
           </CardHeader>
           <CardContent>
             <p className="font-semibold mb-4">{currentQuestion.questionText}</p>
-            {currentQuestion.type === 'MCQ' && (
-              <RadioGroup onValueChange={(value) => handleAnswerChange(currentQuestion.id, value)} value={answers[currentQuestion.id]}>
-                {currentQuestion.options.map((option, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <RadioGroupItem value={String(index)} id={`option-${index}`} />
-                    <Label htmlFor={`option-${index}`}>{option}</Label>
-                  </div>
-                ))}
-              </RadioGroup>
-            )}
-            {currentQuestion.type === 'ESSAY' && (
-              <Textarea
-                rows={10}
-                value={answers[currentQuestion.id] || ''}
-                onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
-              />
-            )}
-            {currentQuestion.type === 'TRUE_FALSE' && (
-                <RadioGroup onValueChange={(value) => handleAnswerChange(currentQuestion.id, value === 'true')} value={String(answers[currentQuestion.id])}>
-                    <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="true" id="true" />
-                        <Label htmlFor="true">True</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="false" id="false" />
-                        <Label htmlFor="false">False</Label>
-                    </div>
-                </RadioGroup>
-            )}
-            {currentQuestion.type === 'FILL_IN_BLANKS' && (
-              <Input
-                value={answers[currentQuestion.id] || ''}
-                onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
-              />
-            )}
+            <QuestionRenderer
+                question={currentQuestion}
+                answer={answers[currentQuestion.id]}
+                onAnswerChange={handleAnswerChange}
+            />
           </CardContent>
         </Card>
         <div className="flex justify-between mt-6">
