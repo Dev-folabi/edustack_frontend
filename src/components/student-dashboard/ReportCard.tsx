@@ -26,8 +26,8 @@ export const ReportCard = ({ data }: ReportCardProps) => {
                 </div>
             </div>
             <Avatar className="h-24 w-24">
-                <AvatarImage src={data.student?.photoUrl} alt="Student Photo" />
-                <AvatarFallback>{data.student?.name?.charAt(0)}</AvatarFallback>
+                <AvatarImage src={data.studentInfo?.photoUrl} alt="Student Photo" />
+                <AvatarFallback>{data.studentInfo?.name?.charAt(0)}</AvatarFallback>
             </Avatar>
         </div>
         <div className="text-center py-2">
@@ -39,15 +39,16 @@ export const ReportCard = ({ data }: ReportCardProps) => {
 
         {/* Student Info */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-4 border-b">
-            <div><span className="font-semibold">Name of Pupil:</span> {data.student?.name}</div>
-            <div><span className="font-semibold">Class:</span> {data.student?.class}</div>
-            <div><span className="font-semibold">Registration No:</span> {data.student?.registrationNumber}</div>
-            <div><span className="font-semibold">Session:</span> {data.student?.session}</div>
+            <div><span className="font-semibold">Name of Pupil:</span> {data.studentInfo?.name}</div>
+            <div><span className="font-semibold">Class:</span> {data.academicInfo?.class}</div>
+            <div><span className="font-semibold">Registration No:</span> {data.studentInfo?.admissionNumber}</div>
+            <div><span className="font-semibold">Session:</span> {data.academicInfo?.session}</div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-4 border-b">
-            <div><span className="font-semibold">Times School Opened:</span> {data.timesOpened}</div>
-            <div><span className="font-semibold">Times Present:</span> {data.timesPresent}</div>
-            <div><span className="font-semibold">Times Absent:</span> {data.timesAbsent}</div>
+            <div><span className="font-semibold">Times School Opened:</span> {data.summary?.timesOpened}</div>
+            <div><span className="font-semibold">Times Present:</span> {data.summary?.timesPresent}</div>
+            <div><span className="font-semibold">Times Absent:</span> {data.summary?.timesAbsent}</div>
+            <div><span className="font-semibold">Overall Grade:</span> {data.summary?.overallGrade}</div>
         </div>
 
         {/* Academic Performance */}
@@ -56,24 +57,22 @@ export const ReportCard = ({ data }: ReportCardProps) => {
             <TableHeader>
                 <TableRow>
                     <TableHead>SUBJECT</TableHead>
-                    <TableHead>1ST CA (10)</TableHead>
-                    <TableHead>2ND CA (20)</TableHead>
-                    <TableHead>EXAM (70)</TableHead>
-                    <TableHead>TOTAL (100)</TableHead>
+                    <TableHead>MARKS OBTAINED</TableHead>
+                    <TableHead>MAX MARKS</TableHead>
+                    <TableHead>PERCENTAGE</TableHead>
                     <TableHead>GRADE</TableHead>
                     <TableHead>REMARKS</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {data.academicPerformance?.map((item, index) => (
+                {data.results?.map((item, index) => (
                     <TableRow key={index}>
                         <TableCell>{item.subject}</TableCell>
-                        <TableCell>{item.ca1}</TableCell>
-                        <TableCell>{item.ca2}</TableCell>
-                        <TableCell>{item.exam}</TableCell>
-                        <TableCell>{item.total}</TableCell>
+                        <TableCell>{item.marksObtained}</TableCell>
+                        <TableCell>{item.maxMarks}</TableCell>
+                        <TableCell>{item.percentage}%</TableCell>
                         <TableCell>{item.grade}</TableCell>
-                        <TableCell>{item.remarks}</TableCell>
+                        <TableCell>{item.remark}</TableCell>
                     </TableRow>
                 ))}
             </TableBody>
@@ -86,28 +85,19 @@ export const ReportCard = ({ data }: ReportCardProps) => {
                  <Table>
                     <TableHeader><TableRow><TableHead>TRAIT</TableHead><TableHead>RATING</TableHead></TableRow></TableHeader>
                     <TableBody>
-                        {data.affectiveTraits?.map((item, index) => (
-                            <TableRow key={index}><TableCell>{item.trait}</TableCell><TableCell>{item.rating}</TableCell></TableRow>
+                        {data.psychomotor?.map((item, index) => (
+                            <TableRow key={index}><TableCell>{item.name}</TableCell><TableCell>{item.rating}</TableCell></TableRow>
                         ))}
                     </TableBody>
                  </Table>
             </div>
             <div>
                 <h2 className="text-center bg-blue-800 text-white font-bold p-1 my-4">KEYS TO GRADING</h2>
-                <Table>
-                    <TableHeader><TableRow><TableHead>RANGE</TableHead><TableHead>GRADE</TableHead><TableHead>INTERPRETATION</TableHead></TableRow></TableHeader>
-                    <TableBody>
-                        {data.keysToGrading?.map((item, index) => (
-                             <TableRow key={index}><TableCell>{item.range}</TableCell><TableCell>{item.grade}</TableCell><TableCell>{item.interpretation}</TableCell></TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-                <h2 className="text-center bg-blue-800 text-white font-bold p-1 my-4">KEYS TO RATING</h2>
                  <Table>
-                    <TableHeader><TableRow><TableHead>RATING</TableHead><TableHead>INTERPRETATION</TableHead></TableRow></TableHeader>
+                    <TableHeader><TableRow><TableHead>RANGE</TableHead><TableHead>GRADE</TableHead></TableRow></TableHeader>
                     <TableBody>
-                        {data.keysToRating?.map((item, index) => (
-                             <TableRow key={index}><TableCell>{item.rating}</TableCell><TableCell>{item.interpretation}</TableCell></TableRow>
+                        {data.gradeCriteria?.map((item, index) => (
+                             <TableRow key={index}><TableCell>{item.minScore}-{item.maxScore}</TableCell><TableCell>{item.name}</TableCell></TableRow>
                         ))}
                     </TableBody>
                 </Table>
@@ -116,8 +106,8 @@ export const ReportCard = ({ data }: ReportCardProps) => {
 
         {/* Comments */}
         <div className="mt-4 space-y-2">
-            <div><span className="font-semibold">Teacher's Comment:</span> {data.teacherComment}</div>
-            <div><span className="font-semibold">Principal's Comment:</span> {data.principalComment}</div>
+            <div><span className="font-semibold">Teacher's Comment:</span> {data.remarks?.classTeacher}</div>
+            <div><span className="font-semibold">Principal's Comment:</span> {data.remarks?.schoolHead}</div>
         </div>
     </Card>
   );

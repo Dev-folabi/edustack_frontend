@@ -14,8 +14,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Flag } from 'lucide-react';
+import { Question } from '@/types/exam';
 
-const QuestionRenderer = ({ question, answer, onAnswerChange }) => {
+const QuestionRenderer = ({ question, answer, onAnswerChange }: { question: Question, answer: any, onAnswerChange: (id: string, answer: any) => void }) => {
     switch (question.type) {
         case 'MCQ':
             return (
@@ -28,7 +29,7 @@ const QuestionRenderer = ({ question, answer, onAnswerChange }) => {
                 ))}
               </RadioGroup>
             );
-        case 'ESSAY':
+        case 'Essay':
             return (
               <Textarea
                 rows={10}
@@ -36,7 +37,7 @@ const QuestionRenderer = ({ question, answer, onAnswerChange }) => {
                 onChange={(e) => onAnswerChange(question.id, e.target.value)}
               />
             );
-        case 'TRUE_FALSE':
+        case 'TrueFalse':
             return (
                 <RadioGroup onValueChange={(value) => onAnswerChange(question.id, value === 'true')} value={String(answer)}>
                     <div className="flex items-center space-x-2">
@@ -49,7 +50,7 @@ const QuestionRenderer = ({ question, answer, onAnswerChange }) => {
                     </div>
                 </RadioGroup>
             );
-        case 'FILL_IN_BLANKS':
+        case 'FillInBlanks':
             return (
               <Input
                 value={answer || ''}
@@ -81,16 +82,10 @@ const CBTPage = () => {
     }
   }, [attemptId, fetchExamAttempt]);
 
-  const timeToSeconds = (timeStr: string | undefined) => {
-    if (!timeStr) return 0;
-    const [hours, minutes, seconds] = timeStr.split(':').map(Number);
-    return (hours || 0) * 3600 + (minutes || 0) * 60 + (seconds || 0);
-  };
-
   useEffect(() => {
     if (currentAttempt) {
-      const durationInSeconds = timeToSeconds(currentAttempt.examPaper.duration);
-      const startTime = new Date(currentAttempt.startTime).getTime();
+      const durationInSeconds = (new Date(currentAttempt.attempt.examPaper.endTime).getTime() - new Date(currentAttempt.attempt.examPaper.startTime).getTime()) / 1000;
+      const startTime = new Date(currentAttempt.attempt.startedAt).getTime();
       const now = new Date().getTime();
       const elapsed = (now - startTime) / 1000;
       setTimeLeft(Math.max(0, durationInSeconds - elapsed));
@@ -122,23 +117,28 @@ const CBTPage = () => {
   }, [timeLeft, currentAttempt, handleSubmit]);
 
   const currentQuestion = useMemo(() => {
-    return currentAttempt?.examPaper.questions[currentQuestionIndex];
+    return currentAttempt?.questions[currentQuestionIndex];
   }, [currentAttempt, currentQuestionIndex]);
 
   useEffect(() => {
     const saveInterval = setInterval(() => {
-        if (dirtyAnswers.size > 0) {
-            toast.info("Auto-saving your progress...");
-            const promises = Array.from(dirtyAnswers).map(questionId => {
-              return saveAnswer(attemptId, questionId, answers[questionId]);
-            });
-            Promise.all(promises).then(() => {
-              setDirtyAnswers(new Set());
-              toast.success("Progress saved!");
-            }).catch(() => {
-                toast.error("Failed to save some answers.")
-            })
+      if (dirtyAnswers.size > 0) {
+        const responsesToSave = Array.from(dirtyAnswers).map(questionId => ({
+          questionId,
+          studentAnswer: answers[questionId],
+        }));
+
+        saveAnswer(attemptId, responsesToSave).then((res) => {
+          if(res.success) {
+            setDirtyAnswers(new Set());
+            toast.success("Progress saved!");
+          } else {
+            toast.error(res.message || "Failed to save some answers.");
           }
+        }).catch(() => {
+            toast.error("An error occurred while saving. Please check your connection.")
+        })
+      }
     }, 30000);
     return () => clearInterval(saveInterval);
   }, [answers, attemptId, dirtyAnswers]);
@@ -157,13 +157,13 @@ const CBTPage = () => {
   if (!currentAttempt) return <p>Exam attempt not found.</p>;
 
   return (
-    <div className="flex gap-6">
+    <div className="flex gap-6 p-4">
       <div className="flex-grow">
         <Card>
           <CardHeader>
-            <CardTitle>{currentAttempt.examPaper.subject.name}</CardTitle>
+            <CardTitle>{currentAttempt.attempt.examPaper.exam.title}</CardTitle>
             <div className="flex justify-between items-center">
-                <CardDescription>Question {currentQuestionIndex + 1} of {currentAttempt.examPaper.questions.length}</CardDescription>
+                <CardDescription>Question {currentQuestionIndex + 1} of {currentAttempt.questions.length}</CardDescription>
                 <Button variant="ghost" size="icon" onClick={() => toggleFlag(currentQuestion.id)}>
                     <Flag className={flagged[currentQuestion.id] ? "text-yellow-500" : ""} />
                 </Button>
@@ -180,7 +180,7 @@ const CBTPage = () => {
         </Card>
         <div className="flex justify-between mt-6">
           <Button onClick={() => setCurrentQuestionIndex(prev => Math.max(0, prev - 1))} disabled={currentQuestionIndex === 0}>Previous</Button>
-          <Button onClick={() => setCurrentQuestionIndex(prev => Math.min(currentAttempt.examPaper.questions.length - 1, prev + 1))} disabled={currentQuestionIndex === currentAttempt.examPaper.questions.length - 1}>Next</Button>
+          <Button onClick={() => setCurrentQuestionIndex(prev => Math.min(currentAttempt.questions.length - 1, prev + 1))} disabled={currentQuestionIndex === currentAttempt.questions.length - 1}>Next</Button>
         </div>
       </div>
       <div className="w-64 flex-shrink-0">
@@ -197,7 +197,7 @@ const CBTPage = () => {
         <Card className="mt-6">
             <CardHeader><CardTitle>Questions</CardTitle></CardHeader>
             <CardContent className="grid grid-cols-5 gap-2">
-                {currentAttempt.examPaper.questions.map((q, index) => (
+                {currentAttempt.questions.map((q, index) => (
                     <Button
                         key={q.id}
                         variant={currentQuestionIndex === index ? 'default' : (answers[q.id] !== undefined ? 'secondary' : 'outline')}

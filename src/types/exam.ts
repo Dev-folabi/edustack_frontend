@@ -3,50 +3,46 @@ export interface Exam {
   title: string;
   startDate: string;
   endDate: string;
-  classId: string;
-  sectionId: string;
-  termId: string;
-  sessionId: string;
-  class: {
-    id: string;
-    name: string;
-  };
-  section: {
-    id: string;
-    name: string;
-  };
-  term: {
-    id: string;
-    name: string;
-  };
-  session: {
-    id: string;
-    name: string;
-  };
   papers: ExamPaper[];
 }
 
 export interface ExamPaper {
   id: string;
-  title?: string; // Added this field to distinguish papers like "1st CA" vs "Final Exam"
   subject: {
     id: string;
     name: string;
   };
+  exam: Exam; // For accessing parent exam details like title
   maxMarks: number;
-  passMarks: number;
   paperDate: string;
   startTime: string;
   endTime: string;
-  duration?: number; // Duration in seconds
   mode: 'PaperBased' | 'CBT';
   questionBankId?: string;
   totalQuestions?: number;
-  instructions?: string;
-  published?: boolean;
-  sectionId?: string;
-  termId: string;
-  sessionId: string;
+}
+
+export interface Question {
+    id: string;
+    type: 'MCQ' | 'Essay' | 'FillInBlanks' | 'TrueFalse';
+    questionText: string;
+    options?: any;
+    marks: number;
+}
+
+export interface ExamAttempt {
+    id: string;
+    examPaperId: string;
+    studentId: string;
+    startedAt: string;
+    submittedAt?: string;
+    status: 'InProgress' | 'Submitted' | 'Graded';
+    totalScore?: number;
+}
+
+export interface ExamAttemptResponse {
+    attempt: ExamAttempt;
+    questions: Question[];
 }
 
 export interface ApiResponse<T> {

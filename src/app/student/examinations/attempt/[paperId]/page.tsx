@@ -50,17 +50,13 @@ const PreAttemptPage = () => {
     setIsStarting(true);
     try {
       const response = await startExam(paper.id);
-      if (response.success && response.data.attemptId) {
-        showToast({
-            title: 'Success',
-            message: 'Exam started successfully! Good luck.',
-            type: 'success'
-        });
-        router.push(`/student/examinations/cbt/${response.data.attemptId}`);
+      if (response.success && response.data.attempt?.id) {
+        showToast({ title: 'Success', message: 'Exam started successfully! Good luck.', type: 'success' });
+        router.push(`/student/examinations/cbt/${response.data.attempt.id}`);
       } else {
         showToast({
           title: 'Error',
-          message: response.message || 'Could not start the exam. You may have an ongoing attempt.',
+          message: response.message || 'Could not start the exam.',
           type: 'error',
         });
       }
@@ -88,7 +84,7 @@ const PreAttemptPage = () => {
           <div className="flex justify-between items-start">
             <BackButton />
             <div className="text-center flex-grow">
-                <CardTitle className="text-2xl mb-2">{paper.title || paper.subject.name}</CardTitle>
+                <CardTitle className="text-2xl mb-2">{paper.exam.title}</CardTitle>
                 <p className="text-lg text-gray-700">{paper.subject.name}</p>
             </div>
           </div>
@@ -110,10 +106,10 @@ const PreAttemptPage = () => {
                 <p className="font-bold">Max Marks</p>
                 <p>{paper.maxMarks}</p>
             </div>
-            <div className="p-4 bg-gray-100 rounded-lg">
+             <div className="p-4 bg-gray-100 rounded-lg">
                 <Check className="mx-auto h-8 w-8 text-gray-600 mb-2"/>
-                <p className="font-bold">Pass Marks</p>
-                <p>{paper.passMarks}</p>
+                <p className="font-bold">Total Questions</p>
+                <p>{paper.totalQuestions}</p>
             </div>
           </div>
         </CardContent>

@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import withAuth from "@/components/withAuth";
 import { UserRole } from "@/constants/roles";
-import { getTermReportByPaper } from '@/services/examService';
+import { getStudentTermReport } from '@/services/examService';
+import { useAuthStore } from '@/store/authStore';
+import { useSessionStore } from '@/store/sessionStore';
 import { ReportCard } from '@/components/student-dashboard/ReportCard';
 import { Button } from '@/components/ui/button';
 import { Download, AlertTriangle } from 'lucide-react';
@@ -13,20 +15,21 @@ import { toast } from 'sonner';
 
 const StudentResultPage = () => {
   const params = useParams();
-  const paperId = params.paperId as string;
+  const paperId = params.paperId as string; // This is actually the termId in this context now
+  const { user } = useAuthStore();
+  const { selectedSession } = useSessionStore();
 
   const [reportData, setReportData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (paperId) {
+    if (paperId && user?.student?.id && selectedSession?.id) {
       const fetchReport = async () => {
         try {
           setLoading(true);
           setError(null);
-          // The function getTermReportByPaper already uses the paperId to fetch the report
-          const response = await getTermReportByPaper(paperId);
+          const response = await getStudentTermReport(user.student.id, paperId, selectedSession.id);
           if (response.success) {
             setReportData(response.data);
           } else {
@@ -40,7 +43,7 @@ const StudentResultPage = () => {
       };
       fetchReport();
     }
-  }, [paperId]);
+  }, [paperId, user, selectedSession]);
 
   const handleExport = async () => {
     const reportCardElement = document.getElementById('report-card');
@@ -64,7 +67,7 @@ const StudentResultPage = () => {
 
         pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
 
-        const studentName = reportData?.student?.name || 'student';
+        const studentName = reportData?.studentInfo?.name || 'student';
         const term = reportData?.term || 'report';
         pdf.save(`Report-Card-${studentName.replace(' ', '-')}-${term.replace(' ', '-')}.pdf`);
 

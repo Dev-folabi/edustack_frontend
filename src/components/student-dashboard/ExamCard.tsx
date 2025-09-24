@@ -54,21 +54,20 @@ const ActionButton = ({ status, paper }) => {
 };
 
 export const ExamCard = ({ paper, status }: ExamCardProps) => {
+  const duration = (new Date(paper.endTime).getTime() - new Date(paper.startTime).getTime()) / 60000;
   return (
     <Card className="flex flex-col justify-between">
       <CardHeader>
-        <CardTitle className="text-lg">{paper.title || paper.subject.name}</CardTitle>
+        <CardTitle className="text-lg">{paper.exam.title}</CardTitle>
+        <p className="text-sm text-gray-500">{paper.subject.name}</p>
         <StatusInfo status={status} paper={paper} />
       </CardHeader>
       <CardContent>
         <div className="flex justify-between items-center">
-            <p className="text-sm text-gray-500">{paper.subject.name}</p>
             <Badge variant={paper.mode === 'CBT' ? 'default' : 'secondary'}>{paper.mode}</Badge>
+            <p className="text-sm"><strong>Marks:</strong> {paper.maxMarks}</p>
         </div>
-        <div className="text-sm mt-2">
-            <p><strong>Marks:</strong> {paper.maxMarks}</p>
-            <p><strong>Duration:</strong> {`${(new Date(paper.endTime).getTime() - new Date(paper.startTime).getTime()) / 60000} minutes`}</p>
-        </div>
+        <p className="text-sm mt-2"><strong>Duration:</strong> {`${duration} minutes`}</p>
       </CardContent>
       <CardFooter>
         <ActionButton status={status} paper={paper} />

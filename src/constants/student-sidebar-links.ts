@@ -1,9 +1,10 @@
 import {
-  FaTachometerAlt, FaUserCircle, FaBook, FaClipboardList, FaFileInvoiceDollar, FaBell, FaCalendarAlt
+  FaTachometerAlt, FaUserCircle, FaBook, FaClipboardList, FaFileInvoiceDollar, FaBell
 } from 'react-icons/fa';
 import { UserRole } from './roles';
 import { DASHBOARD_ROUTES } from './routes';
-import { SidebarCategory } from './sidebar-links';
+import { IconType } from 'react-icons';
+import { SidebarCategory } from './sidebar-links'; // Re-use the interface
 
 export const studentSidebarConfig: SidebarCategory[] = [
   {
@@ -30,14 +31,20 @@ export const studentSidebarConfig: SidebarCategory[] = [
     links: [
       {
         href: DASHBOARD_ROUTES.TIMETABLE,
-        label: 'Class Timetable',
-        icon: FaCalendarAlt,
+        label: 'Timetable',
+        icon: FaClipboardList,
         roles: [UserRole.STUDENT, UserRole.PARENT],
       },
       {
         href: DASHBOARD_ROUTES.SUBJECTS,
-        label: 'My Subjects',
+        label: 'Subjects',
         icon: FaBook,
+        roles: [UserRole.STUDENT, UserRole.PARENT],
+      },
+      {
+        href: DASHBOARD_ROUTES.ATTENDANCE_STUDENT,
+        label: 'Attendance',
+        icon: FaClipboardList,
         roles: [UserRole.STUDENT, UserRole.PARENT],
       },
     ],
@@ -47,15 +54,21 @@ export const studentSidebarConfig: SidebarCategory[] = [
     roles: [UserRole.STUDENT, UserRole.PARENT],
     links: [
       {
-        href: DASHBOARD_ROUTES.STUDENT_EXAMS_HOME,
-        label: 'My Exams',
+        href: DASHBOARD_ROUTES.EXAMS_MANAGE,
+        label: 'Exam Schedule',
         icon: FaClipboardList,
         roles: [UserRole.STUDENT, UserRole.PARENT],
       },
       {
-        href: DASHBOARD_ROUTES.STUDENT_EXAMS_TIMETABLE,
-        label: 'Exam Timetable',
-        icon: FaCalendarAlt,
+        href: DASHBOARD_ROUTES.STUDENT_EXAMS_CBT,
+        label: 'CBT Exam',
+        icon: FaBook,
+        roles: [UserRole.STUDENT, UserRole.PARENT],
+      },
+      {
+        href: DASHBOARD_ROUTES.EXAMS_RESULTS,
+        label: 'Results',
+        icon: FaClipboardList,
         roles: [UserRole.STUDENT, UserRole.PARENT],
       },
     ],
