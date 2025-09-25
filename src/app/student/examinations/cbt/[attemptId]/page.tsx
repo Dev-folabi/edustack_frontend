@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import withAuth from '@/components/withAuth';
 import { UserRole } from '@/constants/roles';
 import { useStudentExamStore } from '@/store/studentExamStore';
-import { saveAnswer, submitExam } from '@/services/examService';
+import { createAndfetchExamAttempt, saveAnswer, submitExam } from '@/services/examService';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Flag } from 'lucide-react';
 import { Question } from '@/types/exam';
+import { useAuthStore } from '@/store/authStore';
 
 const QuestionRenderer = ({ question, answer, onAnswerChange }: { question: Question, answer: any, onAnswerChange: (id: string, answer: any) => void }) => {
     switch (question.type) {
@@ -75,12 +76,13 @@ const CBTPage = () => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dirtyAnswers, setDirtyAnswers] = useState<Set<string>>(new Set());
+  const {selectedSchool} = useAuthStore()
 
   useEffect(() => {
     if (attemptId) {
-      fetchExamAttempt(attemptId);
+      createAndfetchExamAttempt(attemptId, selectedSchool?.schoolId);
     }
-  }, [attemptId, fetchExamAttempt]);
+  }, [attemptId, fetchExamAttempt, selectedSchool?.schoolId]);
 
   useEffect(() => {
     if (currentAttempt) {

@@ -3,8 +3,7 @@ import {
 } from 'react-icons/fa';
 import { UserRole } from './roles';
 import { DASHBOARD_ROUTES } from './routes';
-import { IconType } from 'react-icons';
-import { SidebarCategory } from './sidebar-links'; // Re-use the interface
+import { SidebarCategory } from './sidebar-links';
 
 export const studentSidebarConfig: SidebarCategory[] = [
   {
@@ -54,7 +53,7 @@ export const studentSidebarConfig: SidebarCategory[] = [
     roles: [UserRole.STUDENT, UserRole.PARENT],
     links: [
       {
-        href: DASHBOARD_ROUTES.EXAMS_MANAGE,
+        href: DASHBOARD_ROUTES.STUDENT_EXAM_SCHEDULE,
         label: 'Exam Schedule',
         icon: FaClipboardList,
         roles: [UserRole.STUDENT, UserRole.PARENT],

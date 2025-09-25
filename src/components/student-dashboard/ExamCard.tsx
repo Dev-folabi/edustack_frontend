@@ -1,76 +1,122 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ExamPaper } from '@/types/exam';
-import { useRouter } from 'next/navigation';
-import { Clock, CheckCircle, Pencil, FileText } from 'lucide-react';
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Calendar, Clock, GraduationCap } from "lucide-react";
 
 interface ExamCardProps {
-  paper: ExamPaper;
-  status: 'upcoming' | 'ongoing' | 'completed' | 'published';
+  exam: any;
+  paper?: any;
+  status: string;
 }
 
-const StatusInfo = ({ status, paper }) => {
-  const commonClasses = "flex items-center gap-2 text-sm";
-  switch (status) {
-    case 'upcoming':
-      return <p className={`${commonClasses} text-blue-600`}><Clock className="h-4 w-4" /> Starts on {new Date(paper.startTime).toLocaleDateString()}</p>;
-    case 'ongoing':
-      return <p className={`${commonClasses} text-green-600`}><Pencil className="h-4 w-4" /> Ongoing</p>;
-    case 'completed':
-      return <p className={`${commonClasses} text-gray-600`}><CheckCircle className="h-4 w-4" /> Completed</p>;
-    case 'published':
-      return <p className={`${commonClasses} text-purple-600`}><FileText className="h-4 w-4" /> Result Published</p>;
-    default:
-      return null;
-  }
-};
+export const ExamCard = ({ exam, paper, status }: ExamCardProps) => {
+  const router = useRouter();
 
-const ActionButton = ({ status, paper }) => {
-    const router = useRouter();
+  // Compute duration only if paper has times
+  const duration =
+    paper?.startTime && paper?.endTime
+      ? (new Date(paper.endTime).getTime() -
+          new Date(paper.startTime).getTime()) /
+        60000
+      : null;
 
-    const handleAction = () => {
-        if (status === 'upcoming' || status === 'ongoing') {
-            router.push(`/student/examinations/attempt/${paper.id}`);
-        } else if (status === 'published') {
-            router.push(`/student/examinations/results/${paper.id}`);
-        }
-    };
+  const handleStartExam = async () => {
+    if (!paper?.id) return;
+    const paperId = paper?.id;
+    router.push(`/student/examinations/cbt/${paperId}`);
+  };
 
-    switch (status) {
-        case 'upcoming':
-            return <Button variant="outline" onClick={handleAction}>View Details</Button>;
-        case 'ongoing':
-            return <Button onClick={handleAction}>Start / Continue</Button>;
-        case 'completed':
-            return <Button variant="secondary" disabled>Awaiting Results</Button>;
-        case 'published':
-            return <Button variant="success" onClick={handleAction}>View Result</Button>;
-        default:
-            return null;
-    }
-};
-
-export const ExamCard = ({ paper, status }: ExamCardProps) => {
-  const duration = (new Date(paper.endTime).getTime() - new Date(paper.startTime).getTime()) / 60000;
   return (
-    <Card className="flex flex-col justify-between">
+    <Card className="flex flex-col justify-between hover:shadow-md transition-shadow">
       <CardHeader>
-        <CardTitle className="text-lg">{paper.exam.title}</CardTitle>
-        <p className="text-sm text-gray-500">{paper.subject.name}</p>
-        <StatusInfo status={status} paper={paper} />
+        <CardTitle className="text-lg font-semibold">{exam.title}</CardTitle>
+        <p className="text-sm text-gray-500">
+          {exam.class?.name} {exam.section?.name} • {exam.term?.name} •{" "}
+          {exam.session?.name}
+        </p>
       </CardHeader>
-      <CardContent>
-        <div className="flex justify-between items-center">
-            <Badge variant={paper.mode === 'CBT' ? 'default' : 'secondary'}>{paper.mode}</Badge>
-            <p className="text-sm"><strong>Marks:</strong> {paper.maxMarks}</p>
-        </div>
-        <p className="text-sm mt-2"><strong>Duration:</strong> {`${duration} minutes`}</p>
+
+      <CardContent className="space-y-3">
+        {paper ? (
+          <>
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <GraduationCap size={16} />
+              <span>{paper.subject?.name ?? "Unknown Subject"}</span>
+            </div>
+
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <Calendar size={16} />
+              <span>
+                {new Date(paper.paperDate).toLocaleDateString()} •{" "}
+                {new Date(paper.startTime).toLocaleTimeString()} -{" "}
+                {new Date(paper.endTime).toLocaleTimeString()}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <Clock size={16} />
+              <span>
+                Duration:{" "}
+                {duration !== null ? `${duration} minutes` : "Not specified"}
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center mt-2">
+              <Badge variant={paper.mode === "CBT" ? "default" : "secondary"}>
+                {paper.mode ?? "Unknown Mode"}
+              </Badge>
+              <span className="text-sm">Marks: {paper.maxMarks ?? "--"}</span>
+            </div>
+          </>
+        ) : (
+          <p className="text-sm italic text-gray-500">
+            No papers assigned for this exam.
+          </p>
+        )}
       </CardContent>
-      <CardFooter>
-        <ActionButton status={status} paper={paper} />
+
+      <CardFooter className="flex justify-between items-center">
+        <Badge
+          className={`${
+            status === "Ongoing"
+              ? "bg-green-500"
+              : status === "Scheduled"
+              ? "bg-blue-500"
+              : status === "Completed"
+              ? "bg-gray-500"
+              : "bg-red-500"
+          }`}
+        >
+          {status}
+        </Badge>
+
+        {paper ? (
+          <>
+            {status === "Ongoing" && paper.mode === "CBT" ? (
+              <Button size="sm" variant="outline" onClick={handleStartExam}>
+                {"Start Exam"}
+              </Button>
+            ) : status === "Completed" ? (
+              <Button size="sm" variant="outline">
+                View Result
+              </Button>
+            ) : null}
+          </>
+        ) : (
+          <Button size="sm" variant="outline" disabled>
+            Not Available
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );
