@@ -7,7 +7,7 @@ import {
 } from "@/types/exam";
 import { apiClient } from "@/utils/api";
 
-const EXAM_BASE_URL = "/exam/management";
+const EXAM_BASE_URL = "/exam";
 
 export const getAllExams = async (
   schoolId: string,
@@ -16,7 +16,7 @@ export const getAllExams = async (
   limit: number = 10
 ): Promise<ApiResponse<Exam[]>> => {
   const response = await apiClient.get(
-    `${EXAM_BASE_URL}?schoolId=${schoolId}&sessionId=${sessionId}&page=${page}&limit=${limit}`
+    `${EXAM_BASE_URL}/management?schoolId=${schoolId}&sessionId=${sessionId}&page=${page}&limit=${limit}`
   );
   return response as ApiResponse<Exam[]>;
 };
@@ -24,7 +24,7 @@ export const getAllExams = async (
 export const getExamById = async (
   examId: string
 ): Promise<ApiResponse<Exam>> => {
-  const response = await apiClient.get(`${EXAM_BASE_URL}/${examId}`);
+  const response = await apiClient.get(`${EXAM_BASE_URL}/management/${examId}`);
   return response as ApiResponse<Exam>;
 };
 
@@ -42,7 +42,7 @@ export const createExam = async (
     sessionId: string;
   }
 ): Promise<ApiResponse<Exam>> => {
-  const response = await apiClient.post(EXAM_BASE_URL, {
+  const response = await apiClient.post(`${EXAM_BASE_URL}/management`, {
     ...examData,
     schoolId,
   });
@@ -55,7 +55,7 @@ export const updateExam = async (
     Omit<Exam, "id" | "class" | "section" | "term" | "session" | "papers">
   >
 ): Promise<ApiResponse<Exam>> => {
-  const response = await apiClient.put(`${EXAM_BASE_URL}/${examId}`, examData);
+  const response = await apiClient.put(`${EXAM_BASE_URL}/management/${examId}`, examData);
   return response as ApiResponse<Exam>;
 };
 
@@ -63,7 +63,7 @@ export const getStudentResult = async (
   paperId: string
 ): Promise<ApiResponse<any>> => {
   const response = await apiClient.get(
-    `${EXAM_BASE_URL}/student/results/${paperId}`
+    `${EXAM_BASE_URL}/management/student/results/${paperId}`
   );
   return response as ApiResponse<any>;
 };
@@ -88,7 +88,7 @@ export const getStudentExams = async (
   }>
 > => {
   const response = await apiClient.get(
-    `${EXAM_BASE_URL}/student/${studentId}?sessionId=${sessionId}`
+    `${EXAM_BASE_URL}/management/student/${studentId}?sessionId=${sessionId}`
   );
   return response as ApiResponse<{
     StudentExam: StudentExam;
@@ -99,7 +99,7 @@ export const getStudentExamTimetable = async (
   studentId: string
 ): Promise<ApiResponse<ExamPaper[]>> => {
   const response = await apiClient.get(
-    `${EXAM_BASE_URL}/${studentId}/exams/timetable`
+    `${EXAM_BASE_URL}/management/${studentId}/exams/timetable`
   );
   return response as ApiResponse<ExamPaper[]>;
 };
@@ -229,7 +229,7 @@ export const deleteExamPaper = async (
 export const getExamPaperById = async (
   paperId: string
 ): Promise<ApiResponse<ExamPaper>> => {
-  const response = await apiClient.get(`/exam/papers/${paperId}`);
+  const response = await apiClient.get(`/exam/management/exam/papers/${paperId}`);
   return response as ApiResponse<ExamPaper>;
 };
 

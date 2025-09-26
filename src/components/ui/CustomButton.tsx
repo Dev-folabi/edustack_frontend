@@ -9,10 +9,17 @@ interface CustomButtonProps {
   className?: string;
 }
 
-export function CustomButton({ onClick, children, icon: Icon, className }: CustomButtonProps) {
+export function CustomButton({
+  onClick,
+  children,
+  icon: Icon,
+  className,
+  disabled = false,
+}: CustomButtonProps & { disabled?: boolean }) {
   return (
     <Button
       onClick={onClick}
+      disabled={disabled}
       className={`bg-gradient-to-r from-blue-500 via-indigo-500 to-indigo-500 
         hover:from-blue-600 hover:via-indigo-600 hover:to-indigo-600 
         text-white px-4 sm:px-6 py-2 sm:py-3 rounded-2xl font-semibold shadow-lg 

@@ -12,7 +12,7 @@ export interface ExamPaper {
     id: string;
     name: string;
   };
-  exam: Exam; // For accessing parent exam details like title
+  exam: Exam;
   maxMarks: number;
   paperDate: string;
   startTime: string;
@@ -23,6 +23,7 @@ export interface ExamPaper {
 }
 
 export interface ExamAttemptResponse {
+  examPaper: ExamPaper;
   attempt: {
     id: string;
     examPaperId: string;

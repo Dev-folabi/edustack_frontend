@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import {
   Card,
   CardHeader,
@@ -33,7 +32,7 @@ export const ExamCard = ({ exam, paper, status }: ExamCardProps) => {
   const handleStartExam = async () => {
     if (!paper?.id) return;
     const paperId = paper?.id;
-    router.push(`/student/examinations/cbt/${paperId}`);
+    router.push(`/student/examinations/attempt/${paperId}`);
   };
 
   return (
@@ -102,10 +101,17 @@ export const ExamCard = ({ exam, paper, status }: ExamCardProps) => {
 
         {paper ? (
           <>
+            {/* If completed via submission, show Submitted */}
             {status === "Ongoing" && paper.mode === "CBT" ? (
-              <Button size="sm" variant="outline" onClick={handleStartExam}>
-                {"Start Exam"}
-              </Button>
+              paper.attempts?.some((a: any) => a.status === "Submitted") ? (
+                <Button size="sm" variant="outline" disabled>
+                  Submitted
+                </Button>
+              ) : (
+                <Button size="sm" variant="outline" onClick={handleStartExam}>
+                  Start Exam
+                </Button>
+              )
             ) : status === "Completed" ? (
               <Button size="sm" variant="outline">
                 View Result

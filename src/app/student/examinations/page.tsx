@@ -13,20 +13,14 @@ import { useSessionStore } from "@/store/sessionStore";
 const ExamList = ({ exams, status }: { exams: any[]; status: string }) => (
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
     {exams.length > 0 ? (
-      exams.map((exam) =>
-        exam.papers?.length > 0 ? (
-          exam.papers.map((paper) => (
-            <ExamCard
-              key={paper.id}
-              paper={paper}
-              status={status}
-              exam={exam}
-            />
-          ))
-        ) : (
-          <ExamCard key={exam.id} exam={exam} status={status} />
-        )
-      )
+      exams.map(({ exam, paper }) => (
+        <ExamCard
+          key={paper?.id ?? exam.id}
+          exam={exam}
+          paper={paper}
+          status={status}
+        />
+      ))
     ) : (
       <div className="col-span-full text-center py-12 text-gray-500">
         <p>No exams in this category.</p>
@@ -46,7 +40,7 @@ const StudentExaminationsPage = () => {
     }
   }, [fetchStudentExams, student, selectedSession]);
 
-  // --- Group exams by backend status ---
+  // --- Group papers by status and attempts ---
   const { upcoming, ongoing, completed, cancelled } = useMemo(() => {
     const groups = {
       upcoming: [] as any[],
@@ -56,23 +50,52 @@ const StudentExaminationsPage = () => {
     };
 
     exams?.forEach((exam) => {
-      if (exam.status.toLocaleLowerCase() === "draft") return;
+      if (exam.status.toLowerCase() === "draft") return;
 
-      switch (exam.status.toLocaleLowerCase()) {
-        case "scheduled":
-          groups.upcoming.push(exam);
-          break;
-        case "ongoing":
-          groups.ongoing.push(exam);
-          break;
-        case "completed":
-          groups.completed.push(exam);
-          break;
-        case "cancelled":
-          groups.cancelled.push(exam);
-          break;
-        default:
-          break;
+      if (exam.papers?.length > 0) {
+        exam.papers.forEach((paper: any) => {
+          const hasSubmitted = paper.attempts?.some(
+            (attempt: any) => attempt.status === "Submitted"
+          );
+
+          if (hasSubmitted) {
+            groups.completed.push({ exam, paper });
+            return;
+          }
+
+          switch (exam.status.toLowerCase()) {
+            case "scheduled":
+              groups.upcoming.push({ exam, paper });
+              break;
+            case "ongoing":
+              groups.ongoing.push({ exam, paper });
+              break;
+            case "completed":
+              groups.completed.push({ exam, paper });
+              break;
+            case "cancelled":
+              groups.cancelled.push({ exam, paper });
+              break;
+            default:
+              break;
+          }
+        });
+      } else {
+        // exams with no papers
+        switch (exam.status.toLowerCase()) {
+          case "scheduled":
+            groups.upcoming.push({ exam });
+            break;
+          case "ongoing":
+            groups.ongoing.push({ exam });
+            break;
+          case "completed":
+            groups.completed.push({ exam });
+            break;
+          case "cancelled":
+            groups.cancelled.push({ exam });
+            break;
+        }
       }
     });
 

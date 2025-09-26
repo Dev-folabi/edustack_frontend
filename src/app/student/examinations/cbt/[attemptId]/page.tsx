@@ -1,220 +1,250 @@
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import withAuth from '@/components/withAuth';
-import { UserRole } from '@/constants/roles';
-import { useStudentExamStore } from '@/store/studentExamStore';
-import { createAndfetchExamAttempt, saveAnswer, submitExam } from '@/services/examService';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
-import { Flag } from 'lucide-react';
-import { Question } from '@/types/exam';
-import { useAuthStore } from '@/store/authStore';
-
-const QuestionRenderer = ({ question, answer, onAnswerChange }: { question: Question, answer: any, onAnswerChange: (id: string, answer: any) => void }) => {
-    switch (question.type) {
-        case 'MCQ':
-            return (
-              <RadioGroup onValueChange={(value) => onAnswerChange(question.id, value)} value={answer}>
-                {question.options.map((option, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <RadioGroupItem value={String(index)} id={`option-${index}`} />
-                    <Label htmlFor={`option-${index}`}>{option}</Label>
-                  </div>
-                ))}
-              </RadioGroup>
-            );
-        case 'Essay':
-            return (
-              <Textarea
-                rows={10}
-                value={answer || ''}
-                onChange={(e) => onAnswerChange(question.id, e.target.value)}
-              />
-            );
-        case 'TrueFalse':
-            return (
-                <RadioGroup onValueChange={(value) => onAnswerChange(question.id, value === 'true')} value={String(answer)}>
-                    <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="true" id="true" />
-                        <Label htmlFor="true">True</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="false" id="false" />
-                        <Label htmlFor="false">False</Label>
-                    </div>
-                </RadioGroup>
-            );
-        case 'FillInBlanks':
-            return (
-              <Input
-                value={answer || ''}
-                onChange={(e) => onAnswerChange(question.id, e.target.value)}
-              />
-            );
-        default:
-            return <p>Unsupported question type: {question.type}</p>;
-    }
-};
-
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import { useParams, useRouter } from "next/navigation";
+import withAuth from "@/components/withAuth";
+import { UserRole } from "@/constants/roles";
+import { useStudentExamStore } from "@/store/studentExamStore";
+import { saveAnswer, submitExam } from "@/services/examService";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
+import { Flag } from "lucide-react";
+import { useAuthStore } from "@/store/authStore";
+import QuestionRenderer from "@/components/student-dashboard/QuestionRenderer";
+import QuestionNavigation from "@/components/student-dashboard/QuestionNavigation";
+import TimerCard from "@/components/student-dashboard/TimerCard";
+import { CustomButton } from "@/components/ui/CustomButton";
 
 const CBTPage = () => {
   const params = useParams();
   const router = useRouter();
   const attemptId = params.attemptId as string;
 
-  const { currentAttempt, fetchExamAttempt, loading, error } = useStudentExamStore();
+  const { fetchExamAttempt, currentAttempt, loading, error } =
+    useStudentExamStore();
+  const { selectedSchool } = useAuthStore();
+
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [flagged, setFlagged] = useState<Record<string, boolean>>({});
   const [timeLeft, setTimeLeft] = useState(0);
+  const [durationInSeconds, setDurationInSeconds] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [dirtyAnswers, setDirtyAnswers] = useState<Set<string>>(new Set());
-  const {selectedSchool} = useAuthStore()
 
-  useEffect(() => {
-    if (attemptId) {
-      createAndfetchExamAttempt(attemptId, selectedSchool?.schoolId);
-    }
-  }, [attemptId, fetchExamAttempt, selectedSchool?.schoolId]);
+  const dirtyAnswersRef = useRef<Set<string>>(new Set());
 
+  // Fetch exam attempt
   useEffect(() => {
-    if (currentAttempt) {
-      const durationInSeconds = (new Date(currentAttempt.attempt.examPaper.endTime).getTime() - new Date(currentAttempt.attempt.examPaper.startTime).getTime()) / 1000;
-      const startTime = new Date(currentAttempt.attempt.startedAt).getTime();
-      const now = new Date().getTime();
-      const elapsed = (now - startTime) / 1000;
-      setTimeLeft(Math.max(0, durationInSeconds - elapsed));
-    }
+    if (!selectedSchool?.schoolId || !attemptId) return;
+    fetchExamAttempt(attemptId, selectedSchool.schoolId).catch((err) =>
+      console.error("Failed to fetch exam attempt:", err)
+    );
+  }, [attemptId, selectedSchool?.schoolId, fetchExamAttempt]);
+
+  // Setup duration + initial time
+  useEffect(() => {
+    if (!currentAttempt) return;
+
+    const duration =
+      (new Date(currentAttempt.examPaper.endTime).getTime() -
+        new Date(currentAttempt.examPaper.startTime).getTime()) /
+      1000;
+    setDurationInSeconds(duration);
+
+    const startTime = new Date(currentAttempt.attempt.startedAt).getTime();
+    const now = Date.now();
+    const elapsed = (now - startTime) / 1000;
+
+    setTimeLeft(Math.max(0, duration - elapsed));
   }, [currentAttempt]);
 
+  // Countdown timer
+  useEffect(() => {
+    if (!currentAttempt) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          handleSubmit();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [currentAttempt]);
+
+  // Autosave every 30s
+  useEffect(() => {
+    if (!currentAttempt) return;
+    const interval = setInterval(() => {
+      const dirty = Array.from(dirtyAnswersRef.current);
+      if (dirty.length > 0) {
+        const responses = dirty.map((qid) => ({
+          questionId: qid,
+          studentAnswer: answers[qid],
+        }));
+
+        saveAnswer(currentAttempt?.attempt.id, responses)
+          .then((res) => {
+            if (res.success) dirtyAnswersRef.current.clear();
+            else toast.error(res.message || "Failed to save answers.");
+          })
+          .catch(() => toast.error("Error saving answers. Check connection."));
+      }
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [answers, attemptId]);
+
+  // Submit exam with validation
   const handleSubmit = useCallback(async () => {
+    if (!currentAttempt) return;
     if (isSubmitting) return;
+
+    const unanswered = currentAttempt?.questions.filter((q) => !answers[q.id]);
+
+    if (unanswered && unanswered.length > 0) {
+      toast.error("Please attempt all questions before submitting.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      await submitExam(attemptId);
+      await submitExam(currentAttempt?.attempt.id);
       toast.success("Exam submitted successfully!");
-      router.push('/student/examinations');
-    } catch (error) {
+      router.push("/student/examinations");
+    } catch {
       toast.error("Failed to submit exam.");
       setIsSubmitting(false);
     }
-  }, [attemptId, router, isSubmitting]);
+  }, [attemptId, router, isSubmitting, currentAttempt, answers]);
 
-  useEffect(() => {
-    if (timeLeft <= 0 && currentAttempt) {
-        handleSubmit();
-        return;
-    }
-    const timer = setInterval(() => {
-      setTimeLeft(prev => prev - 1);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [timeLeft, currentAttempt, handleSubmit]);
+  // Answer change
+  const handleAnswerChange = (qid: string, answer: any) => {
+    setAnswers((prev) => ({ ...prev, [qid]: answer }));
+    dirtyAnswersRef.current.add(qid);
+  };
 
+  // Flag toggle
+  const toggleFlag = (qid: string) => {
+    setFlagged((prev) => ({ ...prev, [qid]: !prev[qid] }));
+  };
+
+  // Current question
   const currentQuestion = useMemo(() => {
-    return currentAttempt?.questions[currentQuestionIndex];
+    if (!currentAttempt?.questions) return null;
+    return currentAttempt.questions[currentQuestionIndex];
   }, [currentAttempt, currentQuestionIndex]);
 
-  useEffect(() => {
-    const saveInterval = setInterval(() => {
-      if (dirtyAnswers.size > 0) {
-        const responsesToSave = Array.from(dirtyAnswers).map(questionId => ({
-          questionId,
-          studentAnswer: answers[questionId],
-        }));
-
-        saveAnswer(attemptId, responsesToSave).then((res) => {
-          if(res.success) {
-            setDirtyAnswers(new Set());
-            toast.success("Progress saved!");
-          } else {
-            toast.error(res.message || "Failed to save some answers.");
-          }
-        }).catch(() => {
-            toast.error("An error occurred while saving. Please check your connection.")
-        })
-      }
-    }, 30000);
-    return () => clearInterval(saveInterval);
-  }, [answers, attemptId, dirtyAnswers]);
-
-  const handleAnswerChange = (questionId: string, answer: any) => {
-    setAnswers(prev => ({ ...prev, [questionId]: answer }));
-    setDirtyAnswers(prev => new Set(prev).add(questionId));
-  };
-
-  const toggleFlag = (questionId: string) => {
-    setFlagged(prev => ({ ...prev, [questionId]: !prev[questionId] }));
-  };
-
-  if (loading) return <p>Loading exam...</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
-  if (!currentAttempt) return <p>Exam attempt not found.</p>;
-
-  return (
-    <div className="flex gap-6 p-4">
-      <div className="flex-grow">
-        <Card>
-          <CardHeader>
-            <CardTitle>{currentAttempt.attempt.examPaper.exam.title}</CardTitle>
-            <div className="flex justify-between items-center">
-                <CardDescription>Question {currentQuestionIndex + 1} of {currentAttempt.questions.length}</CardDescription>
-                <Button variant="ghost" size="icon" onClick={() => toggleFlag(currentQuestion.id)}>
-                    <Flag className={flagged[currentQuestion.id] ? "text-yellow-500" : ""} />
-                </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="font-semibold mb-4">{currentQuestion.questionText}</p>
-            <QuestionRenderer
-                question={currentQuestion}
-                answer={answers[currentQuestion.id]}
-                onAnswerChange={handleAnswerChange}
-            />
-          </CardContent>
-        </Card>
-        <div className="flex justify-between mt-6">
-          <Button onClick={() => setCurrentQuestionIndex(prev => Math.max(0, prev - 1))} disabled={currentQuestionIndex === 0}>Previous</Button>
-          <Button onClick={() => setCurrentQuestionIndex(prev => Math.min(currentAttempt.questions.length - 1, prev + 1))} disabled={currentQuestionIndex === currentAttempt.questions.length - 1}>Next</Button>
+  // ---- UI ----
+  if (loading) {
+    return (
+      <div className="flex flex-col lg:flex-row gap-6 p-4">
+        <div className="flex-grow">
+          <Card className="p-6 space-y-4">
+            <Skeleton className="h-6 w-1/3" />
+            <Skeleton className="h-4 w-2/3" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-10 w-24" />
+          </Card>
+        </div>
+        <div className="w-full lg:w-72 space-y-4">
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-48 w-full" />
+          <Skeleton className="h-10 w-full" />
         </div>
       </div>
-      <div className="w-64 flex-shrink-0">
-        <Card>
-          <CardHeader>
-            <CardTitle>Time Left</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-center">
-              {Math.floor(timeLeft / 3600)}:{String(Math.floor((timeLeft % 3600) / 60)).padStart(2, '0')}:{String(timeLeft % 60).padStart(2, '0')}
-            </div>
-          </CardContent>
+    );
+  }
+
+  if (error) return <p className="text-red-500 p-4">{error}</p>;
+  if (!currentAttempt || !currentQuestion)
+    return <p className="p-4">Exam attempt not found.</p>;
+
+  return (
+    <div className="flex flex-col lg:flex-row gap-6 p-4">
+      {/* Main Question Area */}
+      <div className="flex-grow">
+        <Card className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="font-bold text-lg">
+              {currentAttempt.examPaper.exam.title}
+            </h2>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => toggleFlag(currentQuestion.id)}
+            >
+              <Flag
+                className={
+                  flagged[currentQuestion.id]
+                    ? "text-yellow-500"
+                    : "text-gray-400"
+                }
+              />
+            </Button>
+          </div>
+
+          <p className="font-semibold mb-4">
+            Question {currentQuestionIndex + 1} of{" "}
+            {currentAttempt.questions.length}
+          </p>
+          <p className="mb-4">{currentQuestion.questionText}</p>
+
+          <QuestionRenderer
+            question={currentQuestion}
+            answer={answers[currentQuestion.id]}
+            onAnswerChange={handleAnswerChange}
+          />
+
+          <div className="flex justify-between mt-6">
+            <Button
+              onClick={() =>
+                setCurrentQuestionIndex((prev) => Math.max(0, prev - 1))
+              }
+              disabled={currentQuestionIndex === 0}
+              variant="outline"
+            >
+              Previous
+            </Button>
+            <CustomButton
+              onClick={() =>
+                setCurrentQuestionIndex((prev) =>
+                  Math.min(currentAttempt.questions.length - 1, prev + 1)
+                )
+              }
+              disabled={
+                currentQuestionIndex === currentAttempt.questions.length - 1
+              }
+            >
+              Next
+            </CustomButton>
+          </div>
         </Card>
-        <Card className="mt-6">
-            <CardHeader><CardTitle>Questions</CardTitle></CardHeader>
-            <CardContent className="grid grid-cols-5 gap-2">
-                {currentAttempt.questions.map((q, index) => (
-                    <Button
-                        key={q.id}
-                        variant={currentQuestionIndex === index ? 'default' : (answers[q.id] !== undefined ? 'secondary' : 'outline')}
-                        onClick={() => setCurrentQuestionIndex(index)}
-                        className={`h-10 w-10 relative ${flagged[q.id] ? 'border-2 border-yellow-500' : ''}`}
-                    >
-                        {index + 1}
-                        {flagged[q.id] && <Flag className="h-3 w-3 absolute top-1 right-1 text-yellow-500" />}
-                    </Button>
-                ))}
-            </CardContent>
-        </Card>
-        <Button className="w-full mt-6" variant="destructive" onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? 'Submitting...' : 'Submit Exam'}
-        </Button>
+      </div>
+
+      {/* Sidebar */}
+      <div className="w-full lg:w-72 flex-shrink-0 space-y-6">
+        <TimerCard timeLeft={timeLeft} totalDuration={durationInSeconds} />
+        <QuestionNavigation
+          questions={currentAttempt.questions}
+          currentIndex={currentQuestionIndex}
+          answers={answers}
+          flagged={flagged}
+          onNavigate={setCurrentQuestionIndex}
+        />
+        <CustomButton
+          className="w-full"
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Submitting..." : "Submit Exam"}
+        </CustomButton>
       </div>
     </div>
   );

@@ -13,6 +13,7 @@ import { Download, AlertTriangle } from 'lucide-react';
 import { BackButton } from '@/components/ui/BackButton';
 import { toast } from 'sonner';
 
+
 const StudentResultPage = () => {
   const params = useParams();
   const paperId = params.paperId as string; // This is actually the termId in this context now
