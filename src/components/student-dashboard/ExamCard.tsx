@@ -1,56 +1,128 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ExamPaper } from '@/types/exam';
-import { useRouter } from 'next/navigation';
-import { startExam } from '@/services/examService';
-import { toast } from 'sonner';
-import { useState } from 'react';
+import { useRouter } from "next/navigation";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Calendar, Clock, GraduationCap } from "lucide-react";
 
 interface ExamCardProps {
-  paper: ExamPaper;
-  status: 'upcoming' | 'ongoing' | 'completed' | 'published';
+  exam: any;
+  paper?: any;
+  status: string;
 }
 
-export const ExamCard = ({ paper, status }: ExamCardProps) => {
+export const ExamCard = ({ exam, paper, status }: ExamCardProps) => {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
 
-  const handleAction = async () => {
-    if (status === 'ongoing') {
-      setLoading(true);
-      try {
-        const response = await startExam(paper.id);
-        if (response.success) {
-          router.push(`/student/examinations/cbt/${response.data.attemptId}`);
-        } else {
-          toast.error(response.message || "Failed to start exam.");
-        }
-      } catch (error) {
-        toast.error("An error occurred while starting the exam.");
-      } finally {
-        setLoading(false);
-      }
-    } else if (status === 'published') {
-      router.push(`/student/examinations/results/${paper.id}`);
-    }
+  // Compute duration only if paper has times
+  const duration =
+    paper?.startTime && paper?.endTime
+      ? (new Date(paper.endTime).getTime() -
+          new Date(paper.startTime).getTime()) /
+        60000
+      : null;
+
+  const handleStartExam = async () => {
+    if (!paper?.id) return;
+    const paperId = paper?.id;
+    router.push(`/student/examinations/attempt/${paperId}`);
   };
 
   return (
-    <Card>
+    <Card className="flex flex-col justify-between hover:shadow-md transition-shadow">
       <CardHeader>
-        <CardTitle>{paper.subject.name}</CardTitle>
+        <CardTitle className="text-lg font-semibold">{exam.title}</CardTitle>
+        <p className="text-sm text-gray-500">
+          {exam.class?.name} {exam.section?.name} • {exam.term?.name} •{" "}
+          {exam.session?.name}
+        </p>
       </CardHeader>
-      <CardContent>
-        <p><strong>Date:</strong> {new Date(paper.startTime).toLocaleDateString()}</p>
-        <p><strong>Time:</strong> {new Date(paper.startTime).toLocaleTimeString()}</p>
-        <Badge>{paper.mode}</Badge>
+
+      <CardContent className="space-y-3">
+        {paper ? (
+          <>
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <GraduationCap size={16} />
+              <span>{paper.subject?.name ?? "Unknown Subject"}</span>
+            </div>
+
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <Calendar size={16} />
+              <span>
+                {new Date(paper.paperDate).toLocaleDateString()} •{" "}
+                {new Date(paper.startTime).toLocaleTimeString()} -{" "}
+                {new Date(paper.endTime).toLocaleTimeString()}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <Clock size={16} />
+              <span>
+                Duration:{" "}
+                {duration !== null ? `${duration} minutes` : "Not specified"}
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center mt-2">
+              <Badge variant={paper.mode === "CBT" ? "default" : "secondary"}>
+                {paper.mode ?? "Unknown Mode"}
+              </Badge>
+              <span className="text-sm">Marks: {paper.maxMarks ?? "--"}</span>
+            </div>
+          </>
+        ) : (
+          <p className="text-sm italic text-gray-500">
+            No papers assigned for this exam.
+          </p>
+        )}
       </CardContent>
-      <CardFooter>
-        {status === 'ongoing' && <Button onClick={handleAction} disabled={loading}>{loading ? "Starting..." : "Start Exam"}</Button>}
-        {status === 'published' && <Button onClick={handleAction}>View Result</Button>}
+
+      <CardFooter className="flex justify-between items-center">
+        <Badge
+          className={`${
+            status === "Ongoing"
+              ? "bg-green-500"
+              : status === "Scheduled"
+              ? "bg-blue-500"
+              : status === "Completed"
+              ? "bg-gray-500"
+              : "bg-red-500"
+          }`}
+        >
+          {status}
+        </Badge>
+
+        {paper ? (
+          <>
+            {/* If completed via submission, show Submitted */}
+            {status === "Ongoing" && paper.mode === "CBT" ? (
+              paper.attempts?.some((a: any) => a.status === "Submitted") ? (
+                <Button size="sm" variant="outline" disabled>
+                  Submitted
+                </Button>
+              ) : (
+                <Button size="sm" variant="outline" onClick={handleStartExam}>
+                  Start Exam
+                </Button>
+              )
+            ) : status === "Completed" ? (
+              <Button size="sm" variant="outline">
+                View Result
+              </Button>
+            ) : null}
+          </>
+        ) : (
+          <Button size="sm" variant="outline" disabled>
+            Not Available
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

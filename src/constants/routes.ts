@@ -52,7 +52,9 @@ export const DASHBOARD_ROUTES = {
   // Student & Parent Dashboard
   STUDENT_DASHBOARD: '/student/dashboard',
   STUDENT_PROFILE: '/student/profile',
+  STUDENT_EXAM_SCHEDULE: '/student/examinations',
   STUDENT_EXAMS_CBT: '/student/examinations/cbt',
+  STUDENT_EXAM_RESULT: '/student/examinations/results',
   STUDENT_FINANCE_MAKE_PAYMENT: '/student/finance/make-payment',
   STUDENT_NOTIFICATIONS: '/student/notifications',
 

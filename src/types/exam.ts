@@ -3,26 +3,6 @@ export interface Exam {
   title: string;
   startDate: string;
   endDate: string;
-  classId: string;
-  sectionId: string;
-  termId: string;
-  sessionId: string;
-  class: {
-    id: string;
-    name: string;
-  };
-  section: {
-    id: string;
-    name: string;
-  };
-  term: {
-    id: string;
-    name: string;
-  };
-  session: {
-    id: string;
-    name: string;
-  };
   papers: ExamPaper[];
 }
 
@@ -32,19 +12,78 @@ export interface ExamPaper {
     id: string;
     name: string;
   };
+  exam: Exam;
   maxMarks: number;
-  passMarks: number;
   paperDate: string;
   startTime: string;
   endTime: string;
-  mode: 'PaperBased' | 'CBT';
+  mode: "PaperBased" | "CBT";
   questionBankId?: string;
   totalQuestions?: number;
-  instructions?: string;
-  published?: boolean;
-  sectionId?: string;
-  termId?: string;
-  sessionId?: string;
+}
+
+export interface ExamAttemptResponse {
+  examPaper: ExamPaper;
+  attempt: {
+    id: string;
+    examPaperId: string;
+    studentId: string;
+    startedAt: string;
+    submittedAt?: string;
+    status: "InProgress" | "Submitted" | "Graded";
+    totalScore?: number;
+    createdAt: string;
+    updatedAt: string;
+  };
+  questions: Question[];
+}
+
+export interface Question {
+  id: string;
+  type: "MCQ" | "Essay" | "TrueFalse" | "FillInBlanks";
+  questionText: string;
+  options: string[];
+  marks: number;
+}
+
+export interface StudentExam {
+  id: string;
+  title: string;
+  startDate: string;
+  endDate: string;
+  schoolId: string;
+  classId: string;
+  sectionId: string;
+  sessionId: string;
+  status: "draft" | "scheduled" | "Ongoing" | "completed" | "Cancelled";
+  createdById: string | null;
+  createdAt: string;
+  updatedAt: string;
+
+  papers: Paper[];
+
+  school: {
+    name: string;
+  };
+  classInfo: {
+    name: string;
+  };
+  section: {
+    name: string;
+  };
+  term: {
+    name: string;
+  };
+  session: {
+    name: string;
+  };
+}
+
+export interface Paper {
+  id: string;
+  title: string;
+  totalMarks: number;
+  durationMinutes: number;
 }
 
 export interface ApiResponse<T> {
