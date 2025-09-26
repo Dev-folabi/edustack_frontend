@@ -43,6 +43,11 @@ export const sessionService = {
     return apiClient.get(`/session/${sessionId}`);
   },
 
+  // Get the active academic session
+  getActiveSession: (): Promise<any> => {
+    return apiClient.get<Session>("/session");
+  },
+
   // Get all academic sessions
   getSessions: (): Promise<any> => {
     return apiClient.get<SessionsResponse>("/session/all");
@@ -64,7 +69,7 @@ export const sessionService = {
   },
 
   // Get all terms for a specific session
-  getTermsForSession: (sessionId: string): Promise<any> => {
+  getSessionTerms: (sessionId: string): Promise<any> => {
     return apiClient.get(`/session/${sessionId}/terms`);
   },
 
