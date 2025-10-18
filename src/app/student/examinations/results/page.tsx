@@ -9,13 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useSession } from 'next-auth/react';
 import { useReactToPrint } from 'react-to-print';
-import { getStudentExamPapers, getStudentResults, generateStudentTermResult } from '@/services/exam.service';
-import { getActiveSession, getSessionTerms } from '@/services/session.service';
-import { IExamPaper } from '@/types/exam.type';
-import { ITerm } from '@/types/session.type';
-import TermReport from '@/app/(dashboard)/examinations/student-report/TermReport';
+import TermReport from '@/components/dashboard/reports/TermReport';
 
 const StudentResultsPage = () => {
   const { data: session } = useSession();

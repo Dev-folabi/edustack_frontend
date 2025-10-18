@@ -108,7 +108,7 @@ export const sidebarConfig: SidebarCategory[] = [
         href: DASHBOARD_ROUTES.ATTENDANCE_STAFF,
         label: 'Staff Attendance',
         icon: FaUserTie,
-        roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.STAFF],
+        roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.TEACHER],
       },
     ],
   },
@@ -182,6 +182,12 @@ export const sidebarConfig: SidebarCategory[] = [
         href: DASHBOARD_ROUTES.EXAMS_RESULTS,
         label: 'Results Management',
         icon: FaUserGraduate,
+        roles: [UserRole.ADMIN, UserRole.TEACHER],
+      },
+      {
+        href: DASHBOARD_ROUTES.EXAMS_STUDENT_REPORT,
+        label: 'Student Reports',
+        icon: FaFileInvoiceDollar,
         roles: [UserRole.ADMIN, UserRole.TEACHER],
       },
       {

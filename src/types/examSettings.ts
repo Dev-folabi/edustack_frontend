@@ -1,9 +1,9 @@
 export interface GradeCriterion {
   id: string;
-  grade: string;
+  name: string;
   minScore: number;
   maxScore: number;
-  description: string;
+  remark: string;
 }
 
 export interface PsychomotorSkill {
@@ -16,5 +16,5 @@ export interface GeneralSettings {
     passMark: number;
     showSchoolRemarks: boolean;
     showTeacherRemarks: boolean;
-    enablePsychomotorAnalysis: boolean;
+    enablePsychomotor: boolean;
 }

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DatePicker } from '@/components/ui/DatePicker';
 import {
   Select,
@@ -43,7 +42,7 @@ const TakeStudentAttendanceForm = () => {
     if (selectedSchool) {
       classService.getClasses(selectedSchool.schoolId).then((res) => {
         if (res.success) {
-          setClasses(res.data.data);
+          setClasses(res?.data?.data || []);
         }
       });
     }
@@ -59,15 +58,17 @@ const TakeStudentAttendanceForm = () => {
     }
   }, [selectedSection]);
 
+
+
   const handleFetchStudents = () => {
-    if (selectedSection && activeSchool) {
-      studentService.getStudentsBySection(activeSchool.schoolId, selectedSection).then((res) => {
+    if (selectedSection && selectedSchool) {
+      studentService.getStudentsBySection(selectedSchool.schoolId, { sectionId: selectedSection }).then((res) => {
         if (res.success) {
-          setStudents(res.data.data);
+          setStudents(res?.data?.data || []);
           // Initialize attendance records
           const initialRecords: { [key: string]: AttendanceStatus } = {};
-          res.data.data.forEach((student: Student) => {
-            initialRecords[student.id] = AttendanceStatus.PRESENT;
+          res?.data?.data?.forEach((student: Student) => {
+            initialRecords[student?.studentId || ''] = AttendanceStatus.PRESENT;
           });
           setAttendanceRecords(initialRecords);
         }
@@ -206,7 +207,7 @@ const TakeStudentAttendanceForm = () => {
           </Select>
         )}
 
-        <DatePicker date={date} setDate={setDate} />
+        <DatePicker value={date} onChange={setDate} placeholder="Select Date" />
       </div>
 
       {students.length > 0 && (
@@ -225,8 +226,8 @@ const TakeStudentAttendanceForm = () => {
                     <TableCell className="whitespace-nowrap">{student.name}</TableCell>
                     <TableCell>
                       <Select
-                        value={attendanceRecords[student.id]}
-                        onValueChange={(value) => handleStatusChange(student.id, value as AttendanceStatus)}
+                        value={attendanceRecords[student?.studentId || '']}
+                        onValueChange={(value) => handleStatusChange(student?.studentId || '', value as AttendanceStatus)}
                       >
                         <SelectTrigger className="w-full">
                           <SelectValue />

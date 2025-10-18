@@ -51,7 +51,7 @@ export const ExamTable = () => {
 
   useEffect(() => {
     if (selectedSchool?.schoolId) {
-      fetchExams(selectedSchool.schoolId, selectedSession?.id!);
+      fetchExams(selectedSchool.schoolId, selectedSession?.id);
     }
   }, [selectedSchool?.schoolId, selectedSession?.id, fetchExams]);
 
@@ -78,11 +78,11 @@ export const ExamTable = () => {
           message: "Exam deleted successfully!",
           type: "success",
         });
-        fetchExams(selectedSchool.schoolId, selectedSession?.id!);
+        fetchExams(selectedSchool.schoolId, selectedSession?.id || "");
       } catch (error) {
         showToast({
           title: "Error",
-          message: "Failed to delete exam.",
+          message: (error as Error).message || "Failed to delete exam.",
           type: "error",
         });
       } finally {

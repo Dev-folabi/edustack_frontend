@@ -1,20 +1,26 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { useExamSettingsStore } from '@/store/examSettingsStore';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { MoreHorizontal } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { useExamSettingsStore } from "@/store/examSettingsStore";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { GradeCriterion } from '@/types/examSettings';
-import { CreateEditGradeDialog } from './CreateEditGradeDialog';
+} from "@/components/ui/dropdown-menu";
+import { GradeCriterion } from "@/types/examSettings";
+import { CreateEditGradeDialog } from "./CreateEditGradeDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,15 +31,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { deleteGradeCriterion } from '@/services/examSettingsService';
-import { toast } from 'sonner';
+import { deleteGradeCriterion } from "@/services/examSettingsService";
+import { toast } from "sonner";
 
 export const GradeCriteriaTable = () => {
-  const { gradeCriteria, loading, fetchGradeCriteria, error } = useExamSettingsStore();
+  const { gradeCriteria, loading, fetchGradeCriteria, error } =
+    useExamSettingsStore();
   const [isEditDialogOpen, setEditDialogOpen] = useState(false);
-  const [selectedCriterion, setSelectedCriterion] = useState<GradeCriterion | null>(null);
+  const [selectedCriterion, setSelectedCriterion] =
+    useState<GradeCriterion | null>(null);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [criterionToDelete, setCriterionToDelete] = useState<GradeCriterion | null>(null);
+  const [criterionToDelete, setCriterionToDelete] =
+    useState<GradeCriterion | null>(null);
 
   useEffect(() => {
     fetchGradeCriteria();
@@ -75,7 +84,7 @@ export const GradeCriteriaTable = () => {
             <TableRow>
               <TableHead>Grade</TableHead>
               <TableHead>Score Range</TableHead>
-              <TableHead>Description</TableHead>
+              <TableHead>Remark</TableHead>
               <TableHead>
                 <span className="sr-only">Actions</span>
               </TableHead>
@@ -84,9 +93,11 @@ export const GradeCriteriaTable = () => {
           <TableBody>
             {gradeCriteria.map((criterion) => (
               <TableRow key={criterion.id}>
-                <TableCell className="font-medium">{criterion.grade}</TableCell>
-                <TableCell>{criterion.minScore} - {criterion.maxScore}</TableCell>
-                <TableCell>{criterion.description}</TableCell>
+                <TableCell className="font-medium">{criterion.name}</TableCell>
+                <TableCell>
+                  {criterion.minScore} - {criterion.maxScore}
+                </TableCell>
+                <TableCell>{criterion.remark}</TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -97,8 +108,15 @@ export const GradeCriteriaTable = () => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => handleEdit(criterion)}>Edit</DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(criterion)}>Delete</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleEdit(criterion)}>
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="text-red-600"
+                        onClick={() => handleDelete(criterion)}
+                      >
+                        Delete
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -119,12 +137,15 @@ export const GradeCriteriaTable = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the grade criterion.
+              This action cannot be undone. This will permanently delete the
+              grade criterion.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+            <AlertDialogAction onClick={confirmDelete}>
+              Delete
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

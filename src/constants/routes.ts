@@ -36,6 +36,7 @@ export const DASHBOARD_ROUTES = {
   EXAMS_MANAGE: '/examinations/manage',
   EXAMS_QUESTION_BANK: '/examinations/question-bank',
   EXAMS_RESULTS: '/examinations/results',
+  EXAMS_STUDENT_REPORT: '/examinations/student-report',
   EXAMS_GLOBAL_SETTINGS: '/examinations/global-settings',
 
   // Finance Management (Super Admin, Admin, Accountant)

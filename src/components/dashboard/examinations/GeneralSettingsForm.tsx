@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { toast } from "sonner";
+import { useToast } from "@/components/ui/Toast";
 import { GeneralSettings } from "@/types/examSettings";
 import { useExamSettingsStore } from "@/store/examSettingsStore";
 import { updateGeneralSettings } from "@/services/examSettingsService";
@@ -24,13 +24,14 @@ const settingsSchema = z.object({
   passMark: z.coerce.number().min(0).max(100),
   showSchoolRemarks: z.boolean(),
   showTeacherRemarks: z.boolean(),
-  enablePsychomotorAnalysis: z.boolean(),
+  enablePsychomotor: z.boolean(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
 
 export const GeneralSettingsForm = () => {
   const { generalSettings, fetchGeneralSettings } = useExamSettingsStore();
+  const {showToast} = useToast()
 
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
@@ -38,7 +39,7 @@ export const GeneralSettingsForm = () => {
         passMark: 40,
         showSchoolRemarks: true,
         showTeacherRemarks: true,
-        enablePsychomotorAnalysis: true,
+        enablePsychomotor: true,
     },
   });
 
@@ -56,13 +57,25 @@ export const GeneralSettingsForm = () => {
     try {
       const response = await updateGeneralSettings(values);
       if (response.success) {
-        toast.success("General settings updated successfully!");
+        showToast({
+          type: "success",
+          message: response.message || "General settings updated successfully!",
+          title: "Success",
+        });
         fetchGeneralSettings();
       } else {
-        toast.error(response.message || "Failed to update settings");
+        showToast({
+          type: "error",
+          message: response.message || "Failed to update settings",
+          title: "Error",
+        });
       }
     } catch (error) {
-      toast.error("An error occurred while updating settings.");
+      showToast({
+        type: "error",
+        message: "An error occurred while updating settings.",
+        title: "Error",
+      });
     }
   };
 
@@ -112,7 +125,7 @@ export const GeneralSettingsForm = () => {
         />
         <FormField
           control={form.control}
-          name="enablePsychomotorAnalysis"
+          name="enablePsychomotor"
           render={({ field }) => (
             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                 <div className="space-y-0.5">

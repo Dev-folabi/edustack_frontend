@@ -1,30 +1,33 @@
 export interface Exam {
   id: string;
   title: string;
+  status: "draft" | "Scheduled" | "Ongoing" | "Completed" | "Cancelled";
   startDate: string;
   endDate: string;
   papers: ExamPaper[];
-}
-
-export interface ExamPaper {
-  id: string;
-  subject: {
-    id: string;
-    name: string;
+  subject?: {
+    id?: string;
+    name?: string;
   };
-  exam: Exam;
-  maxMarks: number;
-  paperDate: string;
-  startTime: string;
-  endTime: string;
-  mode: "PaperBased" | "CBT";
-  questionBankId?: string;
-  totalQuestions?: number;
+  term?: {
+    id?: string;
+    name?: string;
+  };
+  session?: {
+    id?: string;
+    name?: string;
+  };
+  class?: {
+    id?: string;
+    name?: string;
+  };
+  section?: {
+    id?: string;
+    name?: string;
+  };
 }
 
-export interface ExamAttemptResponse {
-  examPaper: ExamPaper;
-  attempt: {
+export interface Attempt {
     id: string;
     examPaperId: string;
     studentId: string;
@@ -35,6 +38,29 @@ export interface ExamAttemptResponse {
     createdAt: string;
     updatedAt: string;
   };
+
+export interface ExamPaper {
+  id: string;
+  subject: {
+    id: string;
+    name: string;
+    code: string;
+  };
+  exam: Exam;
+  maxMarks: number;
+  paperDate: string;
+  startTime: string;
+  endTime: string;
+  mode: "PaperBased" | "CBT";
+  questionBankId?: string;
+  totalQuestions?: number;
+  isResultPublished?: boolean;
+  attempts?: Attempt[];
+}
+
+export interface ExamAttemptResponse {
+  examPaper: ExamPaper;
+  attempt: Attempt
   questions: Question[];
 }
 

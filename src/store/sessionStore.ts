@@ -47,7 +47,7 @@ export const useSessionStore = create<SessionState>((set) => ({
   fetchTerms: async (sessionId: string) => {
     try {
       set({ isLoading: true });
-      const response = await sessionService.getTermsForSession(sessionId || "");
+      const response = await sessionService.getSessionTerms(sessionId || "");
       if (response.success && response.data) {
         const terms = response.data.data;
         set({

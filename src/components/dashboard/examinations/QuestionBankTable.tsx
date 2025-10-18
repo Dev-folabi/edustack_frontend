@@ -86,8 +86,8 @@ export const QuestionBankTable = () => {
         showToast({
           type: "error",
           title: "Error",
-          message: "Failed to delete question bank.",
-        });
+          message: (error as Error).message || "Failed to delete question bank.",
+        }); 
       } finally {
         setDeleteDialogOpen(false);
         setBankToDelete(null);

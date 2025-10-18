@@ -19,7 +19,7 @@ export const useSubjectStore = create<SubjectState>((set) => ({
       const response = await subjectService.getSubjects({
         schoolId,
         isActive: "true",
-        limit: 1000,
+        limit: 10,
       });
 
       if (response.success) {

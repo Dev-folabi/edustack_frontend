@@ -10,21 +10,30 @@ import { apiClient } from "@/utils/api";
 const EXAM_BASE_URL = "/exam";
 
 export const getAllExams = async (
-  schoolId: string,
-  sessionId: string,
+  filters: {
+    schoolId: string;
+    sessionId: string;
+    termId?: string;
+  },
   page: number = 1,
   limit: number = 10
 ): Promise<ApiResponse<Exam[]>> => {
+  const query = new URLSearchParams(filters).toString();
   const response = await apiClient.get(
-    `${EXAM_BASE_URL}/management?schoolId=${schoolId}&sessionId=${sessionId}&page=${page}&limit=${limit}`
+    `${EXAM_BASE_URL}/management?page=${page}&limit=${limit}&${query}`
   );
   return response as ApiResponse<Exam[]>;
 };
 
 export const getExamById = async (
-  examId: string
+  examId: string,
+  studentId?: string
 ): Promise<ApiResponse<Exam>> => {
-  const response = await apiClient.get(`${EXAM_BASE_URL}/management/${examId}`);
+  const response = await apiClient.get(
+    `${EXAM_BASE_URL}/management/${examId}${
+      studentId ? `?studentId=${studentId}` : ""
+    }`
+  );
   return response as ApiResponse<Exam>;
 };
 
@@ -55,7 +64,10 @@ export const updateExam = async (
     Omit<Exam, "id" | "class" | "section" | "term" | "session" | "papers">
   >
 ): Promise<ApiResponse<Exam>> => {
-  const response = await apiClient.put(`${EXAM_BASE_URL}/management/${examId}`, examData);
+  const response = await apiClient.put(
+    `${EXAM_BASE_URL}/management/${examId}`,
+    examData
+  );
   return response as ApiResponse<Exam>;
 };
 
@@ -76,8 +88,6 @@ export const submitExam = async (
   );
   return response as ApiResponse<any>;
 };
-
-
 
 export const getStudentExams = async (
   studentId: string,
@@ -105,29 +115,14 @@ export const getStudentExamTimetable = async (
 };
 
 export const getStudentTermReport = async (
+  studentId: string,
   termId: string,
   sessionId: string
 ): Promise<ApiResponse<any>> => {
   const response = await apiClient.get(
-    `${EXAM_BASE_URL}/reports/student-term-report?termId=${termId}&sessionId=${sessionId}`
+    `${EXAM_BASE_URL}/reports/student-term-report?studentId=${studentId}&termId=${termId}&sessionId=${sessionId}`
   );
   return response as ApiResponse<any>;
-};
-
-export const getTermReportByPaper = async (
-  paperId: string
-): Promise<ApiResponse<any>> => {
-  const paperResponse = await getExamPaperById(paperId);
-  if (
-    !paperResponse.success ||
-    !paperResponse.data.termId ||
-    !paperResponse.data.sessionId
-  ) {
-    throw new Error("Could not find necessary details to fetch term report.");
-  }
-  const { termId, sessionId } = paperResponse.data;
-
-  return getStudentTermReport(termId, sessionId);
 };
 
 export const publishResults = async (
@@ -143,53 +138,58 @@ export const publishResults = async (
   return response as ApiResponse<any>;
 };
 
-export const getEssayResponses = async (
-  paperId: string
-): Promise<ApiResponse<any[]>> => {
-  const response = await apiClient.get(
-    `${EXAM_BASE_URL}/results/essays-for-grading/${paperId}`
-  );
-  return response as ApiResponse<any[]>;
-};
-
-export const gradeEssayResponse = async (
-  responseId: string,
-  marks: number
-): Promise<ApiResponse<any>> => {
-  const response = await apiClient.post(
-    `${EXAM_BASE_URL}/results/grade-essay/${responseId}`,
-    { marksAwarded: marks }
-  );
-  return response as ApiResponse<any>;
-};
-
-export const saveManualResults = async (
-  paperId: string,
-  results: { studentId: string; marks: number }[]
-): Promise<ApiResponse<any>> => {
+export const saveManualResults = async (payload: {
+  examPaperId: string;
+  termId: string;
+  sessionId: string;
+  studentMarks: {
+    studentId: string;
+    marksObtained: number;
+    teacherRemark?: string;
+    psychomotorAssessments?: {
+      skillId: string;
+      rating: number;
+    }[];
+  }[];
+}): Promise<ApiResponse<any>> => {
   const response = await apiClient.post(
     `${EXAM_BASE_URL}/results/manual-entry`,
-    {
-      paperId,
-      results,
-    }
+    payload
   );
   return response as ApiResponse<any>;
 };
 
-export const getExamPapers = async (filters: {
-  termId: string;
-  sectionId: string;
-}): Promise<ApiResponse<ExamPaper[]>> => {
+export const finalizeCbtResult = async (
+  paperId: string
+): Promise<ApiResponse<any>> => {
+  const response = await apiClient.post(
+    `${EXAM_BASE_URL}/results/finalize-cbt/${paperId}`
+  );
+  return response as ApiResponse<any>;
+};
+
+export const getExamPapers = async (
+  filters: {
+    schoolId: string;
+    termId?: string;
+    sectionId?: string;
+  },
+  page: number = 1,
+  limit: number = 10
+): Promise<ApiResponse<ExamPaper[]>> => {
   const query = new URLSearchParams(filters).toString();
-  const response = await apiClient.get(`${EXAM_BASE_URL}/papers?${query}`);
+  const response = await apiClient.get(
+    `${EXAM_BASE_URL}/management/exam/papers?page=${page}&limit=${limit}&${query}`
+  );
   return response as ApiResponse<ExamPaper[]>;
 };
 
 export const deleteExam = async (
   examId: string
 ): Promise<ApiResponse<null>> => {
-  const response = await apiClient.delete(`${EXAM_BASE_URL}/${examId}`);
+  const response = await apiClient.delete(
+    `${EXAM_BASE_URL}/management/${examId}`
+  );
   return response as ApiResponse<null>;
 };
 
@@ -198,7 +198,7 @@ export const addExamPaper = async (
   paperData: any
 ): Promise<ApiResponse<ExamPaper>> => {
   const response = await apiClient.post(
-    `${EXAM_BASE_URL}/${examId}/papers`,
+    `${EXAM_BASE_URL}/management/${examId}/papers`,
     paperData
   );
   return response as ApiResponse<ExamPaper>;
@@ -210,7 +210,7 @@ export const updateExamPaper = async (
   paperData: any
 ): Promise<ApiResponse<ExamPaper>> => {
   const response = await apiClient.put(
-    `${EXAM_BASE_URL}/${examId}/papers/${paperId}`,
+    `${EXAM_BASE_URL}/management/${examId}/papers/${paperId}`,
     paperData
   );
   return response as ApiResponse<ExamPaper>;
@@ -221,7 +221,7 @@ export const deleteExamPaper = async (
   paperId: string
 ): Promise<ApiResponse<null>> => {
   const response = await apiClient.delete(
-    `${EXAM_BASE_URL}/${examId}/papers/${paperId}`
+    `${EXAM_BASE_URL}/management/${examId}/papers/${paperId}`
   );
   return response as ApiResponse<null>;
 };
@@ -229,7 +229,9 @@ export const deleteExamPaper = async (
 export const getExamPaperById = async (
   paperId: string
 ): Promise<ApiResponse<ExamPaper>> => {
-  const response = await apiClient.get(`/exam/management/exam/papers/${paperId}`);
+  const response = await apiClient.get(
+    `/exam/management/exam/papers/${paperId}`
+  );
   return response as ApiResponse<ExamPaper>;
 };
 
@@ -253,4 +255,19 @@ export const saveAnswer = async (
     { responses }
   );
   return response as ApiResponse<any>;
+};
+
+export const addPsychomotor = async (data: any): Promise<any> => {
+  const response = await apiClient.post("/exam/psychomotor/assessments", data);
+  return response.data;
+};
+
+export const getPsychomotorSkills = async (): Promise<any> => {
+  const response = await apiClient.get("/exam/settings/psychomotor");
+  return response.data;
+};
+
+export const getStudentExamPapers = async (sessionId: string): Promise<any> => {
+    const response = await apiClient.get(`/exam/student/papers?sessionId=${sessionId}`);
+    return response.data;
 };

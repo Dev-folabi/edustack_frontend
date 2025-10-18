@@ -19,10 +19,10 @@ export const useStudentStore = create<StudentState>((set) => ({
     set({ loading: true, error: null });
     try {
       const response = await studentService.getStudentsBySection(schoolId, { sectionId, limit: 1000 });
-      if (response.data.success) {
+      if (response.success) {
         set({
-          students: response.data.data.data,
-          paginatedStudents: response.data.data,
+          students: response?.data?.data,
+          paginatedStudents: response?.data,
           loading: false,
         });
       }

@@ -5,7 +5,7 @@ import { Question } from "@/types/question";
 import { AddEditQuestionDialog } from "./AddEditQuestionDialog";
 import { deleteQuestion } from "@/services/questionBankService";
 import { useQuestionBankStore } from "@/store/questionBankStore";
-import { toast } from "sonner";
+import { useToast } from "@/components/ui/Toast";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,6 +41,8 @@ export const QuestionsTable = ({ questions, bankId }: QuestionsTableProps) => {
     null
   );
 
+  const { showToast } = useToast()
+
   const handleEditQuestion = (question: Question) => {
     setSelectedQuestion(question);
     setAddEditDialogOpen(true);
@@ -55,10 +57,18 @@ export const QuestionsTable = ({ questions, bankId }: QuestionsTableProps) => {
     if (questionToDelete) {
       try {
         await deleteQuestion(bankId, questionToDelete.id);
-        toast.success("Question deleted successfully!");
+        showToast({
+          title: "Success",
+          message: "Question deleted successfully!",
+          type: "success",
+        });
         fetchQuestionBankById(bankId);
       } catch (error) {
-        toast.error("Failed to delete question.");
+        showToast({
+          title: "Error",
+          message: (error as Error).message || "Failed to delete question.",
+          type: "error",
+        });
       } finally {
         setDeleteDialogOpen(false);
         setQuestionToDelete(null);

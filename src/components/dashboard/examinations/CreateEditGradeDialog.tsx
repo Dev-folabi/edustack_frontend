@@ -24,13 +24,16 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { GradeCriterion } from "@/types/examSettings";
 import { useExamSettingsStore } from "@/store/examSettingsStore";
-import { createGradeCriterion, updateGradeCriterion } from "@/services/examSettingsService";
+import {
+  createGradeCriterion,
+  updateGradeCriterion,
+} from "@/services/examSettingsService";
 
 const gradeSchema = z.object({
-  grade: z.string().min(1, "Grade is required"),
+  name: z.string().min(1, "Grade is required"),
   minScore: z.coerce.number().min(0, "Min score must be 0 or greater"),
   maxScore: z.coerce.number().min(0, "Max score must be 0 or greater"),
-  description: z.string().optional(),
+  remark: z.string().min(1, { message: "Remark is required" }),
 });
 
 type GradeFormValues = z.infer<typeof gradeSchema>;
@@ -41,16 +44,20 @@ interface CreateEditGradeDialogProps {
   criterion?: GradeCriterion;
 }
 
-export const CreateEditGradeDialog = ({ isOpen, onClose, criterion }: CreateEditGradeDialogProps) => {
+export const CreateEditGradeDialog = ({
+  isOpen,
+  onClose,
+  criterion,
+}: CreateEditGradeDialogProps) => {
   const { fetchGradeCriteria } = useExamSettingsStore();
 
   const form = useForm<GradeFormValues>({
     resolver: zodResolver(gradeSchema),
     defaultValues: criterion || {
-      grade: "",
+      name: "",
       minScore: 0,
       maxScore: 100,
-      description: "",
+      remark: "",
     },
   });
 
@@ -61,7 +68,9 @@ export const CreateEditGradeDialog = ({ isOpen, onClose, criterion }: CreateEdit
         : await createGradeCriterion(values);
 
       if (response.success) {
-        toast.success(`Grade criterion ${criterion ? 'updated' : 'created'} successfully!`);
+        toast.success(
+          `Grade criterion ${criterion ? "updated" : "created"} successfully!`
+        );
         fetchGradeCriteria();
         onClose();
       } else {
@@ -76,7 +85,9 @@ export const CreateEditGradeDialog = ({ isOpen, onClose, criterion }: CreateEdit
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{criterion ? "Edit" : "Create"} Grade Criterion</DialogTitle>
+          <DialogTitle>
+            {criterion ? "Edit" : "Create"} Grade Criterion
+          </DialogTitle>
           <DialogDescription>
             Fill in the details for the grade criterion.
           </DialogDescription>
@@ -85,7 +96,7 @@ export const CreateEditGradeDialog = ({ isOpen, onClose, criterion }: CreateEdit
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="grade"
+              name="name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Grade</FormLabel>
@@ -126,10 +137,10 @@ export const CreateEditGradeDialog = ({ isOpen, onClose, criterion }: CreateEdit
             </div>
             <FormField
               control={form.control}
-              name="description"
+              name="remark"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Remark</FormLabel>
                   <FormControl>
                     <Input placeholder="e.g., Excellent" {...field} />
                   </FormControl>
@@ -138,7 +149,9 @@ export const CreateEditGradeDialog = ({ isOpen, onClose, criterion }: CreateEdit
               )}
             />
             <DialogFooter>
-              <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
+              <Button type="button" variant="ghost" onClick={onClose}>
+                Cancel
+              </Button>
               <Button type="submit" disabled={form.formState.isSubmitting}>
                 {form.formState.isSubmitting ? "Saving..." : "Save"}
               </Button>
