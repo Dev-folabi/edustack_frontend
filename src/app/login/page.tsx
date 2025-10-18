@@ -113,9 +113,9 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  if (isCheckingOnboarding) {
-    return <Loader fullScreen text="Checking system status..." />;
-  }
+  // if (isCheckingOnboarding) {
+  //   return <Loader fullScreen text="Checking system status..." />;
+  // }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: COLORS.background.accent }}>
