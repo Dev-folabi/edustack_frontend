@@ -27,7 +27,9 @@ export const getStudentAttendance = (params: {
   page?: number;
   limit?: number;
 }): Promise<ApiResponse<{ data: Attendance[] }>> => {
-  const query = new URLSearchParams(params as any).toString();
+  const query = new URLSearchParams(
+    params as Record<string, string>
+  ).toString();
   return apiClient.get(`/api/attendance/student?${query}`);
 };
 
@@ -45,6 +47,8 @@ export const getStaffAttendance = (params: {
   page?: number;
   limit?: number;
 }): Promise<ApiResponse<{ data: Attendance[] }>> => {
-  const query = new URLSearchParams(params as any).toString();
+  const query = new URLSearchParams(
+    params as Record<string, string>
+  ).toString();
   return apiClient.get(`/api/attendance/staff?${query}`);
 };

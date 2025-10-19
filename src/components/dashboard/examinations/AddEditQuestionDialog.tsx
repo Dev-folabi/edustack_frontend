@@ -41,7 +41,7 @@ import { useQuestionBankStore } from "@/store/questionBankStore";
 
 const questionSchema = z
   .object({
-    type: z.enum(["MCQ", "Essay", "FillInBlanks"]),
+    type: z.enum(["MCQ", "True/False", "FillInBlanks"]),
     questionText: z.string().min(1, "Question text is required"),
     marks: z.coerce.number().min(1, "Marks are required"),
     difficulty: z.enum(["Easy", "Medium", "Hard"]),
@@ -61,6 +61,13 @@ const questionSchema = z
     (data) => data.type !== "FillInBlanks" || !!data.correctAnswer?.trim(),
     {
       message: "Fill in the blanks must have a correct answer.",
+      path: ["correctAnswer"],
+    }
+  )
+  .refine(
+    (data) => data.type !== "True/False" || !!data.correctAnswer,
+    {
+      message: "True/False must have a correct answer.",
       path: ["correctAnswer"],
     }
   );
@@ -87,7 +94,7 @@ export function AddEditQuestionDialog({
     resolver: zodResolver(questionSchema),
     defaultValues: question
       ? {
-          type: question.type as "MCQ" | "Essay" | "FillInBlanks",
+          type: question.type as "MCQ" | "True/False" | "FillInBlanks",
           questionText: question.questionText,
           marks: question.marks,
           difficulty: question.difficulty as "Easy" | "Medium" | "Hard",
@@ -96,8 +103,8 @@ export function AddEditQuestionDialog({
               ? question.options?.map((opt) => ({ value: opt }))
               : undefined,
           correctAnswer:
-            question.type === "Essay"
-              ? undefined
+            question.type === "True/False"
+              ? question.correctAnswer
               : String(question.correctAnswer || ""),
         }
       : {
@@ -116,7 +123,9 @@ export function AddEditQuestionDialog({
   });
   const questionType = form.watch("type");
 
-  const handleTypeChange = (value: "MCQ" | "Essay" | "FillInBlanks") => {
+  const handleTypeChange = (
+    value: "MCQ" | "True/False" | "FillInBlanks"
+  ) => {
     const resetMap = {
       MCQ: {
         type: "MCQ",
@@ -128,7 +137,11 @@ export function AddEditQuestionDialog({
         options: undefined,
         correctAnswer: "",
       },
-      Essay: { type: "Essay", options: undefined, correctAnswer: undefined },
+      "True/False": {
+        type: "True/False",
+        options: undefined,
+        correctAnswer: undefined,
+      },
     };
     form.reset({
       ...form.getValues(),
@@ -150,6 +163,8 @@ export function AddEditQuestionDialog({
         values.type === "MCQ"
           ? values.options?.[Number(values.correctAnswer)]?.value
           : values.type === "FillInBlanks"
+          ? values.correctAnswer
+          : values.type === "True/False"
           ? values.correctAnswer
           : undefined,
     };
@@ -218,7 +233,7 @@ export function AddEditQuestionDialog({
                       </FormControl>
                       <SelectContent className="rounded-lg border-white/20 bg-white/10 backdrop-blur-md text-gray-100">
                         <SelectItem value="MCQ">Multiple Choice</SelectItem>
-                        <SelectItem value="Essay">Essay</SelectItem>
+                        <SelectItem value="True/False">True/False</SelectItem>
                         <SelectItem value="FillInBlanks">
                           Fill in the Blanks
                         </SelectItem>
@@ -323,6 +338,46 @@ export function AddEditQuestionDialog({
                           className="rounded-lg border-white/20 bg-white/10 text-gray-100 placeholder-gray-400"
                         />
                       </FormControl>
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              {/* True/False block */}
+              {questionType === "True/False" && (
+                <FormField
+                  control={form.control}
+                  name="correctAnswer"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3">
+                      <FormLabel className="text-gray-200">
+                        Correct Answer
+                      </FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          value={field.value}
+                          className="flex items-center space-x-4"
+                        >
+                          <FormItem className="flex items-center space-x-2">
+                            <FormControl>
+                              <RadioGroupItem value="true" />
+                            </FormControl>
+                            <FormLabel className="font-normal text-gray-200">
+                              True
+                            </FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-2">
+                            <FormControl>
+                              <RadioGroupItem value="false" />
+                            </FormControl>
+                            <FormLabel className="font-normal text-gray-200">
+                              False
+                            </FormLabel>
+                          </FormItem>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />

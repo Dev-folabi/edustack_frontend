@@ -66,7 +66,7 @@ export interface ExamAttemptResponse {
 
 export interface Question {
   id: string;
-  type: "MCQ" | "Essay" | "TrueFalse" | "FillInBlanks";
+  type: "MCQ" | "True/False" | "FillInBlanks";
   questionText: string;
   options: string[];
   marks: number;

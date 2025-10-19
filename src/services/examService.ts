@@ -73,20 +73,20 @@ export const updateExam = async (
 
 export const getStudentResult = async (
   paperId: string
-): Promise<ApiResponse<any>> => {
+): Promise<ApiResponse<unknown>> => {
   const response = await apiClient.get(
     `${EXAM_BASE_URL}/management/student/results/${paperId}`
   );
-  return response as ApiResponse<any>;
+  return response as ApiResponse<unknown>;
 };
 
 export const submitExam = async (
   attemptId: string
-): Promise<ApiResponse<any>> => {
+): Promise<ApiResponse<unknown>> => {
   const response = await apiClient.post(
     `${EXAM_BASE_URL}/cbt/attempts/${attemptId}/submit`
   );
-  return response as ApiResponse<any>;
+  return response as ApiResponse<unknown>;
 };
 
 export const getStudentExams = async (
@@ -118,24 +118,24 @@ export const getStudentTermReport = async (
   studentId: string,
   termId: string,
   sessionId: string
-): Promise<ApiResponse<any>> => {
+): Promise<ApiResponse<unknown>> => {
   const response = await apiClient.get(
     `${EXAM_BASE_URL}/reports/student-term-report?studentId=${studentId}&termId=${termId}&sessionId=${sessionId}`
   );
-  return response as ApiResponse<any>;
+  return response as ApiResponse<unknown>;
 };
 
 export const publishResults = async (
   paperId: string,
   publish: boolean
-): Promise<ApiResponse<any>> => {
+): Promise<ApiResponse<unknown>> => {
   const response = await apiClient.post(
     `${EXAM_BASE_URL}/results/publish/${paperId}`,
     {
       publish,
     }
   );
-  return response as ApiResponse<any>;
+  return response as ApiResponse<unknown>;
 };
 
 export const saveManualResults = async (payload: {
@@ -151,21 +151,21 @@ export const saveManualResults = async (payload: {
       rating: number;
     }[];
   }[];
-}): Promise<ApiResponse<any>> => {
+}): Promise<ApiResponse<unknown>> => {
   const response = await apiClient.post(
     `${EXAM_BASE_URL}/results/manual-entry`,
     payload
   );
-  return response as ApiResponse<any>;
+  return response as ApiResponse<unknown>;
 };
 
 export const finalizeCbtResult = async (
   paperId: string
-): Promise<ApiResponse<any>> => {
+): Promise<ApiResponse<unknown>> => {
   const response = await apiClient.post(
     `${EXAM_BASE_URL}/results/finalize-cbt/${paperId}`
   );
-  return response as ApiResponse<any>;
+  return response as ApiResponse<unknown>;
 };
 
 export const getExamPapers = async (
@@ -195,7 +195,7 @@ export const deleteExam = async (
 
 export const addExamPaper = async (
   examId: string,
-  paperData: any
+  paperData: Partial<ExamPaper>
 ): Promise<ApiResponse<ExamPaper>> => {
   const response = await apiClient.post(
     `${EXAM_BASE_URL}/management/${examId}/papers`,
@@ -207,7 +207,7 @@ export const addExamPaper = async (
 export const updateExamPaper = async (
   examId: string,
   paperId: string,
-  paperData: any
+  paperData: Partial<ExamPaper>
 ): Promise<ApiResponse<ExamPaper>> => {
   const response = await apiClient.put(
     `${EXAM_BASE_URL}/management/${examId}/papers/${paperId}`,
@@ -248,26 +248,26 @@ export const createAndfetchExamAttempt = async (
 
 export const saveAnswer = async (
   attemptId: string,
-  responses: { questionId: string; studentAnswer: any }[]
-): Promise<ApiResponse<any>> => {
+  responses: { questionId: string; studentAnswer: unknown }[]
+): Promise<ApiResponse<unknown>> => {
   const response = await apiClient.post(
     `${EXAM_BASE_URL}/cbt/attempts/${attemptId}/responses`,
     { responses }
   );
-  return response as ApiResponse<any>;
+  return response as ApiResponse<unknown>;
 };
 
-export const addPsychomotor = async (data: any): Promise<any> => {
+export const addPsychomotor = async (data: unknown): Promise<unknown> => {
   const response = await apiClient.post("/exam/psychomotor/assessments", data);
   return response.data;
 };
 
-export const getPsychomotorSkills = async (): Promise<any> => {
+export const getPsychomotorSkills = async (): Promise<unknown> => {
   const response = await apiClient.get("/exam/settings/psychomotor");
   return response.data;
 };
 
-export const getStudentExamPapers = async (sessionId: string): Promise<any> => {
+export const getStudentExamPapers = async (sessionId: string): Promise<unknown> => {
     const response = await apiClient.get(`/exam/student/papers?sessionId=${sessionId}`);
     return response.data;
 };

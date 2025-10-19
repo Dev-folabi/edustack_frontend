@@ -39,27 +39,27 @@ export type UpdateSessionData = Partial<CreateSessionData>;
 
 export const sessionService = {
   // Get a single session by its ID
-  getSessionById: (sessionId: string): Promise<any> => {
+  getSessionById: (sessionId: string): Promise<unknown> => {
     return apiClient.get(`/session/${sessionId}`);
   },
 
   // Get the active academic session
-  getActiveSession: (): Promise<any> => {
+  getActiveSession: (): Promise<unknown> => {
     return apiClient.get<Session>("/session");
   },
 
   // Get all academic sessions
-  getSessions: (): Promise<any> => {
+  getSessions: (): Promise<unknown> => {
     return apiClient.get<SessionsResponse>("/session/all");
   },
 
   // Create a new session
-  createSession: (data: CreateSessionData): Promise<any> => {
+  createSession: (data: CreateSessionData): Promise<unknown> => {
     return apiClient.post("/session", data);
   },
 
   // Update a session by its ID
-  updateSession: (sessionId: string, data: UpdateSessionData): Promise<any> => {
+  updateSession: (sessionId: string, data: UpdateSessionData): Promise<unknown> => {
     return apiClient.put(`/session/${sessionId}`, data);
   },
 
