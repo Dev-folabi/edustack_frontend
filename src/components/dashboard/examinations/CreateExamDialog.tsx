@@ -46,6 +46,7 @@ const examSchema = z.object({
   sectionId: z.string().min(1, "Section is required"),
   termId: z.string().min(1, "Term is required"),
   sessionId: z.string().min(1, "Session is required"),
+  status: z.enum(["Draft", "Scheduled"]),
 });
 
 type ExamFormValues = z.infer<typeof examSchema>;
@@ -77,6 +78,7 @@ export const CreateExamDialog = ({
       sectionId: "",
       termId: "",
       sessionId: selectedSession?.id || "",
+      status: "Draft",
     },
   });
 
@@ -157,6 +159,28 @@ export const CreateExamDialog = ({
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Status</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a status" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Draft">Draft</SelectItem>
+                      <SelectItem value="Scheduled">Scheduled</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

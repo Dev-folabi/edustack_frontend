@@ -6,8 +6,9 @@ import { useEffect } from 'react';
 import { UserRole } from '@/constants/roles';
 import { DASHBOARD_ROUTES } from '@/constants/routes';
 
+import React from 'react';
 const withAuth = (WrappedComponent: React.ComponentType, requiredRoles: UserRole[]) => {
-  const AuthComponent = (props: any) => {
+  const AuthComponent = (props: React.ComponentProps<typeof WrappedComponent>) => {
     const { isSuperAdmin, hasRole } = usePermissions();
     const router = useRouter();
 

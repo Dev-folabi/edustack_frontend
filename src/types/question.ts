@@ -10,8 +10,7 @@ export interface Question {
 
 export type QuestionType =
   | "MCQ"
-  | "Essay"
   | "FillInBlanks"
-  | "TrueFalse"
+  | "True/False"
   | "Matching";
 export type QuestionDifficulty = "Easy" | "Medium" | "Hard";

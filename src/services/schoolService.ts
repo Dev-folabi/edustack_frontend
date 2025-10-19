@@ -45,22 +45,22 @@ interface SchoolResponse {
 
 export const schoolService = {
   // Get all schools
-  getSchools: (): Promise<any> => {
+  getSchools: (): Promise<unknown> => {
     return apiClient.get<SchoolsResponse>("/school/all");
   },
 
   // Create a new school
-  createSchool: (data: CreateSchoolData): Promise<any> => {
+  createSchool: (data: CreateSchoolData): Promise<unknown> => {
     return apiClient.post<SchoolResponse>("/school", data);
   },
 
   // Update a school by its ID
-  updateSchool: (schoolId: string, data: UpdateSchoolData): Promise<any> => {
+  updateSchool: (schoolId: string, data: UpdateSchoolData): Promise<unknown> => {
     return apiClient.put<SchoolResponse>(`/school/${schoolId}`, data);
   },
 
   // Delete a school by its ID
-  deleteSchool: (schoolId: string): Promise<any> => {
+  deleteSchool: (schoolId: string): Promise<unknown> => {
     return apiClient.delete(`/school/${schoolId}`);
   },
 
