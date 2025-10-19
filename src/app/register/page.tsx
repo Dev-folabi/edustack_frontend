@@ -306,8 +306,8 @@ const RegisterPage: React.FC = () => {
     }
   };
 
-  if (isCheckingOnboarding)
-    return <Loader fullScreen text="Checking system status..." />;
+  // if (isCheckingOnboarding)
+  //   return <Loader fullScreen text="Checking system status..." />;
 
   const renderStaffForm = () => (
     <motion.form

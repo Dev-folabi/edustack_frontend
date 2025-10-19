@@ -1,109 +1,107 @@
 import {
-  FaTachometerAlt, FaUserCircle, FaBook, FaClipboardList, FaFileInvoiceDollar, FaBell
-} from 'react-icons/fa';
-import { UserRole } from './roles';
-import { DASHBOARD_ROUTES } from './routes';
-import { IconType } from 'react-icons';
-import { SidebarCategory } from './sidebar-links'; // Re-use the interface
+  FaTachometerAlt,
+  FaUserCircle,
+  FaBook,
+  FaClipboardList,
+  FaFileInvoiceDollar,
+  FaBell,
+} from "react-icons/fa";
+import { UserRole } from "./roles";
+import { DASHBOARD_ROUTES } from "./routes";
+import { SidebarCategory } from "./sidebar-links";
 
 export const studentSidebarConfig: SidebarCategory[] = [
   {
-    title: 'Dashboard',
+    title: "Dashboard",
     roles: [UserRole.STUDENT, UserRole.PARENT],
     links: [
       {
         href: DASHBOARD_ROUTES.STUDENT_DASHBOARD,
-        label: 'Overview',
+        label: "Overview",
         icon: FaTachometerAlt,
         roles: [UserRole.STUDENT, UserRole.PARENT],
       },
       {
         href: DASHBOARD_ROUTES.STUDENT_PROFILE,
-        label: 'My Profile',
+        label: "My Profile",
         icon: FaUserCircle,
         roles: [UserRole.STUDENT, UserRole.PARENT],
       },
     ],
   },
   {
-    title: 'Academics',
+    title: "Academics",
     roles: [UserRole.STUDENT, UserRole.PARENT],
     links: [
       {
         href: DASHBOARD_ROUTES.TIMETABLE,
-        label: 'Timetable',
+        label: "Timetable",
         icon: FaClipboardList,
         roles: [UserRole.STUDENT, UserRole.PARENT],
       },
       {
         href: DASHBOARD_ROUTES.SUBJECTS,
-        label: 'Subjects',
+        label: "Subjects",
         icon: FaBook,
         roles: [UserRole.STUDENT, UserRole.PARENT],
       },
       {
         href: DASHBOARD_ROUTES.ATTENDANCE_STUDENT,
-        label: 'Attendance',
+        label: "Attendance",
         icon: FaClipboardList,
         roles: [UserRole.STUDENT, UserRole.PARENT],
       },
     ],
   },
   {
-    title: 'Examinations',
+    title: "Examinations",
     roles: [UserRole.STUDENT, UserRole.PARENT],
     links: [
       {
-        href: DASHBOARD_ROUTES.EXAMS_MANAGE,
-        label: 'Exam Schedule',
+        href: DASHBOARD_ROUTES.STUDENT_EXAM_SCHEDULE,
+        label: "Exam Schedule",
         icon: FaClipboardList,
         roles: [UserRole.STUDENT, UserRole.PARENT],
       },
       {
-        href: DASHBOARD_ROUTES.STUDENT_EXAMS_CBT,
-        label: 'CBT Exam',
-        icon: FaBook,
-        roles: [UserRole.STUDENT, UserRole.PARENT],
-      },
-      {
-        href: DASHBOARD_ROUTES.EXAMS_RESULTS,
-        label: 'Results',
+        href: DASHBOARD_ROUTES.STUDENT_EXAM_RESULT,
+        label: "Results",
         icon: FaClipboardList,
         roles: [UserRole.STUDENT, UserRole.PARENT],
       },
     ],
   },
   {
-    title: 'Finance',
+    title: "Finance",
     roles: [UserRole.STUDENT, UserRole.PARENT],
     links: [
       {
         href: DASHBOARD_ROUTES.FINANCE_INVOICES,
-        label: 'Invoices',
+        label: "Invoices",
         icon: FaFileInvoiceDollar,
         roles: [UserRole.STUDENT, UserRole.PARENT],
       },
       {
         href: DASHBOARD_ROUTES.FINANCE_PAYMENTS,
-        label: 'Payment History',
+        label: "Payment History",
         icon: FaFileInvoiceDollar,
         roles: [UserRole.STUDENT, UserRole.PARENT],
       },
       {
         href: DASHBOARD_ROUTES.STUDENT_FINANCE_MAKE_PAYMENT,
-        label: 'Make a Payment',
+        label: "Make a Payment",
         icon: FaFileInvoiceDollar,
         roles: [UserRole.STUDENT, UserRole.PARENT],
       },
     ],
   },
   {
-    title: 'Notifications',
+    title: "Notifications",
     roles: [UserRole.STUDENT, UserRole.PARENT],
     links: [
       {
         href: DASHBOARD_ROUTES.STUDENT_NOTIFICATIONS,
-        label: 'View All Notifications',
+        label: "View All Notifications",
         icon: FaBell,
         roles: [UserRole.STUDENT, UserRole.PARENT],
       },

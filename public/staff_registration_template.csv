@@ -1,0 +1,3 @@
+"email","password","username","name","phone","address","role","designation","dob","salary","joining_date","gender","isActive","qualification","notes"
+"staff1@example.com","password123","staff1","John Doe","1234567890","123 Main St","teacher","Math Teacher","1990-01-01","50000","2023-01-01","male","true","B.Sc. Mathematics",""
+"staff2@example.com","password123","staff2","Jane Smith","0987654321","456 Oak Ave","finance","Accountant","1985-05-15","60000","2022-01-01","female","true","B.Com",""

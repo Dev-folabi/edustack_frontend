@@ -1,6 +1,5 @@
 import { apiClient } from "../utils/api";
 
-// Re-defining interfaces here for clarity, can be shared if needed
 export interface Term {
   id: string;
   name: string;
@@ -18,8 +17,7 @@ export interface Session {
   terms: Term[];
 }
 
-// Based on Postman `GET /api/session/all` response
-// The `data` property is directly an array of sessions
+
 interface SessionsResponse {
     data: Session[];
 }
@@ -45,6 +43,11 @@ export const sessionService = {
     return apiClient.get(`/session/${sessionId}`);
   },
 
+  // Get the active academic session
+  getActiveSession: (): Promise<any> => {
+    return apiClient.get<Session>("/session");
+  },
+
   // Get all academic sessions
   getSessions: (): Promise<any> => {
     return apiClient.get<SessionsResponse>("/session/all");
@@ -66,7 +69,7 @@ export const sessionService = {
   },
 
   // Get all terms for a specific session
-  getTermsForSession: (sessionId: string): Promise<any> => {
+  getSessionTerms: (sessionId: string): Promise<any> => {
     return apiClient.get(`/session/${sessionId}/terms`);
   },
 

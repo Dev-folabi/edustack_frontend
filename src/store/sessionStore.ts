@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import { sessionService } from "@/services/sessionService"; // Updated import
-import type { Session } from "@/services/sessionService";
+import { sessionService } from "@/services/sessionService";
+import type { Session, Term } from "@/services/sessionService";
 export type { Session };
 
 interface SessionState {
@@ -9,12 +9,15 @@ interface SessionState {
   isLoading: boolean;
   fetchSessions: () => Promise<void>;
   setSelectedSession: (session: Session) => void;
+  fetchTerms: (sessionId: string) => Promise<void>;
+  terms: Term[];
 }
 
 export const useSessionStore = create<SessionState>((set) => ({
   sessions: [],
   selectedSession: null,
   isLoading: false,
+  terms: [],
 
   fetchSessions: async () => {
     try {
@@ -39,5 +42,24 @@ export const useSessionStore = create<SessionState>((set) => ({
 
   setSelectedSession: (session: Session) => {
     set({ selectedSession: session });
+  },
+
+  fetchTerms: async (sessionId: string) => {
+    try {
+      set({ isLoading: true });
+      const response = await sessionService.getSessionTerms(sessionId || "");
+      if (response.success && response.data) {
+        const terms = response.data.data;
+        set({
+          terms,
+          isLoading: false,
+        });
+      } else {
+        throw new Error(response.message || "Failed to fetch terms");
+      }
+    } catch (error) {
+      console.error("Error fetching terms:", error);
+      set({ isLoading: false });
+    }
   },
 }));

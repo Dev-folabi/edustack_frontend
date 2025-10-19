@@ -97,4 +97,18 @@ export const  studentService = {
     );
   },
 
+  // TODO: Replace with a real API call when the backend endpoint is available.
+  getSectionTermReport: (
+    sectionId: string,
+    termId: string,
+    sessionId: string
+  ): Promise<ApiResponse<Blob>> => {
+    // This service function is a placeholder and returns a dummy PDF blob.
+    return new Promise(resolve => {
+      setTimeout(() => {
+        const dummyPdf = new Blob(['This is a dummy PDF for the whole section'], { type: 'application/pdf' });
+        resolve({ data: { success: true, message: 'Dummy report generated', data: dummyPdf } } as any);
+      }, 1000);
+    });
+  },
 };

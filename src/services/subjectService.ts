@@ -1,4 +1,3 @@
-import { UserRole } from '@/constants/roles';
 import { apiClient, ApiResponse } from '@/utils/api';
 
 export interface Subject {

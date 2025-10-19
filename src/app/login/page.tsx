@@ -47,22 +47,22 @@ const LoginPage: React.FC = () => {
     defaultValues: { emailOrUsername: "", password: "" },
   });
 
-  useEffect(() => {
-    const checkSystemStatus = async () => {
-      try {
-        const onboard = await checkOnboardingStatus();
-        if (!onboard.isOnboarded) {
-          router.push("/onboarding");
-          return;
-        }
-      } catch (error) {
-        console.error("Error checking onboarding status:", error);
-      } finally {
-        setIsCheckingOnboarding(false);
-      }
-    };
-    checkSystemStatus();
-  }, [checkOnboardingStatus, router]);
+  // useEffect(() => {
+  //   const checkSystemStatus = async () => {
+  //     try {
+  //       const onboard = await checkOnboardingStatus();
+  //       if (!onboard.isOnboarded) {
+  //         router.push("/onboarding");
+  //         return;
+  //       }
+  //     } catch (error) {
+  //       console.error("Error checking onboarding status:", error);
+  //     } finally {
+  //       setIsCheckingOnboarding(false);
+  //     }
+  //   };
+  //   checkSystemStatus();
+  // }, [checkOnboardingStatus, router]);
 
   const onSubmit = async (values: LoginFormValues) => {
     try {
@@ -113,9 +113,9 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  if (isCheckingOnboarding) {
-    return <Loader fullScreen text="Checking system status..." />;
-  }
+  // if (isCheckingOnboarding) {
+  //   return <Loader fullScreen text="Checking system status..." />;
+  // }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: COLORS.background.accent }}>
