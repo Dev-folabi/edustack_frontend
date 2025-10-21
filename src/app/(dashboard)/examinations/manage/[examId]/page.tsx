@@ -77,12 +77,13 @@ const ExamDetailsPage = () => {
               <div>
                 <p className="text-sm font-medium text-gray-500">Class</p>
                 <p>
-                  {selectedExam.class.name} - {selectedExam.section.name}
+                  {selectedExam.class?.name || "--"} -{" "}
+                  {selectedExam.section?.name || "--"}
                 </p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Term</p>
-                <p>{selectedExam.term.name}</p>
+                <p>{selectedExam.term?.name || "--"}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Start Date</p>

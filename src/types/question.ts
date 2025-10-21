@@ -11,6 +11,6 @@ export interface Question {
 export type QuestionType =
   | "MCQ"
   | "FillInBlanks"
-  | "True/False"
+  | "TrueFalse"
   | "Matching";
 export type QuestionDifficulty = "Easy" | "Medium" | "Hard";

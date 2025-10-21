@@ -71,15 +71,6 @@ export const updateExam = async (
   return response as ApiResponse<Exam>;
 };
 
-export const getStudentResult = async (
-  paperId: string
-): Promise<ApiResponse<unknown>> => {
-  const response = await apiClient.get(
-    `${EXAM_BASE_URL}/management/student/results/${paperId}`
-  );
-  return response as ApiResponse<unknown>;
-};
-
 export const submitExam = async (
   attemptId: string
 ): Promise<ApiResponse<unknown>> => {
@@ -267,7 +258,11 @@ export const getPsychomotorSkills = async (): Promise<unknown> => {
   return response.data;
 };
 
-export const getStudentExamPapers = async (sessionId: string): Promise<unknown> => {
-    const response = await apiClient.get(`/exam/student/papers?sessionId=${sessionId}`);
-    return response.data;
+export const getStudentExamPapers = async (
+  sessionId: string
+): Promise<unknown> => {
+  const response = await apiClient.get(
+    `/exam/student/papers?sessionId=${sessionId}`
+  );
+  return response.data;
 };

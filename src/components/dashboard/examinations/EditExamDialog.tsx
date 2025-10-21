@@ -67,7 +67,9 @@ export const EditExamDialog = ({
   const { selectedSession, fetchTerms } = useSessionStore();
   const { fetchExams } = useExamStore();
   const { showToast } = useToast();
-  const [selectedClass, setSelectedClass] = useState<string>(exam.class.id);
+  const [selectedClass, setSelectedClass] = useState<string>(
+    exam?.classId || ""
+  );
 
   const form = useForm<ExamFormValues>({
     resolver: zodResolver(examSchema),
@@ -75,9 +77,9 @@ export const EditExamDialog = ({
       title: exam.title,
       startDate: new Date(exam.startDate),
       endDate: new Date(exam.endDate),
-      classId: exam.class.id,
-      sectionId: exam.section.id,
-      termId: exam.term.id,
+      classId: exam?.classId || "",
+      sectionId: exam?.sectionId || "",
+      termId: exam?.termId || "",
       sessionId: selectedSession?.id || "", // always lock to selectedSession
       status: exam.status,
     },
@@ -100,13 +102,13 @@ export const EditExamDialog = ({
         title: exam.title,
         startDate: new Date(exam.startDate),
         endDate: new Date(exam.endDate),
-        classId: exam.class.id,
-        sectionId: exam.section.id,
-        termId: exam.term.id,
+        classId: exam?.classId || "",
+        sectionId: exam?.sectionId || "",
+        termId: exam?.termId || "",
         sessionId: selectedSession.id, // force current session
         status: exam.status,
       });
-      setSelectedClass(exam.class.id);
+      setSelectedClass(exam?.classId || "");
     }
   }, [exam, selectedSession, form]);
 
@@ -136,11 +138,14 @@ export const EditExamDialog = ({
           message: response.message || "Failed to update exam",
         });
       }
-    } catch {
+    } catch (error) {
       showToast({
         title: "Error",
         type: "error",
-        message: "An error occurred while updating the exam.",
+        message:
+          error instanceof Error
+            ? error.message
+            : "An error occurred while updating the exam.",
       });
     }
   };
@@ -189,12 +194,12 @@ export const EditExamDialog = ({
                       {exam.status === "Completed" ? (
                         <>
                           <SelectItem value="Ongoing">Ongoing</SelectItem>
-                          <SelectItem value="Scheduled">Scheduled</SelectItem>
                         </>
                       ) : (
                         <>
                           <SelectItem value="Draft">Draft</SelectItem>
                           <SelectItem value="Scheduled">Scheduled</SelectItem>
+                          <SelectItem value="Cancelled">Cancelled</SelectItem>
                         </>
                       )}
                     </SelectContent>

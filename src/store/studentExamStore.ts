@@ -2,7 +2,6 @@ import { create } from "zustand";
 import {
   getStudentExams,
   createAndfetchExamAttempt,
-  getStudentResult,
 } from "@/services/examService";
 import { StudentExam, ExamAttemptResponse } from "@/types/exam";
 
@@ -20,7 +19,6 @@ interface StudentExamState {
 export const useStudentExamStore = create<StudentExamState>((set) => ({
   exams: [],
   currentAttempt: null,
-  currentResult: null,
   loading: false,
   error: null,
 
@@ -53,17 +51,4 @@ export const useStudentExamStore = create<StudentExamState>((set) => ({
     }
   },
 
-  fetchStudentResult: async (paperId: string) => {
-    set({ loading: true, error: null });
-    try {
-      const response = await getStudentResult(paperId);
-      if (response.success) {
-        set({ currentResult: response.data, loading: false });
-      } else {
-        set({ loading: false, error: "Failed to fetch result" });
-      }
-    } catch (error) {
-      set({ loading: false, error: String(error) });
-    }
-  },
 }));

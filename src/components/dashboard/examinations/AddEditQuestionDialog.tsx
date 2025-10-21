@@ -41,7 +41,7 @@ import { useQuestionBankStore } from "@/store/questionBankStore";
 
 const questionSchema = z
   .object({
-    type: z.enum(["MCQ", "True/False", "FillInBlanks"]),
+    type: z.enum(["MCQ", "TrueFalse", "FillInBlanks"]),
     questionText: z.string().min(1, "Question text is required"),
     marks: z.coerce.number().min(1, "Marks are required"),
     difficulty: z.enum(["Easy", "Medium", "Hard"]),
@@ -64,13 +64,10 @@ const questionSchema = z
       path: ["correctAnswer"],
     }
   )
-  .refine(
-    (data) => data.type !== "True/False" || !!data.correctAnswer,
-    {
-      message: "True/False must have a correct answer.",
-      path: ["correctAnswer"],
-    }
-  );
+  .refine((data) => data.type !== "TrueFalse" || !!data.correctAnswer, {
+    message: "True/False must have a correct answer.",
+    path: ["correctAnswer"],
+  });
 
 type QuestionFormValues = z.infer<typeof questionSchema>;
 
@@ -94,7 +91,7 @@ export function AddEditQuestionDialog({
     resolver: zodResolver(questionSchema),
     defaultValues: question
       ? {
-          type: question.type as "MCQ" | "True/False" | "FillInBlanks",
+          type: question.type as "MCQ" | "TrueFalse" | "FillInBlanks",
           questionText: question.questionText,
           marks: question.marks,
           difficulty: question.difficulty as "Easy" | "Medium" | "Hard",
@@ -103,7 +100,7 @@ export function AddEditQuestionDialog({
               ? question.options?.map((opt) => ({ value: opt }))
               : undefined,
           correctAnswer:
-            question.type === "True/False"
+            question.type === "TrueFalse"
               ? question.correctAnswer
               : String(question.correctAnswer || ""),
         }
@@ -123,9 +120,7 @@ export function AddEditQuestionDialog({
   });
   const questionType = form.watch("type");
 
-  const handleTypeChange = (
-    value: "MCQ" | "True/False" | "FillInBlanks"
-  ) => {
+  const handleTypeChange = (value: "MCQ" | "TrueFalse" | "FillInBlanks") => {
     const resetMap = {
       MCQ: {
         type: "MCQ",
@@ -137,8 +132,8 @@ export function AddEditQuestionDialog({
         options: undefined,
         correctAnswer: "",
       },
-      "True/False": {
-        type: "True/False",
+      TrueFalse: {
+        type: "TrueFalse",
         options: undefined,
         correctAnswer: undefined,
       },
@@ -164,7 +159,7 @@ export function AddEditQuestionDialog({
           ? values.options?.[Number(values.correctAnswer)]?.value
           : values.type === "FillInBlanks"
           ? values.correctAnswer
-          : values.type === "True/False"
+          : values.type === "TrueFalse"
           ? values.correctAnswer
           : undefined,
     };
@@ -233,7 +228,7 @@ export function AddEditQuestionDialog({
                       </FormControl>
                       <SelectContent className="rounded-lg border-white/20 bg-white/10 backdrop-blur-md text-gray-100">
                         <SelectItem value="MCQ">Multiple Choice</SelectItem>
-                        <SelectItem value="True/False">True/False</SelectItem>
+                        <SelectItem value="TrueFalse">True/False</SelectItem>
                         <SelectItem value="FillInBlanks">
                           Fill in the Blanks
                         </SelectItem>
@@ -344,7 +339,7 @@ export function AddEditQuestionDialog({
               )}
 
               {/* True/False block */}
-              {questionType === "True/False" && (
+              {questionType === "TrueFalse" && (
                 <FormField
                   control={form.control}
                   name="correctAnswer"

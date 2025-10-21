@@ -29,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DateTimePicker } from "@/components/ui/DateTimePicker"; // Assume it supports mode prop
+import { DateTimePicker } from "@/components/ui/DateTimePicker";
 import { useAuthStore } from "@/store/authStore";
 import { useSubjectStore } from "@/store/subjectStore";
 import { useQuestionBankStore } from "@/store/questionBankStore";
@@ -42,15 +42,24 @@ import { ExamPaper } from "@/types/exam";
 const paperSchema = z
   .object({
     subjectId: z.string().min(1, "Subject is required"),
-    maxMarks: z.coerce.number().min(1, "Max marks are required"),
-    passMarks: z.coerce.number().min(1, "Pass marks are required"),
-    paperDate: z.date(),
-    startTime: z.date(),
-    endTime: z.date(),
-    mode: z.enum(["PaperBased", "CBT"]),
-    questionBankId: z.string().optional(),
-    totalQuestions: z.coerce.number().positive().optional(),
-    instructions: z.string().optional(),
+    maxMarks: z.coerce.number().min(1, "Max marks must be at least 1"),
+    paperDate: z.date({ required_error: "Paper date is required" }),
+    startTime: z.date({ required_error: "Start time is required" }),
+    endTime: z.date({ required_error: "End time is required" }),
+    mode: z.enum(["PaperBased", "CBT"], {
+      required_error: "Exam mode is required",
+    }),
+    questionBankId: z.string().optional().nullable(),
+    totalQuestions: z.coerce
+      .number()
+      .positive("Total questions must be positive")
+      .optional()
+      .nullable(),
+    instructions: z.string().optional().nullable(),
+  })
+  .refine((data) => data.endTime > data.startTime, {
+    message: "End time must be after start time",
+    path: ["endTime"],
   })
   .refine(
     (data) =>
@@ -71,55 +80,6 @@ interface AddEditPaperDialogProps {
   paper?: ExamPaper;
 }
 
-/* ------------------ Reusable Field Components ------------------ */
-const NumberField = ({
-  name,
-  label,
-}: {
-  name: keyof PaperFormValues;
-  label: string;
-}) => (
-  <FormField
-    name={name}
-    render={({ field }) => (
-      <FormItem>
-        <FormLabel>{label}</FormLabel>
-        <FormControl>
-          <Input type="number" {...field} />
-        </FormControl>
-        <FormMessage />
-      </FormItem>
-    )}
-  />
-);
-
-const DateField = ({
-  name,
-  label,
-  mode = "date",
-}: {
-  name: keyof PaperFormValues;
-  label: string;
-  mode?: "date" | "time";
-}) => (
-  <FormField
-    name={name}
-    render={({ field }) => (
-      <FormItem>
-        <FormLabel>{label}</FormLabel>
-        <FormControl>
-          <DateTimePicker
-            date={field.value}
-            setDate={field.onChange}
-            mode={mode}
-          />
-        </FormControl>
-        <FormMessage />
-      </FormItem>
-    )}
-  />
-);
-
 export const AddEditPaperDialog = ({
   isOpen,
   onClose,
@@ -135,14 +95,15 @@ export const AddEditPaperDialog = ({
   const defaultValues = useMemo<PaperFormValues>(
     () => ({
       subjectId: paper?.subject?.id || "",
-      maxMarks: paper?.maxMarks || 0,
-      passMarks: paper?.passMarks || 0,
+      maxMarks: paper?.maxMarks || 10,
       paperDate: paper?.paperDate ? new Date(paper.paperDate) : new Date(),
       startTime: paper?.startTime ? new Date(paper.startTime) : new Date(),
-      endTime: paper?.endTime ? new Date(paper.endTime) : new Date(),
+      endTime: paper?.endTime
+        ? new Date(paper.endTime)
+        : new Date(Date.now() + 3600000), // 1 hour later
       mode: paper?.mode || "PaperBased",
-      questionBankId: paper?.questionBankId || "",
-      totalQuestions: paper?.totalQuestions,
+      questionBankId: paper?.questionBankId || null,
+      totalQuestions: paper?.totalQuestions || null,
       instructions: paper?.instructions || "",
     }),
     [paper]
@@ -151,6 +112,7 @@ export const AddEditPaperDialog = ({
   const form = useForm<PaperFormValues>({
     resolver: zodResolver(paperSchema),
     defaultValues,
+    mode: "onChange", // Validate on change for better UX
   });
 
   const selectedSubjectId = form.watch("subjectId");
@@ -165,6 +127,21 @@ export const AddEditPaperDialog = ({
     if (selectedSubjectId) fetchQuestionBanksBySubject(selectedSubjectId);
   }, [selectedSubjectId, fetchQuestionBanksBySubject]);
 
+  // Reset form when dialog opens/closes or paper changes
+  useEffect(() => {
+    if (isOpen) {
+      form.reset(defaultValues);
+    }
+  }, [isOpen, defaultValues, form]);
+
+  // Clear CBT fields when switching to PaperBased
+  useEffect(() => {
+    if (selectedMode === "PaperBased") {
+      form.setValue("questionBankId", null);
+      form.setValue("totalQuestions", null);
+    }
+  }, [selectedMode, form]);
+
   /* Submit Handler */
   const onSubmit = async (values: PaperFormValues) => {
     try {
@@ -173,6 +150,9 @@ export const AddEditPaperDialog = ({
         paperDate: values.paperDate.toISOString(),
         startTime: values.startTime.toISOString(),
         endTime: values.endTime.toISOString(),
+        questionBankId: values.questionBankId || undefined,
+        totalQuestions: values.totalQuestions || undefined,
+        instructions: values.instructions || undefined,
       };
 
       const response = paper
@@ -186,6 +166,7 @@ export const AddEditPaperDialog = ({
           type: "success",
         });
         fetchExamById(examId);
+        form.reset();
         onClose();
       } else {
         showToast({
@@ -194,7 +175,8 @@ export const AddEditPaperDialog = ({
           type: "error",
         });
       }
-    } catch {
+    } catch (error) {
+      console.error("Error saving exam paper:", error);
       showToast({
         title: "Error",
         message: "An error occurred while saving the exam paper.",
@@ -205,24 +187,31 @@ export const AddEditPaperDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[525px] max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{paper ? "Edit" : "Add"} Exam Paper</DialogTitle>
+          <DialogTitle className="text-xl">
+            {paper ? "Edit" : "Add"} Exam Paper
+          </DialogTitle>
           <DialogDescription>
-            Fill in the details for the exam paper.
+            Fill in the details for the exam paper. All fields marked with * are
+            required.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             {/* Subject */}
             <FormField
+              control={form.control}
               name="subjectId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Subject</FormLabel>
+                  <FormLabel>
+                    Subject <span className="text-red-500">*</span>
+                  </FormLabel>
                   <Select
                     onValueChange={field.onChange}
+                    value={field.value}
                     defaultValue={field.value}
                   >
                     <FormControl>
@@ -231,11 +220,17 @@ export const AddEditPaperDialog = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {subjects.map((s) => (
-                        <SelectItem key={s.id} value={s.id}>
-                          {s.name}
+                      {subjects.length > 0 ? (
+                        subjects.map((s) => (
+                          <SelectItem key={s.id} value={s.id}>
+                            {s.name} ({s.code})
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-subjects" disabled>
+                          No subjects available
                         </SelectItem>
-                      ))}
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -243,32 +238,107 @@ export const AddEditPaperDialog = ({
               )}
             />
 
-            {/* Marks */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <NumberField name="maxMarks" label="Max Marks" />
-              <NumberField name="passMarks" label="Pass Marks" />
-            </div>
-
-            {/* Schedule */}
-            <DateField name="paperDate" label="Paper Date" mode="date" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <DateField name="startTime" label="Start Time" mode="time" />
-              <DateField name="endTime" label="End Time" mode="time" />
-            </div>
-
-            {/* Mode */}
+            {/* Max Marks */}
             <FormField
+              control={form.control}
+              name="maxMarks"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Max Marks <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder="e.g., 100"
+                      {...field}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Paper Date */}
+            <FormField
+              control={form.control}
+              name="paperDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Paper Date <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <DateTimePicker
+                      date={field.value}
+                      setDate={field.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Start & End Time */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="startTime"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Start Time <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <DateTimePicker
+                        date={field.value}
+                        setDate={field.onChange}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="endTime"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      End Time <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <DateTimePicker
+                        date={field.value}
+                        setDate={field.onChange}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Exam Mode */}
+            <FormField
+              control={form.control}
               name="mode"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Exam Mode</FormLabel>
+                  <FormLabel>
+                    Exam Mode <span className="text-red-500">*</span>
+                  </FormLabel>
                   <Select
                     onValueChange={field.onChange}
+                    value={field.value}
                     defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a mode" />
+                        <SelectValue placeholder="Select exam mode" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -283,17 +353,23 @@ export const AddEditPaperDialog = ({
               )}
             />
 
-            {/* CBT Extra */}
+            {/* CBT Extra Fields */}
             {selectedMode === "CBT" && (
-              <div className="space-y-4 p-4 border rounded-md">
+              <div className="space-y-4 p-4 border rounded-lg bg-blue-50/50">
+                <p className="text-sm font-medium text-blue-900">
+                  CBT Configuration
+                </p>
                 <FormField
+                  control={form.control}
                   name="questionBankId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Question Bank</FormLabel>
+                      <FormLabel>
+                        Question Bank <span className="text-red-500">*</span>
+                      </FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value || ""}
                         disabled={!selectedSubjectId}
                       >
                         <FormControl>
@@ -302,31 +378,65 @@ export const AddEditPaperDialog = ({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {questionBanks.map((qb) => (
-                            <SelectItem key={qb.id} value={qb.id}>
-                              {qb.name}
+                          {questionBanks.length > 0 ? (
+                            questionBanks.map((qb) => (
+                              <SelectItem key={qb.id} value={qb.id}>
+                                {qb.name}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="no-banks" disabled>
+                              No question banks available
                             </SelectItem>
-                          ))}
+                          )}
                         </SelectContent>
                       </Select>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <NumberField name="totalQuestions" label="Total Questions" />
+
+                <FormField
+                  control={form.control}
+                  name="totalQuestions"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Total Questions <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min="1"
+                          placeholder="e.g., 50"
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value ? Number(e.target.value) : null
+                            )
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
             )}
 
             {/* Instructions */}
             <FormField
+              control={form.control}
               name="instructions"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Instructions</FormLabel>
+                  <FormLabel>Instructions (Optional)</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="e.g., All questions are compulsory"
                       {...field}
+                      value={field.value || ""}
                     />
                   </FormControl>
                   <FormMessage />
@@ -335,11 +445,21 @@ export const AddEditPaperDialog = ({
             />
 
             {/* Actions */}
-            <DialogFooter>
-              <Button type="button" variant="ghost" onClick={onClose}>
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  form.reset();
+                  onClose();
+                }}
+              >
                 Cancel
               </Button>
-              <Button type="submit" disabled={form.formState.isSubmitting}>
+              <Button
+                type="submit"
+                disabled={form.formState.isSubmitting || !form.formState.isValid}
+              >
                 {form.formState.isSubmitting ? "Saving..." : "Save Paper"}
               </Button>
             </DialogFooter>
