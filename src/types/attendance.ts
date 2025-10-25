@@ -33,6 +33,7 @@ export interface Attendance {
   student?: {
     id: string;
     name: string;
+    admission_number: string;
   };
   staff?: {
     id: string;

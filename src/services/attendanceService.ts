@@ -1,4 +1,4 @@
-import { apiClient, ApiResponse } from '@/utils/api';
+import { apiClient, ApiResponse } from "../utils/api";
 import {
   StudentAttendanceRequest,
   StaffAttendanceRequest,
@@ -8,13 +8,13 @@ import {
 export const takeSectionAttendance = (
   data: StudentAttendanceRequest
 ): Promise<ApiResponse> => {
-  return apiClient.post('/api/attendance/section', data);
+  return apiClient.post('/attendance/section', data);
 };
 
 export const takeSubjectAttendance = (
   data: StudentAttendanceRequest
 ): Promise<ApiResponse> => {
-  return apiClient.post('/api/attendance/subject', data);
+  return apiClient.post('/attendance/subject', data);
 };
 
 export const getStudentAttendance = (params: {
@@ -30,13 +30,13 @@ export const getStudentAttendance = (params: {
   const query = new URLSearchParams(
     params as Record<string, string>
   ).toString();
-  return apiClient.get(`/api/attendance/student?${query}`);
+  return apiClient.get(`/attendance/student?${query}`);
 };
 
 export const takeStaffAttendance = (
   data: StaffAttendanceRequest
 ): Promise<ApiResponse> => {
-  return apiClient.post('/api/attendance/staff', data);
+  return apiClient.post('/attendance/staff', data);
 };
 
 export const getStaffAttendance = (params: {
@@ -50,5 +50,5 @@ export const getStaffAttendance = (params: {
   const query = new URLSearchParams(
     params as Record<string, string>
   ).toString();
-  return apiClient.get(`/api/attendance/staff?${query}`);
+  return apiClient.get(`/attendance/staff?${query}`);
 };

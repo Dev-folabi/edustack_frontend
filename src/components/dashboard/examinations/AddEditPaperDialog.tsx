@@ -77,6 +77,7 @@ interface AddEditPaperDialogProps {
   isOpen: boolean;
   onClose: () => void;
   examId: string;
+  sectionId?: string;
   paper?: ExamPaper;
 }
 
@@ -85,6 +86,7 @@ export const AddEditPaperDialog = ({
   onClose,
   examId,
   paper,
+  sectionId,
 }: AddEditPaperDialogProps) => {
   const { selectedSchool } = useAuthStore();
   const { subjects, fetchSubjects } = useSubjectStore();
@@ -120,7 +122,7 @@ export const AddEditPaperDialog = ({
 
   /* Fetch Data */
   useEffect(() => {
-    if (selectedSchool) fetchSubjects(selectedSchool.schoolId);
+    if (selectedSchool) fetchSubjects(selectedSchool.schoolId, sectionId);
   }, [selectedSchool, fetchSubjects]);
 
   useEffect(() => {
