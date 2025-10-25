@@ -17,6 +17,7 @@ import { getStudentAttendance } from '@/services/attendanceService';
 import { Attendance } from '@/types/attendance';
 import { Student } from '@/types/student';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { subjectService, Subject } from '@/services/subjectService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const ViewStudentAttendance = () => {
@@ -27,6 +28,8 @@ const ViewStudentAttendance = () => {
   const [selectedStudent, setSelectedStudent] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>();
   const [attendanceRecords, setAttendanceRecords] = useState<Attendance[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [selectedSubject, setSelectedSubject] = useState<string>('');
 
   const { selectedSchool } = useAuthStore();
 
@@ -48,14 +51,25 @@ const ViewStudentAttendance = () => {
         }
       });
     }
+    if (selectedSection) {
+      subjectService.getSubjects({ sectionId: selectedSection }).then((res) => {
+        if (res.success) {
+          setSubjects(res.data.data);
+        }
+      });
+    }
   }, [selectedSection, selectedSchool]);
 
   const handleFetchAttendance = () => {
     if (!selectedSection) return;
 
     const params: any = { sectionId: selectedSection };
-    if (date) params.date = date.toISOString().split('T')[0];
+    if (date) {
+      const adjustedDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+      params.date = adjustedDate.toISOString().split('T')[0];
+    }
     if (selectedStudent) params.studentId = selectedStudent;
+    if (selectedSubject) params.subjectId = selectedSubject;
 
     getStudentAttendance(params).then((res) => {
       if (res.success) {
@@ -72,7 +86,7 @@ const ViewStudentAttendance = () => {
         <CardTitle>View Student Attendance Records</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
           <Select onValueChange={setSelectedClass} value={selectedClass}>
             <SelectTrigger>
               <SelectValue placeholder="Select Class" />
@@ -106,6 +120,20 @@ const ViewStudentAttendance = () => {
             <SelectContent>
                 <SelectItem value="all">All Students</SelectItem>
               {students.map((s) => (
+                <SelectItem key={s.id} value={s.id}>
+                  {s.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select onValueChange={setSelectedSubject} value={selectedSubject} disabled={!selectedSection}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select Subject" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Subjects</SelectItem>
+              {subjects.map((s) => (
                 <SelectItem key={s.id} value={s.id}>
                   {s.name}
                 </SelectItem>

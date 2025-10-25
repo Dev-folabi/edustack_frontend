@@ -17,11 +17,16 @@ import {
     SelectTrigger,
     SelectValue,
   } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+
+interface AttendanceRecordWithNotes extends AttendanceRecord {
+  notes?: string;
+}
 
 const TakeStaffAttendanceForm = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [staff, setStaff] = useState<Staff[]>([]);
-  const [attendanceRecords, setAttendanceRecords] = useState<{ [key: string]: AttendanceStatus }>({});
+  const [attendanceRecords, setAttendanceRecords] = useState<{ [key: string]: AttendanceRecordWithNotes }>({});
 
   const { selectedSchool } = useAuthStore();
 
@@ -30,18 +35,21 @@ const TakeStaffAttendanceForm = () => {
       staffService.getStaffBySchool(selectedSchool.schoolId, { isActive: true }).then((res) => {
         if (res.success) {
           setStaff(res.data?.data || []);
-           const initialRecords: { [key: string]: AttendanceStatus } = {};
-           res.data.data.forEach((s: Staff) => {
-             initialRecords[s.id] = AttendanceStatus.PRESENT;
-           });
-           setAttendanceRecords(initialRecords);
+          const initialRecords: { [key: string]: AttendanceRecordWithNotes } = {};
+          res.data.data.forEach((s: Staff) => {
+            initialRecords[s.id] = { staffId: s.id, status: AttendanceStatus.PRESENT, notes: '' };
+          });
+          setAttendanceRecords(initialRecords);
         }
       });
     }
   }, [selectedSchool]);
 
-  const handleStatusChange = (staffId: string, status: AttendanceStatus) => {
-    setAttendanceRecords((prev) => ({ ...prev, [staffId]: status }));
+  const handleAttendanceChange = (staffId: string, status: AttendanceStatus, notes: string) => {
+    setAttendanceRecords((prev) => ({
+      ...prev,
+      [staffId]: { staffId, status, notes },
+    }));
   };
 
   const { showToast } = useToast();
@@ -56,16 +64,21 @@ const TakeStaffAttendanceForm = () => {
       return;
     }
 
-    const records: AttendanceRecord[] = Object.entries(attendanceRecords).map(
-      ([staffId, status]) => ({
+    const records: AttendanceRecord[] = Object.values(attendanceRecords).map(
+      ({ staffId, status, notes }) => ({
         staffId,
         status,
+        notes,
       })
     );
 
     try {
+      // Adjust date to local timezone before sending to backend
+      const adjustedDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+      const formattedDate = adjustedDate.toISOString().split('T')[0];
+
       const res = await takeStaffAttendance({
-        date: date.toISOString(),
+        date: formattedDate,
         records,
       });
 
@@ -102,6 +115,7 @@ const TakeStaffAttendanceForm = () => {
               <TableRow>
                   <TableHead>Staff Name</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Notes</TableHead>
               </TableRow>
           </TableHeader>
           <TableBody>
@@ -110,8 +124,8 @@ const TakeStaffAttendanceForm = () => {
                       <TableCell>{s.name}</TableCell>
                       <TableCell>
                           <Select
-                          value={attendanceRecords[s.id]}
-                          onValueChange={(value) => handleStatusChange(s.id, value as AttendanceStatus)}
+                          value={attendanceRecords[s.id]?.status}
+                          onValueChange={(value) => handleAttendanceChange(s.id, value as AttendanceStatus, attendanceRecords[s.id]?.notes || '')}
                           >
                           <SelectTrigger>
                               <SelectValue />
@@ -124,6 +138,13 @@ const TakeStaffAttendanceForm = () => {
                               ))}
                           </SelectContent>
                           </Select>
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          value={attendanceRecords[s.id]?.notes}
+                          onChange={(e) => handleAttendanceChange(s.id, attendanceRecords[s.id]?.status, e.target.value)}
+                          placeholder="Optional notes"
+                        />
                       </TableCell>
                   </TableRow>
               ))}

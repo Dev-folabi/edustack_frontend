@@ -25,8 +25,9 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserRole } from "@/constants/roles";
+import { UserData } from "@/services/authService";
 
-const ViewStaffAttendance = ({ user }: { user: any }) => {
+const ViewStaffAttendance = ({ user }: { user: UserData }) => {
   const [staffList, setStaffList] = useState<Staff[]>([]);
   const [selectedStaff, setSelectedStaff] = useState<string>("");
   const [date, setDate] = useState<Date | undefined>();
@@ -47,7 +48,8 @@ const ViewStaffAttendance = ({ user }: { user: any }) => {
         params.staffId = selectedStaff;
       }
       if (date) {
-        params.date = date.toISOString().split('T')[0];
+        const adjustedDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+        params.date = adjustedDate.toISOString().split('T')[0];
       } else {
         // If no specific date is selected, use month and year for all staff view
         params.month = month;

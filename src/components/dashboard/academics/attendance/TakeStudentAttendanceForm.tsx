@@ -22,6 +22,11 @@ import { AttendanceStatus, AttendanceRecord } from '@/types/attendance';
 import { useToast } from '@/components/ui/Toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Student } from '@/types/student';
+import { Input } from '@/components/ui/input';
+
+interface AttendanceRecordWithNotes extends AttendanceRecord {
+  notes?: string;
+}
 
 const TakeStudentAttendanceForm = () => {
   const [attendanceType, setAttendanceType] = useState<'section' | 'subject'>(
@@ -34,7 +39,7 @@ const TakeStudentAttendanceForm = () => {
   const [selectedSubject, setSelectedSubject] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [students, setStudents] = useState<Student[]>([]);
-  const [attendanceRecords, setAttendanceRecords] = useState<{ [key: string]: AttendanceStatus }>({});
+  const [attendanceRecords, setAttendanceRecords] = useState<{ [key: string]: AttendanceRecordWithNotes }>({});
 
   const { selectedSchool } = useAuthStore();
 
@@ -66,9 +71,13 @@ const TakeStudentAttendanceForm = () => {
         if (res.success) {
           setStudents(res?.data?.data || []);
           // Initialize attendance records
-          const initialRecords: { [key: string]: AttendanceStatus } = {};
+          const initialRecords: { [key: string]: AttendanceRecordWithNotes } = {};
           res?.data?.data?.forEach((student: Student) => {
-            initialRecords[student?.studentId || ''] = AttendanceStatus.PRESENT;
+            initialRecords[student?.studentId || ''] = {
+              studentId: student?.studentId || '',
+              status: AttendanceStatus.PRESENT,
+              notes: '',
+            };
           });
           setAttendanceRecords(initialRecords);
         }
@@ -76,8 +85,11 @@ const TakeStudentAttendanceForm = () => {
     }
   };
 
-  const handleStatusChange = (studentId: string, status: AttendanceStatus) => {
-    setAttendanceRecords((prev) => ({ ...prev, [studentId]: status }));
+  const handleAttendanceChange = (studentId: string, status: AttendanceStatus, notes: string) => {
+    setAttendanceRecords((prev) => ({
+      ...prev,
+      [studentId]: { studentId, status, notes },
+    }));
   };
 
   const handleSubmit = async () => {
@@ -90,19 +102,23 @@ const TakeStudentAttendanceForm = () => {
       return;
     }
 
-    const records: AttendanceRecord[] = Object.entries(attendanceRecords).map(
-      ([studentId, status]) => ({
+    const records: AttendanceRecord[] = Object.values(attendanceRecords).map(
+      ({ studentId, status, notes }) => ({
         studentId,
         status,
+        notes,
       })
     );
 
     try {
+      const adjustedDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+      const formattedDate = adjustedDate.toISOString().split('T')[0];
+
       let res;
       if (attendanceType === 'section') {
         res = await takeSectionAttendance({
           sectionId: selectedSection,
-          date: date.toISOString(),
+          date: formattedDate,
           records,
         });
       } else {
@@ -117,7 +133,7 @@ const TakeStudentAttendanceForm = () => {
         res = await takeSubjectAttendance({
           sectionId: selectedSection,
           subjectId: selectedSubject,
-          date: date.toISOString(),
+          date: formattedDate,
           records,
         });
       }
@@ -218,6 +234,7 @@ const TakeStudentAttendanceForm = () => {
                 <TableRow>
                   <TableHead className="min-w-[120px]">Student Name</TableHead>
                   <TableHead className="min-w-[150px]">Attendance Status</TableHead>
+                  <TableHead className="min-w-[150px]">Notes</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -226,8 +243,14 @@ const TakeStudentAttendanceForm = () => {
                     <TableCell className="whitespace-nowrap">{student.name}</TableCell>
                     <TableCell>
                       <Select
-                        value={attendanceRecords[student?.studentId || '']}
-                        onValueChange={(value) => handleStatusChange(student?.studentId || '', value as AttendanceStatus)}
+                        value={attendanceRecords[student?.studentId || '']?.status}
+                        onValueChange={(value) =>
+                          handleAttendanceChange(
+                            student?.studentId || '',
+                            value as AttendanceStatus,
+                            attendanceRecords[student?.studentId || '']?.notes || ''
+                          )
+                        }
                       >
                         <SelectTrigger className="w-full">
                           <SelectValue />
@@ -240,6 +263,19 @@ const TakeStudentAttendanceForm = () => {
                           ))}
                         </SelectContent>
                       </Select>
+                    </TableCell>
+                    <TableCell>
+                      <Input
+                        value={attendanceRecords[student?.studentId || '']?.notes}
+                        onChange={(e) =>
+                          handleAttendanceChange(
+                            student?.studentId || '',
+                            attendanceRecords[student?.studentId || '']?.status,
+                            e.target.value
+                          )
+                        }
+                        placeholder="Optional notes"
+                      />
                     </TableCell>
                   </TableRow>
                 ))}
