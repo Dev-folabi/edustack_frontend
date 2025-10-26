@@ -37,6 +37,7 @@ import {
   FileText,
   Filter,
 } from "lucide-react";
+import { formatDateToYYYYMMDD } from "@/utils/date";
 
 const ViewStudentAttendance = () => {
   const [classes, setClasses] = useState<Class[]>([]);
@@ -46,6 +47,11 @@ const ViewStudentAttendance = () => {
   const [selectedStudent, setSelectedStudent] = useState<string>("");
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
+  const [filterType, setFilterType] = useState<"section" | "subject">(
+    "section"
+  );
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [selectedSubject, setSelectedSubject] = useState<string>("");
   const [attendanceRecords, setAttendanceRecords] = useState<Attendance[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingStudents, setLoadingStudents] = useState(false);
@@ -76,6 +82,13 @@ const ViewStudentAttendance = () => {
         })
         .finally(() => setLoadingStudents(false));
     }
+    if (selectedSection) {
+      subjectService.getSubjects({ sectionId: selectedSection }).then((res) => {
+        if (res.success) {
+          setSubjects(res.data.data);
+        }
+      });
+    }
   }, [selectedSection, selectedSchool]);
 
   const handleFetchAttendance = async () => {
@@ -84,10 +97,13 @@ const ViewStudentAttendance = () => {
     setLoading(true);
     try {
       const params: any = { sectionId: selectedSection };
-      if (startDate) params.startDate = startDate.toISOString().split("T")[0];
-      if (endDate) params.endDate = endDate.toISOString().split("T")[0];
+      if (startDate) params.startDate = formatDateToYYYYMMDD(startDate);
+      if (endDate) params.endDate = formatDateToYYYYMMDD(endDate);
       if (selectedStudent && selectedStudent !== "all")
         params.studentId = selectedStudent;
+      if (filterType === "subject" && selectedSubject) {
+        params.subjectId = selectedSubject;
+      }
 
       const res = await getStudentAttendance(params);
       if (res.success) {
@@ -210,6 +226,55 @@ const ViewStudentAttendance = () => {
                   </SelectContent>
                 </Select>
               </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center gap-2">
+                  <Filter className="w-4 h-4" />
+                  Filter Type
+                </label>
+                <Select
+                  onValueChange={(value) =>
+                    setFilterType(value as "section" | "subject")
+                  }
+                  value={filterType}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Filter Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="section">Section</SelectItem>
+                    <SelectItem value="subject">Subject</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {filterType === "subject" && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Subject</label>
+                  <Select
+                    onValueChange={setSelectedSubject}
+                    value={selectedSubject}
+                    disabled={!selectedSection}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Subject" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {subjects.length > 0 ? (
+                        subjects.map((s) => (
+                          <SelectItem key={s.id} value={s.id}>
+                            {s.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="placeholder" disabled>
+                          No subjects available
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <label className="text-sm font-medium flex items-center gap-2">

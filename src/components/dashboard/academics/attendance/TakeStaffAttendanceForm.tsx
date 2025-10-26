@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useAuthStore } from '@/store/authStore';
 import { staffService } from '@/services/staffService';
@@ -36,6 +37,7 @@ import {
   UserCheck,
   RefreshCw,
 } from 'lucide-react';
+import { formatDateToYYYYMMDD } from '@/utils/date';
 
 const TakeStaffAttendanceForm = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -43,6 +45,7 @@ const TakeStaffAttendanceForm = () => {
   const [attendanceRecords, setAttendanceRecords] = useState<{
     [key: string]: AttendanceStatus;
   }>({});
+  const [notes, setNotes] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -96,6 +99,10 @@ const TakeStaffAttendanceForm = () => {
     setAttendanceRecords((prev) => ({ ...prev, [staffId]: status }));
   };
 
+  const handleNoteChange = (staffId: string, note: string) => {
+    setNotes((prev) => ({ ...prev, [staffId]: note }));
+  };
+
   const handleMarkAll = (status: AttendanceStatus) => {
     const updatedRecords: { [key: string]: AttendanceStatus } = {};
     staff.forEach((s) => {
@@ -127,13 +134,14 @@ const TakeStaffAttendanceForm = () => {
       ([staffId, status]) => ({
         staffId,
         status,
+        notes: notes[staffId] || "",
       })
     );
 
     setSubmitting(true);
     try {
       const res = await takeStaffAttendance({
-        date: date.toISOString(),
+        date: formatDateToYYYYMMDD(date),
         records,
       });
 
@@ -357,6 +365,7 @@ const TakeStaffAttendanceForm = () => {
                       <TableHead className="min-w-[200px]">
                         Attendance Status
                       </TableHead>
+                      <TableHead className="min-w-[200px]">Notes</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -405,6 +414,15 @@ const TakeStaffAttendanceForm = () => {
                               ))}
                             </SelectContent>
                           </Select>
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            placeholder="Add a note..."
+                            value={notes[s.id] || ""}
+                            onChange={(e) =>
+                              handleNoteChange(s.id, e.target.value)
+                            }
+                          />
                         </TableCell>
                       </TableRow>
                     ))}

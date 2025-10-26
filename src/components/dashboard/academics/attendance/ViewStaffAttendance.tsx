@@ -37,6 +37,7 @@ import {
   FileText,
   UserCheck,
 } from "lucide-react";
+import { formatDateToYYYYMMDD } from "@/utils/date";
 
 const ViewStaffAttendance = () => {
   const [staffList, setStaffList] = useState<Staff[]>([]);
@@ -62,7 +63,7 @@ const ViewStaffAttendance = () => {
         params.staffId = selectedStaff;
       }
       if (date) {
-        params.date = date.toISOString().split("T")[0];
+        params.date = formatDateToYYYYMMDD(date);
       } else {
         params.month = month;
         params.year = year;

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -39,6 +40,7 @@ import {
   XCircle,
   Clock,
 } from "lucide-react";
+import { formatDateToYYYYMMDD } from "@/utils/date";
 
 const TakeStudentAttendanceForm = () => {
   const [attendanceType, setAttendanceType] = useState<"section" | "subject">(
@@ -54,6 +56,7 @@ const TakeStudentAttendanceForm = () => {
   const [attendanceRecords, setAttendanceRecords] = useState<{
     [key: string]: AttendanceStatus;
   }>({});
+  const [notes, setNotes] = useState<{ [key: string]: string }>({});
   const [loadingStudents, setLoadingStudents] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -125,6 +128,10 @@ const TakeStudentAttendanceForm = () => {
     setAttendanceRecords((prev) => ({ ...prev, [studentId]: status }));
   };
 
+  const handleNoteChange = (studentId: string, note: string) => {
+    setNotes((prev) => ({ ...prev, [studentId]: note }));
+  };
+
   const handleMarkAll = (status: AttendanceStatus) => {
     const updatedRecords: { [key: string]: AttendanceStatus } = {};
     students.forEach((student) => {
@@ -156,6 +163,7 @@ const TakeStudentAttendanceForm = () => {
       ([studentId, status]) => ({
         studentId,
         status,
+        notes: notes[studentId] || "",
       })
     );
 
@@ -165,7 +173,7 @@ const TakeStudentAttendanceForm = () => {
       if (attendanceType === "section") {
         res = await takeSectionAttendance({
           sectionId: selectedSection,
-          date: date.toISOString(),
+          date: formatDateToYYYYMMDD(date),
           records,
         });
       } else {
@@ -181,7 +189,7 @@ const TakeStudentAttendanceForm = () => {
         res = await takeSubjectAttendance({
           sectionId: selectedSection,
           subjectId: selectedSubject,
-          date: date.toISOString(),
+          date: formatDateToYYYYMMDD(date),
           records,
         });
       }
@@ -498,6 +506,7 @@ const TakeStudentAttendanceForm = () => {
                       <TableHead className="min-w-[200px]">
                         Attendance Status
                       </TableHead>
+                      <TableHead className="min-w-[200px]">Notes</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -548,6 +557,15 @@ const TakeStudentAttendanceForm = () => {
                               ))}
                             </SelectContent>
                           </Select>
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            placeholder="Add a note..."
+                            value={notes[student.studentId] || ""}
+                            onChange={(e) =>
+                              handleNoteChange(student.studentId, e.target.value)
+                            }
+                          />
                         </TableCell>
                       </TableRow>
                     ))}
