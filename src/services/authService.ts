@@ -127,6 +127,10 @@ interface ClassesResponse {
 interface UserSchool {
   schoolId: string;
   role: "super_admin" | "school_admin" | "teacher" | "staff";
+  school: {
+    name: string;
+    isActive: boolean;
+  };
 }
 
 interface UserData {
@@ -140,9 +144,9 @@ interface UserData {
 interface LoginResponse {
   userData: UserData;
   userSchools: UserSchool[];
-  staff: any | null;
-  student: any | null;
-  parent: any | null;
+  staff: unknown | null;
+  student: unknown | null;
+  parent: unknown | null;
   token: string;
 }
 

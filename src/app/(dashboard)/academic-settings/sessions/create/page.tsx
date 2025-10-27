@@ -13,7 +13,7 @@ const CreateSessionPage = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Create New Academic Session</h1>
-        <Link href={DASHBOARD_ROUTES.SESSIONS_TERMS}>
+        <Link href={DASHBOARD_ROUTES.SESSIONS}>
           <Button variant="outline">Back to Sessions</Button>
         </Link>
       </div>
@@ -22,4 +22,4 @@ const CreateSessionPage = () => {
   );
 };
 
-export default withAuth(CreateSessionPage, [UserRole.SUPER_ADMIN]);
+export default withAuth(CreateSessionPage, [UserRole.SUPER_ADMIN, UserRole.ADMIN]);

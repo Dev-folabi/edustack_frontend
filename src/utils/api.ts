@@ -1,4 +1,5 @@
-import { config } from './config';
+import { config } from "./config";
+import { useAuthStore } from "@/store/authStore";
 
 // Custom error class to include additional data from API responses
 export class ApiError extends Error {
@@ -6,12 +7,12 @@ export class ApiError extends Error {
 
   constructor(message: string, data: any = null) {
     super(message);
-    this.name = 'ApiError';
+    this.name = "ApiError";
     this.data = data;
   }
 }
 
-interface ApiResponse<T = any> {
+export interface ApiResponse<T = any> {
   success: boolean;
   message: string;
   data?: T;
@@ -26,58 +27,76 @@ class ApiClient {
   }
 
   private getAuthHeaders(): HeadersInit {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
+    const { selectedSchool } = useAuthStore.getState();
+    const schoolId = selectedSchool?.schoolId ?? null;
     return {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...(token && { Authorization: `Bearer ${token}` }),
+      ...(schoolId && { "X-School-Id": schoolId }),
     };
   }
 
   private async handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
     const data = await response.json();
-    
-    if (!response.ok) {
-      throw new ApiError(data.message || 'An error occurred', data.data);
+
+    // Check for token expiration
+    if (
+      !data.success &&
+      data.message &&
+      data.message.includes("Invalid or missing token")
+    ) {
+      // Get the logout function from auth store
+      const { logout } = useAuthStore.getState();
+
+      logout();
+
+      // Throw error to prevent further processing
+      throw new ApiError(data.message, data);
     }
-    
+
+    if (!response.ok) {
+      throw new ApiError(data.message || "An error occurred", data);
+    }
+
     return data;
   }
 
   async get<T>(endpoint: string): Promise<ApiResponse<T>> {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      method: 'GET',
+      method: "GET",
       headers: this.getAuthHeaders(),
     });
-    
+
     return this.handleResponse<T>(response);
   }
 
   async post<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      method: 'POST',
+      method: "POST",
       headers: this.getAuthHeaders(),
       body: data ? JSON.stringify(data) : undefined,
     });
-    
+
     return this.handleResponse<T>(response);
   }
 
   async put<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      method: 'PUT',
+      method: "PUT",
       headers: this.getAuthHeaders(),
       body: data ? JSON.stringify(data) : undefined,
     });
-    
+
     return this.handleResponse<T>(response);
   }
 
   async delete<T>(endpoint: string): Promise<ApiResponse<T>> {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      method: 'DELETE',
+      method: "DELETE",
       headers: this.getAuthHeaders(),
     });
-    
+
     return this.handleResponse<T>(response);
   }
 }

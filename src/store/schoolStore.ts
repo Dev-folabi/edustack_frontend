@@ -7,12 +7,13 @@ export type { School };
 
 interface SchoolState {
   schools: School[];
-  selectedSchool: School | null;
   isLoading: boolean;
   fetchSchools: () => Promise<void>;
-  setSelectedSchool: (school: School) => void;
   createSchool: (schoolData: CreateSchoolData) => Promise<any>;
-  updateSchool: (schoolId: string, schoolData: UpdateSchoolData) => Promise<any>;
+  updateSchool: (
+    schoolId: string,
+    schoolData: UpdateSchoolData
+  ) => Promise<any>;
   deleteSchool: (schoolId: string) => Promise<any>;
 }
 
@@ -27,11 +28,8 @@ export const useSchoolStore = create<SchoolState>((set, get) => ({
       const response = await schoolService.getSchools();
       if (response.success && response.data && response.data.data) {
         const schools = response.data.data;
-        const activeSchool =
-          schools.find((s: School) => s.isActive) || schools[0] || null;
         set({
           schools,
-          selectedSchool: activeSchool,
           isLoading: false,
         });
       } else {
@@ -41,10 +39,6 @@ export const useSchoolStore = create<SchoolState>((set, get) => ({
       console.error("Error fetching schools:", error);
       set({ isLoading: false });
     }
-  },
-
-  setSelectedSchool: (school: School) => {
-    set({ selectedSchool: school });
   },
 
   createSchool: async (schoolData: CreateSchoolData) => {

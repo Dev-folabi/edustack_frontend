@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
+import { format } from 'date-fns';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -12,12 +13,13 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { useToast } from '@/components/ui/Toast';
-import { sessionService, Session } from '@/services/sessionService';
+import { sessionService, Session, CreateSessionData } from '@/services/sessionService';
 import { DASHBOARD_ROUTES } from '@/constants/routes';
 import { FaPlus, FaTrash } from 'react-icons/fa';
 
 const termSchema = z.object({
-  id: z.string().optional(), // Terms might have an ID if they already exist
+  id: z.string().optional(),
+  databaseId: z.string().optional(),
   name: z.string().min(1, "Term name is required."),
   start_date: z.date({ required_error: "Start date is required." }),
   end_date: z.date({ required_error: "End date is required." }),
@@ -28,18 +30,37 @@ const sessionFormSchema = z.object({
   start_date: z.date({ required_error: "Session start date is required." }),
   end_date: z.date({ required_error: "Session end date is required." }),
   isActive: z.boolean().default(false),
-  terms: z.array(termSchema).min(2, "You must have at least two terms."),
+  terms: z.array(termSchema).min(1, "You must have at least one term."),
 }).refine(data => data.start_date < data.end_date, {
   message: "Session end date must be after the start date.",
   path: ["end_date"],
-});
-// Note: More complex cross-field validation for dates is omitted for brevity but would be similar to create form
+}).refine(data => {
+    for (const term of data.terms) {
+        if (term.start_date < data.start_date || term.end_date > data.end_date) {
+            return false;
+        }
+    }
+    return true;
+}, { message: "Term dates must be within the session date range.", path: ["terms"] })
+.refine(data => {
+    for (let i = 0; i < data.terms.length; i++) {
+        for (let j = i + 1; j < data.terms.length; j++) {
+            if (data.terms[i].start_date < data.terms[j].end_date && data.terms[j].start_date < data.terms[i].end_date) {
+                return false;
+            }
+        }
+    }
+    return true;
+}, { message: "Term dates must not overlap.", path: ["terms"] });
 
 type SessionFormValues = z.infer<typeof sessionFormSchema>;
 
 interface EditSessionFormProps {
     initialData: Session;
 }
+
+// Function to format date to 'yyyy-MM-dd'
+const formatDateForApi = (date: Date) => format(date, 'yyyy-MM-dd');
 
 export const EditSessionForm: React.FC<EditSessionFormProps> = ({ initialData }) => {
   const router = useRouter();
@@ -49,11 +70,11 @@ export const EditSessionForm: React.FC<EditSessionFormProps> = ({ initialData })
     resolver: zodResolver(sessionFormSchema),
     defaultValues: {
         ...initialData,
-        // Convert date strings from API to Date objects for the form
         start_date: new Date(initialData.start_date),
         end_date: new Date(initialData.end_date),
         terms: initialData.terms.map(term => ({
             ...term,
+            databaseId: term.id,
             start_date: new Date(term.start_date),
             end_date: new Date(term.end_date),
         }))
@@ -65,12 +86,51 @@ export const EditSessionForm: React.FC<EditSessionFormProps> = ({ initialData })
     name: "terms",
   });
 
+  // Handle term deletion with API call for existing terms
+  const handleTermDelete = async (index: number) => {
+    const formValues = form.getValues();
+    const term = formValues.terms[index];
+    console.log({index, term})
+    
+    if (term.databaseId) {
+      try {
+        await sessionService.deleteTerm(term.databaseId);
+        showToast({ 
+          title: "Success", 
+          message: "Term deleted successfully!", 
+          type: 'success' 
+        });
+      } catch (error) {
+        showToast({ 
+          title: "Error", 
+          message: "Failed to delete term.", 
+          type: 'error' 
+        });
+        return; 
+      }
+    }
+    
+    // Remove from form array
+    remove(index);
+  };
+
   const onSubmit = async (values: SessionFormValues) => {
     try {
-      await sessionService.updateSession(initialData.id, values);
+        const formattedValues = {
+            ...values,
+            start_date: formatDateForApi(values.start_date),
+            end_date: formatDateForApi(values.end_date),
+            terms: values.terms.map(term => ({
+                ...term,
+                start_date: formatDateForApi(term.start_date),
+                end_date: formatDateForApi(term.end_date),
+            }))
+        };
+
+      await sessionService.updateSession(initialData.id, formattedValues as unknown as CreateSessionData);
       showToast({ title: "Success", message: "Academic session updated successfully!", type: 'success' });
       router.push(DASHBOARD_ROUTES.SESSIONS_TERMS);
-      router.refresh(); // to ensure the list is updated
+      router.refresh();
     } catch (error) {
       showToast({ title: "Error", message: "Failed to update session.", type: 'error' });
     }
@@ -79,7 +139,6 @@ export const EditSessionForm: React.FC<EditSessionFormProps> = ({ initialData })
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        {/* Form fields are identical to CreateSessionForm, so they are included here */}
         <div className="p-6 border rounded-lg">
           <h3 className="text-lg font-medium mb-4">Session Details</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -114,14 +173,14 @@ export const EditSessionForm: React.FC<EditSessionFormProps> = ({ initialData })
                              <FormItem><FormLabel>End Date</FormLabel><FormControl><DatePicker value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem>
                         )} />
                     </div>
-                    <Button type="button" variant="destructive" size="sm" onClick={() => remove(index)}><FaTrash /></Button>
+                    <Button type="button" variant="destructive" size="sm" onClick={() => handleTermDelete(index)}><FaTrash /></Button>
                 </div>
             ))}
             </div>
             <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", start_date: undefined, end_date: undefined })} className="mt-4">
                 <FaPlus className="mr-2 h-4 w-4" /> Add Term
             </Button>
-            {form.formState.errors.terms && <p className="text-sm font-medium text-destructive">{form.formState.errors.terms.message}</p>}
+            {form.formState.errors.terms && <p className="text-sm font-medium text-destructive">{form.formState.errors.terms.message || form.formState.errors.terms.root?.message}</p>}
         </div>
 
         <Button type="submit" disabled={form.formState.isSubmitting}>

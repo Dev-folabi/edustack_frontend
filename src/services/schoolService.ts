@@ -1,4 +1,4 @@
-import { apiClient } from "../utils/api";
+import { apiClient, ApiResponse } from "../utils/api";
 import { School } from "./authService"; // Re-using the School type
 
 // Interface for creating a new school
@@ -7,8 +7,6 @@ export interface CreateSchoolData {
   address: string;
   email: string;
   phone: string[];
-  // principal assignment might be handled separately or be a simple string
-  principalName?: string;
   isActive?: boolean;
 }
 
@@ -21,20 +19,20 @@ interface SchoolsResponse {
 
 // Interface for a single staff member
 export interface Staff {
+  id: string;
+  name: string;
+  email: string;
+  user: {
     id: string;
-    name: string;
-    email: string;
-    user: {
-        id: string;
-        username: string;
-    }
+    username: string;
+  };
 }
 
 // Interface for the API response for a list of staff
 interface StaffResponse {
-    data: {
-        data: Staff[];
-    };
+  data: {
+    data: Staff[];
+  };
 }
 
 // Interface for updating a school, all fields are optional
@@ -47,27 +45,35 @@ interface SchoolResponse {
 
 export const schoolService = {
   // Get all schools
-  getSchools: (): Promise<any> => {
+  getSchools: (): Promise<unknown> => {
     return apiClient.get<SchoolsResponse>("/school/all");
   },
 
   // Create a new school
-  createSchool: (data: CreateSchoolData): Promise<any> => {
+  createSchool: (data: CreateSchoolData): Promise<unknown> => {
     return apiClient.post<SchoolResponse>("/school", data);
   },
 
   // Update a school by its ID
-  updateSchool: (schoolId: string, data: UpdateSchoolData): Promise<any> => {
+  updateSchool: (schoolId: string, data: UpdateSchoolData): Promise<unknown> => {
     return apiClient.put<SchoolResponse>(`/school/${schoolId}`, data);
   },
 
   // Delete a school by its ID
-  deleteSchool: (schoolId: string): Promise<any> => {
+  deleteSchool: (schoolId: string): Promise<unknown> => {
     return apiClient.delete(`/school/${schoolId}`);
   },
 
   // Get staff by school ID
-  getStaffBySchool: (schoolId: string): Promise<any> => {
-    return apiClient.get<StaffResponse>(`/staff/school/${schoolId}`);
-  }
+  getStaffBySchool: (
+    schoolId: string,
+    role?: string,
+    isActive?: boolean
+  ): Promise<ApiResponse<StaffResponse>> => {
+    return apiClient.get<StaffResponse>(
+      `/staff/school/${schoolId}${role ? `?role=${role}` : ""}${
+        isActive !== undefined ? `${role ? "&" : "?"}isActive=${isActive}` : ""
+      }`
+    );
+  },
 };

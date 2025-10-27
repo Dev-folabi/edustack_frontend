@@ -1,6 +1,5 @@
 import { apiClient } from "../utils/api";
 
-// Re-defining interfaces here for clarity, can be shared if needed
 export interface Term {
   id: string;
   name: string;
@@ -18,8 +17,7 @@ export interface Session {
   terms: Term[];
 }
 
-// Based on Postman `GET /api/session/all` response
-// The `data` property is directly an array of sessions
+
 interface SessionsResponse {
     data: Session[];
 }
@@ -41,27 +39,42 @@ export type UpdateSessionData = Partial<CreateSessionData>;
 
 export const sessionService = {
   // Get a single session by its ID
-  getSessionById: (sessionId: string): Promise<any> => {
+  getSessionById: (sessionId: string): Promise<unknown> => {
     return apiClient.get(`/session/${sessionId}`);
   },
 
+  // Get the active academic session
+  getActiveSession: (): Promise<unknown> => {
+    return apiClient.get<Session>("/session");
+  },
+
   // Get all academic sessions
-  getSessions: (): Promise<any> => {
+  getSessions: (): Promise<unknown> => {
     return apiClient.get<SessionsResponse>("/session/all");
   },
 
   // Create a new session
-  createSession: (data: CreateSessionData): Promise<any> => {
+  createSession: (data: CreateSessionData): Promise<unknown> => {
     return apiClient.post("/session", data);
   },
 
   // Update a session by its ID
-  updateSession: (sessionId: string, data: UpdateSessionData): Promise<any> => {
+  updateSession: (sessionId: string, data: UpdateSessionData): Promise<unknown> => {
     return apiClient.put(`/session/${sessionId}`, data);
   },
 
   // Delete a session by its ID
   deleteSession: (sessionId: string): Promise<any> => {
     return apiClient.delete(`/session/${sessionId}`);
+  },
+
+  // Get all terms for a specific session
+  getSessionTerms: (sessionId: string): Promise<any> => {
+    return apiClient.get(`/session/${sessionId}/terms`);
+  },
+
+  // Delete a specific term by its ID
+  deleteTerm: (termId: string): Promise<any> => {
+    return apiClient.delete(`/session/term/${termId}`);
   },
 };

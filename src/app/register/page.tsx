@@ -10,6 +10,7 @@ import {
   Class,
   Section,
 } from "../../services/authService";
+import { schoolService } from "../../services/schoolService";
 import { useToast } from "../../components/ui/Toast";
 import { Loader, ButtonLoader } from "../../components/ui/Loader";
 import Link from "next/link";
@@ -107,7 +108,7 @@ const RegisterPage: React.FC = () => {
 
   const loadSchools = async () => {
     try {
-      const response = await authService.getSchools();
+      const response = await schoolService.getSchools();
       if (response.success && response.data && response.data.data) {
         setSchools(response.data.data);
       } else {
@@ -305,8 +306,8 @@ const RegisterPage: React.FC = () => {
     }
   };
 
-  if (isCheckingOnboarding)
-    return <Loader fullScreen text="Checking system status..." />;
+  // if (isCheckingOnboarding)
+  //   return <Loader fullScreen text="Checking system status..." />;
 
   const renderStaffForm = () => (
     <motion.form

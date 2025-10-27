@@ -14,23 +14,19 @@ interface DashboardLayoutProps {
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
-  const { user, token, isLoading, initializeAuth } = useAuthStore();
+  const { user, token, isLoading } = useAuthStore();
   const router = useRouter();
-  const [isInitialized, setIsInitialized] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    initializeAuth();
-    setIsInitialized(true);
-  }, [initializeAuth]);
-
-  useEffect(() => {
-    if (isInitialized && !isLoading && (!user || !token)) {
+    // Redirect to login if not authenticated
+    if (!isLoading && (!user || !token)) {
       router.push('/login');
     }
-  }, [user, token, isLoading, isInitialized, router]);
+  }, [user, token, isLoading, router]);
 
-  if (!isInitialized || isLoading || !user || !token) {
+  // Show a loader while auth state is loading or if user is not yet available
+  if (isLoading || !user || !token) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader />
