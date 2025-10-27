@@ -511,7 +511,7 @@ const TakeStudentAttendanceForm = () => {
                   </TableHeader>
                   <TableBody>
                     {students.map((student, index) => (
-                      <TableRow key={student.id} className="hover:bg-muted/30">
+                      <TableRow key={student.studentId} className="hover:bg-muted/30">
                         <TableCell className="font-medium text-muted-foreground">
                           {index + 1}
                         </TableCell>
@@ -561,9 +561,12 @@ const TakeStudentAttendanceForm = () => {
                         <TableCell>
                           <Input
                             placeholder="Add a note..."
-                            value={notes[student.studentId] || ""}
+                            value={notes[student?.studentId || ""] || ""}
                             onChange={(e) =>
-                              handleNoteChange(student.studentId, e.target.value)
+                              handleNoteChange(
+                                student?.studentId || "",
+                                e.target.value
+                              )
                             }
                           />
                         </TableCell>

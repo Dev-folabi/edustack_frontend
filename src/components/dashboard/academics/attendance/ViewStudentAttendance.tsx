@@ -38,6 +38,8 @@ import {
   Filter,
 } from "lucide-react";
 import { formatDateToYYYYMMDD } from "@/utils/date";
+import { Subject } from "@/types/subject";
+import { subjectService } from "@/services/subjectService";
 
 const ViewStudentAttendance = () => {
   const [classes, setClasses] = useState<Class[]>([]);
@@ -45,8 +47,9 @@ const ViewStudentAttendance = () => {
   const [selectedSection, setSelectedSection] = useState<string>("");
   const [students, setStudents] = useState<Student[]>([]);
   const [selectedStudent, setSelectedStudent] = useState<string>("");
-  const [startDate, setStartDate] = useState<Date | undefined>();
-  const [endDate, setEndDate] = useState<Date | undefined>();
+  const [date, setDate] = useState<Date | undefined>();
+  const [month, setMonth] = useState<number>(new Date().getMonth() + 1);
+  const [year, setYear] = useState<number>(new Date().getFullYear());
   const [filterType, setFilterType] = useState<"section" | "subject">(
     "section"
   );
@@ -97,8 +100,15 @@ const ViewStudentAttendance = () => {
     setLoading(true);
     try {
       const params: any = { sectionId: selectedSection };
-      if (startDate) params.startDate = formatDateToYYYYMMDD(startDate);
-      if (endDate) params.endDate = formatDateToYYYYMMDD(endDate);
+
+      // Use specific date if provided, otherwise use month/year
+      if (date) {
+        params.date = formatDateToYYYYMMDD(date);
+      } else {
+        params.month = month;
+        params.year = year;
+      }
+
       if (selectedStudent && selectedStudent !== "all")
         params.studentId = selectedStudent;
       if (filterType === "subject" && selectedSubject) {
@@ -310,21 +320,56 @@ const ViewStudentAttendance = () => {
             </div>
 
             {/* Date Range */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  Start Date
+                  Month
                 </label>
-                <DatePicker value={startDate} onChange={setStartDate} />
+                <Select
+                  value={month.toString()}
+                  onValueChange={(val) => setMonth(parseInt(val))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                      <SelectItem key={m} value={m.toString()}>
+                        {new Date(0, m - 1).toLocaleString("default", {
+                          month: "long",
+                        })}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  End Date
-                </label>
-                <DatePicker value={endDate} onChange={setEndDate} />
+                <label className="text-sm font-medium">Year</label>
+                <Select
+                  value={year.toString()}
+                  onValueChange={(val) => setYear(parseInt(val))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from(
+                      { length: 10 },
+                      (_, i) => new Date().getFullYear() - i
+                    ).map((y) => (
+                      <SelectItem key={y} value={y.toString()}>
+                        {y}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Specific Date</label>
+                <DatePicker value={date} onChange={setDate} />
               </div>
 
               <div className="space-y-2">
