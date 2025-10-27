@@ -1,9 +1,13 @@
 export interface Exam {
   id: string;
   title: string;
-  status: "draft" | "Scheduled" | "Ongoing" | "Completed" | "Cancelled";
+  status: "Draft" | "Scheduled" | "Ongoing" | "Completed" | "Cancelled";
   startDate: string;
   endDate: string;
+  classId: string;
+  sectionId: string;
+  termId: string;
+  sessionId: string;
   papers: ExamPaper[];
   subject?: {
     id?: string;
@@ -28,16 +32,16 @@ export interface Exam {
 }
 
 export interface Attempt {
-    id: string;
-    examPaperId: string;
-    studentId: string;
-    startedAt: string;
-    submittedAt?: string;
-    status: "InProgress" | "Submitted" | "Graded";
-    totalScore?: number;
-    createdAt: string;
-    updatedAt: string;
-  };
+  id: string;
+  examPaperId: string;
+  studentId: string;
+  startedAt: string;
+  submittedAt?: string;
+  status: "InProgress" | "Submitted" | "Graded";
+  totalScore?: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface ExamPaper {
   id: string;
@@ -54,19 +58,20 @@ export interface ExamPaper {
   mode: "PaperBased" | "CBT";
   questionBankId?: string;
   totalQuestions?: number;
+  instructions?: string;
   isResultPublished?: boolean;
   attempts?: Attempt[];
 }
 
 export interface ExamAttemptResponse {
   examPaper: ExamPaper;
-  attempt: Attempt
+  attempt: Attempt;
   questions: Question[];
 }
 
 export interface Question {
   id: string;
-  type: "MCQ" | "Essay" | "TrueFalse" | "FillInBlanks";
+  type: "MCQ" | "TrueFalse" | "FillInBlanks";
   questionText: string;
   options: string[];
   marks: number;

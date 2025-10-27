@@ -38,7 +38,6 @@ import { Badge } from "@/components/ui/badge";
 import { Term } from "@/services/sessionService";
 import {
   getStudentExams,
-  getStudentResult,
   getStudentTermReport,
 } from "@/services/examService";
 import { ReportModal } from "@/components/dashboard/reports/reportsModal";
@@ -57,11 +56,12 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { ExamPaper } from "@/types/exam";
 
 const StudentResultsPage = () => {
   const { student } = useAuthStore();
   const { selectedSession } = useSessionStore();
-  const [examPapers, setExamPapers] = useState<any[]>([]);
+  const [examPapers, setExamPapers] = useState<ExamPaper[]>([]);
   const [groupedPapers, setGroupedPapers] = useState<Record<string, any[]>>({});
   const [openTerms, setOpenTerms] = useState<Record<string, boolean>>({});
   const [terms, setTerms] = useState<Term[]>([]);
@@ -79,36 +79,46 @@ const StudentResultsPage = () => {
       if (selectedSession?.id && student?.id) {
         setLoadingPapers(true);
         try {
-          const paperRes = await getStudentExams(student?.id, selectedSession.id);
+          const paperRes = await getStudentExams(
+            student?.id,
+            selectedSession.id
+          );
           // Flatten the papers array from all exams
-          const allPapers = paperRes.data?.flatMap((exam: any) => 
-            exam.papers.map((paper: any) => ({
-              ...paper,
-              exam: {
-                title: exam.title,
-                status: exam.status
-              },
-              term: exam.term
-            }))
-          ) || [];
+          const allPapers =
+            paperRes.data?.flatMap((exam: any) =>
+              exam.papers.map((paper: any) => ({
+                ...paper,
+                exam: {
+                  title: exam.title,
+                  status: exam.status,
+                },
+                term: exam.term,
+              }))
+            ) || [];
           setExamPapers(allPapers);
-          
+
           // Group papers by term
-          const grouped = allPapers.reduce((acc: Record<string, any[]>, paper: any) => {
-            const termName = paper.term?.name || "Uncategorized";
-            if (!acc[termName]) {
-              acc[termName] = [];
-            }
-            acc[termName].push(paper);
-            return acc;
-          }, {});
+          const grouped = allPapers.reduce(
+            (acc: Record<string, any[]>, paper: any) => {
+              const termName = paper.term?.name || "Uncategorized";
+              if (!acc[termName]) {
+                acc[termName] = [];
+              }
+              acc[termName].push(paper);
+              return acc;
+            },
+            {}
+          );
           setGroupedPapers(grouped);
-          
+
           // Initialize all terms as open by default
-          const initialOpenState = Object.keys(grouped).reduce((acc, termName) => {
-            acc[termName] = true;
-            return acc;
-          }, {} as Record<string, boolean>);
+          const initialOpenState = Object.keys(grouped).reduce(
+            (acc, termName) => {
+              acc[termName] = true;
+              return acc;
+            },
+            {} as Record<string, boolean>
+          );
           setOpenTerms(initialOpenState);
         } catch (error) {
           toast.error("Failed to load exam papers");
@@ -127,9 +137,9 @@ const StudentResultsPage = () => {
   }, [selectedSession]);
 
   const toggleTerm = (termName: string) => {
-    setOpenTerms(prev => ({
+    setOpenTerms((prev) => ({
       ...prev,
-      [termName]: !prev[termName]
+      [termName]: !prev[termName],
     }));
   };
 
@@ -150,7 +160,7 @@ const StudentResultsPage = () => {
       const studentAttempt = paper.attempts?.find(
         (attempt: any) => attempt.studentId === student?.id
       );
-      
+
       if (studentAttempt) {
         setPaperResult({
           totalScore: studentAttempt.totalScore,
@@ -158,15 +168,7 @@ const StudentResultsPage = () => {
           remarks: studentAttempt.remarks || "",
         });
         setIsResultDialogOpen(true);
-      } else {
-        // Fallback to API results if no attempt found
-        const results = await getStudentResult(paper.id);
-        const studentResult = results.data.find(
-          (r: any) => r.student.id === student?.id
-        );
-        setPaperResult(studentResult);
-        setIsResultDialogOpen(true);
-      }
+      } 
     } catch (error) {
       toast.error("Failed to load result");
     }
@@ -303,9 +305,12 @@ const StudentResultsPage = () => {
                               <ChevronRight className="w-5 h-5 text-blue-600 transition-transform" />
                             )}
                             <Calendar className="w-5 h-5 text-blue-600" />
-                            <h3 className="text-lg font-semibold">{termName}</h3>
+                            <h3 className="text-lg font-semibold">
+                              {termName}
+                            </h3>
                             <Badge variant="secondary" className="ml-auto">
-                              {papers.length} {papers.length === 1 ? 'Exam' : 'Exams'}
+                              {papers.length}{" "}
+                              {papers.length === 1 ? "Exam" : "Exams"}
                             </Badge>
                           </div>
                         </CollapsibleTrigger>
@@ -319,27 +324,41 @@ const StudentResultsPage = () => {
                                   <TableHead>Exam</TableHead>
                                   <TableHead>Date</TableHead>
                                   <TableHead>Mode</TableHead>
-                                  <TableHead className="text-center">Status</TableHead>
-                                  <TableHead className="text-center">Action</TableHead>
+                                  <TableHead className="text-center">
+                                    Status
+                                  </TableHead>
+                                  <TableHead className="text-center">
+                                    Action
+                                  </TableHead>
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
                                 {papers.map((paper, index) => (
-                                  <TableRow key={paper.id} className="hover:bg-muted/30">
+                                  <TableRow
+                                    key={paper.id}
+                                    className="hover:bg-muted/30"
+                                  >
                                     <TableCell className="font-medium text-muted-foreground">
                                       {index + 1}
                                     </TableCell>
                                     <TableCell className="font-medium">
                                       {paper.subject.name}
                                     </TableCell>
-                                    <TableCell>{paper.exam?.title || "N/A"}</TableCell>
                                     <TableCell>
-                                      {format(new Date(paper.startTime), "MMM dd, yyyy")}
+                                      {paper.exam?.title || "N/A"}
+                                    </TableCell>
+                                    <TableCell>
+                                      {format(
+                                        new Date(paper.startTime),
+                                        "MMM dd, yyyy"
+                                      )}
                                     </TableCell>
                                     <TableCell>
                                       <Badge
                                         variant={
-                                          paper.mode === "CBT" ? "default" : "secondary"
+                                          paper.mode === "CBT"
+                                            ? "default"
+                                            : "secondary"
                                         }
                                         className={
                                           paper.mode === "CBT"
@@ -352,7 +371,10 @@ const StudentResultsPage = () => {
                                     </TableCell>
                                     <TableCell className="text-center">
                                       {paper.isResultPublished ? (
-                                        <Badge variant="default" className="bg-green-600">
+                                        <Badge
+                                          variant="default"
+                                          className="bg-green-600"
+                                        >
                                           <CheckCircle2 className="w-3 h-3 mr-1" />
                                           Published
                                         </Badge>
@@ -367,7 +389,9 @@ const StudentResultsPage = () => {
                                       <Button
                                         variant="outline"
                                         size="sm"
-                                        onClick={() => handleViewPaperResult(paper)}
+                                        onClick={() =>
+                                          handleViewPaperResult(paper)
+                                        }
                                         disabled={!paper.isResultPublished}
                                       >
                                         <Eye className="w-4 h-4 mr-2" />

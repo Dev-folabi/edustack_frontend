@@ -13,11 +13,12 @@ export const useSubjectStore = create<SubjectState>((set) => ({
   subjects: [],
   loading: false,
   error: null,
-  fetchSubjects: async (schoolId: string) => {
+  fetchSubjects: async (schoolId: string, sectionId?: string) => {
     set({ loading: true, error: null });
     try {
       const response = await subjectService.getSubjects({
         schoolId,
+        ...(sectionId && { sectionId }),
         isActive: "true",
         limit: 10,
       });

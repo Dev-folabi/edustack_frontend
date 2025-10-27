@@ -46,6 +46,7 @@ const examSchema = z.object({
   sectionId: z.string().min(1, "Section is required"),
   termId: z.string().min(1, "Term is required"),
   sessionId: z.string().min(1, "Session is required"),
+  status: z.enum(["Draft", "Scheduled", "Ongoing", "Completed", "Cancelled"]),
 });
 
 type ExamFormValues = z.infer<typeof examSchema>;
@@ -66,7 +67,9 @@ export const EditExamDialog = ({
   const { selectedSession, fetchTerms } = useSessionStore();
   const { fetchExams } = useExamStore();
   const { showToast } = useToast();
-  const [selectedClass, setSelectedClass] = useState<string>(exam.class.id);
+  const [selectedClass, setSelectedClass] = useState<string>(
+    exam?.classId || ""
+  );
 
   const form = useForm<ExamFormValues>({
     resolver: zodResolver(examSchema),
@@ -74,10 +77,11 @@ export const EditExamDialog = ({
       title: exam.title,
       startDate: new Date(exam.startDate),
       endDate: new Date(exam.endDate),
-      classId: exam.class.id,
-      sectionId: exam.section.id,
-      termId: exam.term.id,
+      classId: exam?.classId || "",
+      sectionId: exam?.sectionId || "",
+      termId: exam?.termId || "",
       sessionId: selectedSession?.id || "", // always lock to selectedSession
+      status: exam.status,
     },
   });
 
@@ -98,12 +102,13 @@ export const EditExamDialog = ({
         title: exam.title,
         startDate: new Date(exam.startDate),
         endDate: new Date(exam.endDate),
-        classId: exam.class.id,
-        sectionId: exam.section.id,
-        termId: exam.term.id,
+        classId: exam?.classId || "",
+        sectionId: exam?.sectionId || "",
+        termId: exam?.termId || "",
         sessionId: selectedSession.id, // force current session
+        status: exam.status,
       });
-      setSelectedClass(exam.class.id);
+      setSelectedClass(exam?.classId || "");
     }
   }, [exam, selectedSession, form]);
 
@@ -133,11 +138,14 @@ export const EditExamDialog = ({
           message: response.message || "Failed to update exam",
         });
       }
-    } catch {
+    } catch (error) {
       showToast({
         title: "Error",
         type: "error",
-        message: "An error occurred while updating the exam.",
+        message:
+          error instanceof Error
+            ? error.message
+            : "An error occurred while updating the exam.",
       });
     }
   };
@@ -165,6 +173,37 @@ export const EditExamDialog = ({
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Status</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a status" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {exam.status === "Completed" ? (
+                        <>
+                          <SelectItem value="Ongoing">Ongoing</SelectItem>
+                        </>
+                      ) : (
+                        <>
+                          <SelectItem value="Draft">Draft</SelectItem>
+                          <SelectItem value="Scheduled">Scheduled</SelectItem>
+                          <SelectItem value="Cancelled">Cancelled</SelectItem>
+                        </>
+                      )}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

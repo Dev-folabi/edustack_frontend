@@ -10,7 +10,6 @@ export interface Question {
 
 export type QuestionType =
   | "MCQ"
-  | "Essay"
   | "FillInBlanks"
   | "TrueFalse"
   | "Matching";

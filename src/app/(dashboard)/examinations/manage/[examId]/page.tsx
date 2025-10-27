@@ -6,7 +6,6 @@ import withAuth from "@/components/withAuth";
 import { UserRole } from "@/constants/roles";
 import { useExamStore } from "@/store/examStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { ExamPapersTable } from "@/components/dashboard/examinations/ExamPapersTable";
 import { AddEditPaperDialog } from "@/components/dashboard/examinations/AddEditPaperDialog";
@@ -77,12 +76,13 @@ const ExamDetailsPage = () => {
               <div>
                 <p className="text-sm font-medium text-gray-500">Class</p>
                 <p>
-                  {selectedExam.class.name} - {selectedExam.section.name}
+                  {selectedExam.class?.name || "--"} -{" "}
+                  {selectedExam.section?.name || "--"}
                 </p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Term</p>
-                <p>{selectedExam.term.name}</p>
+                <p>{selectedExam.term?.name || "--"}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Start Date</p>
@@ -101,6 +101,7 @@ const ExamDetailsPage = () => {
       <AddEditPaperDialog
         isOpen={isAddPaperOpen}
         onClose={() => setAddPaperOpen(false)}
+        sectionId={selectedExam?.sectionId}
         examId={examId}
       />
     </>

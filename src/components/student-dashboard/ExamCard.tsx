@@ -71,7 +71,7 @@ export const ExamCard = ({ exam, paper, status }: ExamCardProps) => {
             </div>
 
             <div className="flex justify-between items-center mt-2">
-              <Badge variant={paper.mode === "CBT" ? "default" : "secondary"}>
+              <Badge variant={paper.mode === "CBT" ? "outline" : "secondary"}>
                 {paper.mode ?? "Unknown Mode"}
               </Badge>
               <span className="text-sm">Marks: {paper.maxMarks ?? "--"}</span>
@@ -88,11 +88,11 @@ export const ExamCard = ({ exam, paper, status }: ExamCardProps) => {
         <Badge
           className={`${
             status === "Ongoing"
-              ? "bg-green-500"
+              ? "bg-yellow-500"
               : status === "Scheduled"
               ? "bg-blue-500"
               : status === "Completed"
-              ? "bg-gray-500"
+              ? "bg-green-500"
               : "bg-red-500"
           }`}
         >
@@ -104,7 +104,7 @@ export const ExamCard = ({ exam, paper, status }: ExamCardProps) => {
             {/* If completed via submission, show Submitted */}
             {status === "Ongoing" && paper.mode === "CBT" ? (
               paper.attempts?.some((a: any) => a.status === "Submitted") ? (
-                <Button size="sm" variant="outline" disabled>
+                <Button size="sm"  variant="outline" disabled>
                   Submitted
                 </Button>
               ) : (
@@ -112,11 +112,7 @@ export const ExamCard = ({ exam, paper, status }: ExamCardProps) => {
                   Start Exam
                 </Button>
               )
-            ) : status === "Completed" ? (
-              <Button size="sm" variant="outline">
-                View Result
-              </Button>
-            ) : null}
+            )  : null}
           </>
         ) : (
           <Button size="sm" variant="outline" disabled>

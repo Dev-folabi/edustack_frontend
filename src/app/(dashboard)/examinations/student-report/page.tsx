@@ -174,9 +174,15 @@ const StudentReportPage = () => {
                   <SelectValue placeholder="Select Session" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={selectedSession?.id || ""}>
-                    {selectedSession?.name}
-                  </SelectItem>
+                  {selectedSession?.id ? (
+                    <SelectItem value={selectedSession.id}>
+                      {selectedSession.name}
+                    </SelectItem>
+                  ) : (
+                    <SelectItem value="placeholder" disabled>
+                      No session selected
+                    </SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -200,7 +206,7 @@ const StudentReportPage = () => {
                       </SelectItem>
                     ))
                   ) : (
-                    <SelectItem disabled value="no-term">
+                    <SelectItem value="placeholder" disabled>
                       No terms available
                     </SelectItem>
                   )}
@@ -223,7 +229,7 @@ const StudentReportPage = () => {
                       </SelectItem>
                     ))
                   ) : (
-                    <SelectItem disabled value="no-class">
+                    <SelectItem value="placeholder" disabled>
                       No classes available
                     </SelectItem>
                   )}
@@ -250,7 +256,7 @@ const StudentReportPage = () => {
                       </SelectItem>
                     ))
                   ) : (
-                    <SelectItem disabled value="no-section">
+                    <SelectItem value="placeholder" disabled>
                       No sections available
                     </SelectItem>
                   )}
@@ -296,7 +302,10 @@ const StudentReportPage = () => {
                 </TableHeader>
                 <TableBody>
                   {students.map((student, index) => (
-                    <TableRow key={student.id} className="hover:bg-muted/30">
+                    <TableRow
+                      key={student.studentId}
+                      className="hover:bg-muted/30"
+                    >
                       <TableCell className="font-medium text-muted-foreground">
                         {index + 1}
                       </TableCell>

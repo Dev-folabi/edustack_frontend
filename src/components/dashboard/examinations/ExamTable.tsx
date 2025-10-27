@@ -133,6 +133,7 @@ export const ExamTable = () => {
               <TableHead>Term</TableHead>
               <TableHead>Start Date</TableHead>
               <TableHead>End Date</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead>
                 <span className="sr-only">Actions</span>
               </TableHead>
@@ -158,6 +159,15 @@ export const ExamTable = () => {
                   </TableCell>
                   <TableCell>
                     {new Date(exam.endDate).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(
+                        exam.status
+                      )}`}
+                    >
+                      {exam.status}
+                    </span>
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -219,4 +229,21 @@ export const ExamTable = () => {
       </AlertDialog>
     </>
   );
+};
+
+const getStatusBadge = (status: string) => {
+  switch (status) {
+    case "Draft":
+      return "bg-gray-200 text-gray-800";
+    case "Scheduled":
+      return "bg-blue-200 text-blue-800";
+    case "Ongoing":
+      return "bg-yellow-200 text-yellow-800";
+    case "Completed":
+      return "bg-green-200 text-green-800";
+    case "Cancelled":
+      return "bg-red-200 text-red-800";
+    default:
+      return "bg-gray-200 text-gray-800";
+  }
 };
