@@ -212,13 +212,7 @@ export const sidebarConfig: SidebarCategory[] = [
         href: DASHBOARD_ROUTES.FINANCE_FEE_MANAGEMENT,
         label: 'Fee Management',
         icon: FaFileInvoiceDollar,
-        roles: [UserRole.ADMIN, UserRole.FINANCE],
-      },
-      {
-        href: DASHBOARD_ROUTES.FINANCE_INVOICES,
-        label: 'Invoices & Receipts',
-        icon: FaFileInvoiceDollar,
-        roles: [UserRole.ADMIN, UserRole.FINANCE],
+        roles: [UserRole.ADMIN, UserRole.FINANCE, UserRole.SUPER_ADMIN],
       },
       {
         href: DASHBOARD_ROUTES.FINANCE_PAYMENTS,
