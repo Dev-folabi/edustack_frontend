@@ -1,4 +1,4 @@
-import { apiClient, ApiResponse } from '@/utils/api';
+import { apiClient, ApiResponse } from "@/utils/api";
 import {
   FeeCategory,
   CreateFeeCategoryPayload,
@@ -6,7 +6,7 @@ import {
   Invoice,
   CreateInvoicePayload,
   UpdateInvoicePayload,
-} from '@/types/finance';
+} from "@/types/finance";
 
 export interface PaginatedResponse<T> {
   totalItems: number;
@@ -23,7 +23,7 @@ export const financeService = {
   createFeeCategory: (
     data: CreateFeeCategoryPayload
   ): Promise<ApiResponse<FeeCategory>> => {
-    return apiClient.post('/accounting/fee-categories', data);
+    return apiClient.post("/accounting/fee-categories", data);
   },
 
   getFeeCategories: (
@@ -50,7 +50,7 @@ export const financeService = {
     return apiClient.put(`/accounting/fee-categories/${id}`, data);
   },
 
-  deleteFeeCategory: (id: string): Promise<ApiResponse<any>> => {
+  deleteFeeCategory: (id: string): Promise<ApiResponse<void>> => {
     return apiClient.delete(`/accounting/fee-categories/${id}`);
   },
 
@@ -58,20 +58,20 @@ export const financeService = {
   createInvoice: (
     data: CreateInvoicePayload
   ): Promise<ApiResponse<{ count: number }>> => {
-    return apiClient.post('/accounting/invoices', data);
+    return apiClient.post("/accounting/invoices/create-and-assign", data);
   },
 
   getInvoices: (
-    status: string = '',
+    status: string = "",
     page: number = 1,
     limit: number = 10
   ): Promise<ApiResponse<PaginatedResponse<Invoice>>> => {
     const params = new URLSearchParams({
-        page: page.toString(),
-        limit: limit.toString(),
+      page: page.toString(),
+      limit: limit.toString(),
     });
     if (status) {
-        params.append('status', status);
+      params.append("status", status);
     }
     return apiClient.get(`/accounting/invoices?${params.toString()}`);
   },
@@ -87,7 +87,7 @@ export const financeService = {
     return apiClient.put(`/accounting/invoices/${id}`, data);
   },
 
-  deleteInvoice: (id: string): Promise<ApiResponse<any>> => {
+  deleteInvoice: (id: string): Promise<ApiResponse<void>> => {
     return apiClient.delete(`/accounting/invoices/${id}`);
   },
 };
