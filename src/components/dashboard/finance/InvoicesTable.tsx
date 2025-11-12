@@ -10,7 +10,6 @@ import {
   Trash2,
   Eye,
   Search,
-  Filter,
   FileText,
   Calendar,
   Users,
@@ -47,23 +46,15 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Invoice, InvoiceItem } from "@/types/finance";
 
 export const InvoicesTable = () => {
   const { selectedSchool } = useAuthStore();
   const { showToast } = useToast();
 
-  const [invoices, setInvoices] = useState<any[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -75,13 +66,11 @@ export const InvoicesTable = () => {
     if (!selectedSchool?.schoolId) return;
     setIsLoading(true);
     try {
-      const status = statusFilter !== "all" ? statusFilter : "";
-      
-      const res = await financeService.getInvoices(status, currentPage, 10);
-      if (res.success) {
-        setInvoices(res.data?.data ?? []);
-        setTotalPages(res.data?.totalPages ?? 0);
-        setTotalItems(res.data?.totalItems ?? 0);
+      const res = await financeService.getInvoices("", currentPage, 10);
+      if (res.success && res.data) {
+        setInvoices(res.data.data || []);
+        setTotalPages(res.data.totalPages || 1);
+        setTotalItems(res.data.totalItems || 0);
       }
     } catch (error: any) {
       showToast({
@@ -92,7 +81,7 @@ export const InvoicesTable = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedSchool, statusFilter, currentPage, showToast]);
+  }, [selectedSchool, currentPage, showToast]);
 
   useEffect(() => {
     if (selectedSchool) {
@@ -132,39 +121,7 @@ export const InvoicesTable = () => {
     window.location.href = `/finance/invoices/${invoiceId}/edit`;
   };
 
-  const getStatusConfig = (status: string) => {
-    const configs: { [key: string]: { color: string; label: string } } = {
-      DRAFT: { color: "bg-gray-100 text-gray-800 border-gray-300", label: "Draft" },
-      SENT: { color: "bg-blue-100 text-blue-800 border-blue-300", label: "Sent" },
-      PAID: { color: "bg-green-100 text-green-800 border-green-300", label: "Paid" },
-      PARTIALLY_PAID: {
-        color: "bg-yellow-100 text-yellow-800 border-yellow-300",
-        label: "Partially Paid",
-      },
-      OVERDUE: { color: "bg-red-100 text-red-800 border-red-300", label: "Overdue" },
-      CANCELLED: {
-        color: "bg-gray-100 text-gray-800 border-gray-300",
-        label: "Cancelled",
-      },
-    };
-    return configs[status] || configs.DRAFT;
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-NG", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
+  // Status configuration removed — API doesn't return a status field for simplified view
 
   const filteredInvoices = invoices.filter(
     (invoice) =>
@@ -187,21 +144,7 @@ export const InvoicesTable = () => {
                 className="pl-10"
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-48">
-                <Filter className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="All Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="DRAFT">Draft</SelectItem>
-                <SelectItem value="SENT">Sent</SelectItem>
-                <SelectItem value="PAID">Paid</SelectItem>
-                <SelectItem value="PARTIALLY_PAID">Partially Paid</SelectItem>
-                <SelectItem value="OVERDUE">Overdue</SelectItem>
-                <SelectItem value="CANCELLED">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
+            {/* Status filter removed to keep UI minimal; only search is available */}
           </div>
         </CardContent>
       </Card>
@@ -234,13 +177,11 @@ export const InvoicesTable = () => {
                       <TableHead className="text-right">Paid</TableHead>
                       <TableHead className="text-right">Due</TableHead>
                       <TableHead className="text-center">Students</TableHead>
-                      <TableHead>Status</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredInvoices.map((invoice) => {
-                      const statusConfig = getStatusConfig(invoice.status);
                       return (
                         <TableRow key={invoice.id} className="hover:bg-gray-50">
                           <TableCell className="font-mono text-sm font-medium">
@@ -249,44 +190,53 @@ export const InvoicesTable = () => {
                           <TableCell>
                             <div className="max-w-xs">
                               <p className="font-medium truncate">{invoice.title}</p>
-                              
                             </div>
                           </TableCell>
                           <TableCell>
                             <div className="text-sm">
-                              <p className="font-medium">{invoice.session?.name}</p>
-                              <p className="text-gray-500">{invoice.term?.name}</p>
+                              <p className="font-medium">{invoice.session?.name || "N/A"}</p>
+                              <p className="text-gray-500">{invoice.term?.name || "N/A"}</p>
                             </div>
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2 whitespace-nowrap">
                               <Calendar className="w-4 h-4 text-gray-400" />
                               <span className="text-sm">
-                                {formatDate(invoice.dueDate)}
+                                {new Date(invoice.dueDate).toLocaleDateString("en-NG", {
+                                  day: "numeric",
+                                  month: "short",
+                                })}
                               </span>
                             </div>
                           </TableCell>
                           <TableCell className="text-right font-semibold whitespace-nowrap">
-                            {formatCurrency(invoice.totalAmount)}
+                            {new Intl.NumberFormat("en-NG", {
+                              style: "currency",
+                              currency: "NGN",
+                              minimumFractionDigits: 0,
+                            }).format(invoice.totalAmount)}
                           </TableCell>
                           <TableCell className="text-right font-semibold text-green-600 whitespace-nowrap">
-                            {formatCurrency(invoice.amountPaid)}
+                            {new Intl.NumberFormat("en-NG", {
+                              style: "currency",
+                              currency: "NGN",
+                              minimumFractionDigits: 0,
+                            }).format(invoice.amountPaid)}
                           </TableCell>
                           <TableCell className="text-right font-semibold text-red-600 whitespace-nowrap">
-                            {formatCurrency(invoice.amountDue)}
+                            {new Intl.NumberFormat("en-NG", {
+                              style: "currency",
+                              currency: "NGN",
+                              minimumFractionDigits: 0,
+                            }).format(invoice.amountDue)}
                           </TableCell>
                           <TableCell className="text-center">
                             <div className="flex items-center justify-center gap-2">
                               <Users className="w-4 h-4 text-gray-400" />
                               <span className="text-sm font-medium">
-                                {invoice._count?.studentInvoices || 0}
+                                {invoice.studentInvoicesCount || 0}
                               </span>
                             </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={statusConfig.color}>
-                              {statusConfig.label}
-                            </Badge>
                           </TableCell>
                           <TableCell className="text-right">
                             <DropdownMenu>
@@ -333,7 +283,6 @@ export const InvoicesTable = () => {
               {/* Mobile Card View */}
               <div className="md:hidden space-y-4">
                 {filteredInvoices.map((invoice) => {
-                  const statusConfig = getStatusConfig(invoice.status);
                   return (
                     <Card key={invoice.id} className="hover:shadow-md transition-shadow">
                       <CardContent className="pt-6">
@@ -347,24 +296,23 @@ export const InvoicesTable = () => {
                               <h3 className="font-semibold text-lg mt-1">
                                 {invoice.title}
                               </h3>
-                              
                             </div>
-                            <Badge className={statusConfig.color}>
-                              {statusConfig.label}
-                            </Badge>
                           </div>
 
                           {/* Session/Term */}
                           <div className="flex items-center gap-2 text-sm">
-                            <span className="font-medium">{invoice.session?.name}</span>
+                            <span className="font-medium">{invoice.session?.name || "N/A"}</span>
                             <span className="text-gray-400">•</span>
-                            <span className="text-gray-600">{invoice.term?.name}</span>
+                            <span className="text-gray-600">{invoice.term?.name || "N/A"}</span>
                           </div>
 
                           {/* Due Date */}
                           <div className="flex items-center gap-2 text-sm text-gray-600">
                             <Calendar className="w-4 h-4" />
-                            <span>Due: {formatDate(invoice.dueDate)}</span>
+                             <span>Due: {new Date(invoice.dueDate).toLocaleDateString("en-NG", {
+                               day: "numeric",
+                               month: "short",
+                             })}</span>
                           </div>
 
                           {/* Financial Info */}
@@ -372,19 +320,31 @@ export const InvoicesTable = () => {
                             <div>
                               <p className="text-xs text-gray-600">Total</p>
                               <p className="font-semibold text-sm mt-1">
-                                {formatCurrency(invoice.totalAmount)}
+                                {new Intl.NumberFormat("en-NG", {
+                                  style: "currency",
+                                  currency: "NGN",
+                                  minimumFractionDigits: 0,
+                                }).format(invoice.totalAmount)}
                               </p>
                             </div>
                             <div>
                               <p className="text-xs text-gray-600">Paid</p>
                               <p className="font-semibold text-sm text-green-600 mt-1">
-                                {formatCurrency(invoice.amountPaid)}
+                                {new Intl.NumberFormat("en-NG", {
+                                  style: "currency",
+                                  currency: "NGN",
+                                  minimumFractionDigits: 0,
+                                }).format(invoice.amountPaid)}
                               </p>
                             </div>
                             <div>
                               <p className="text-xs text-gray-600">Due</p>
                               <p className="font-semibold text-sm text-red-600 mt-1">
-                                {formatCurrency(invoice.amountDue)}
+                                {new Intl.NumberFormat("en-NG", {
+                                  style: "currency",
+                                  currency: "NGN",
+                                  minimumFractionDigits: 0,
+                                }).format(invoice.amountDue)}
                               </p>
                             </div>
                           </div>
@@ -393,7 +353,7 @@ export const InvoicesTable = () => {
                           <div className="flex items-center gap-2 text-sm">
                             <Users className="w-4 h-4 text-gray-400" />
                             <span className="text-gray-600">
-                              {invoice._count?.studentInvoices || 0} student(s) assigned
+                              {invoice.studentInvoicesCount || 0} student(s) assigned
                             </span>
                           </div>
 
@@ -504,8 +464,8 @@ export const InvoicesTable = () => {
               <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-600 mb-2 font-medium">No invoices found</p>
               <p className="text-sm text-gray-500">
-                {searchQuery || (statusFilter && statusFilter !== "all")
-                  ? "Try adjusting your filters or search query"
+                {searchQuery
+                  ? "Try adjusting your search query"
                   : "Create your first invoice to get started"}
               </p>
             </div>

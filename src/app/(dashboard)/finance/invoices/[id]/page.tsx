@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, use } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -27,13 +28,22 @@ import {
   Download,
   CreditCard,
   User,
+  Search,
+  Filter,
 } from "lucide-react";
 import { financeService } from "@/services/financeService";
 import { useToast } from "@/components/ui/Toast";
 import withAuth from "@/components/withAuth";
 import { UserRole } from "@/constants/roles";
 import { BackButton } from "@/components/ui/BackButton";
-import { useRouter } from "next/navigation";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 
 const InvoiceDetailsPage = ({
   params,
@@ -44,6 +54,8 @@ const InvoiceDetailsPage = ({
   const { showToast } = useToast();
   const [invoice, setInvoice] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const router = useRouter();
 
   useEffect(() => {
@@ -77,46 +89,42 @@ const InvoiceDetailsPage = ({
 
   const getStatusConfig = (status: string) => {
     const configs: {
-      [key: string]: { color: string; icon: any; label: string };
+      [key: string]: { color: string; label: string; icon: any };
     } = {
-      DRAFT: {
-        color: "bg-gray-100 text-gray-800 border-gray-300",
-        icon: FileText,
-        label: "Draft",
-      },
-      SENT: {
-        color: "bg-blue-100 text-blue-800 border-blue-300",
-        icon: Clock,
-        label: "Sent",
+      UNPAID: {
+        color: "bg-red-100 text-red-800 border-red-300",
+        label: "Unpaid",
+        icon: XCircle,
       },
       PAID: {
         color: "bg-green-100 text-green-800 border-green-300",
-        icon: CheckCircle,
         label: "Paid",
+        icon: CheckCircle,
       },
       PARTIALLY_PAID: {
         color: "bg-yellow-100 text-yellow-800 border-yellow-300",
-        icon: AlertCircle,
         label: "Partially Paid",
+        icon: Clock,
       },
       OVERDUE: {
-        color: "bg-red-100 text-red-800 border-red-300",
-        icon: XCircle,
+        color: "bg-orange-100 text-orange-800 border-orange-300",
         label: "Overdue",
+        icon: AlertCircle,
       },
       CANCELLED: {
         color: "bg-gray-100 text-gray-800 border-gray-300",
-        icon: XCircle,
         label: "Cancelled",
+        icon: XCircle,
       },
     };
-    return configs[status] || configs.DRAFT;
+    return configs[status] || configs.UNPAID;
   };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-NG", {
       style: "currency",
       currency: "NGN",
+      minimumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -138,12 +146,26 @@ const InvoiceDetailsPage = ({
     });
   };
 
+  // Filter student invoices
+  const filteredStudentInvoices =
+    invoice?.studentInvoices?.filter((studentInvoice: any) => {
+      const matchesStatus =
+        statusFilter === "all" || studentInvoice.status === statusFilter;
+      const matchesSearch =
+        studentInvoice.student?.name
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        studentInvoice.student?.admission_number
+          ?.toString()
+          .includes(searchQuery);
+      return matchesStatus && matchesSearch;
+    }) || [];
+
   const handlePrint = () => {
     window.print();
   };
 
   const handleDownload = () => {
-    // Implement PDF download logic
     showToast({
       type: "info",
       title: "Coming Soon",
@@ -186,9 +208,6 @@ const InvoiceDetailsPage = ({
     );
   }
 
-  const statusConfig = getStatusConfig(invoice.status);
-  const StatusIcon = statusConfig.icon;
-
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -217,25 +236,8 @@ const InvoiceDetailsPage = ({
           </div>
         </div>
 
-        {/* Status and Summary Cards */}
+        {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Status</p>
-                  <Badge
-                    className={`${statusConfig.color} mt-2 flex items-center gap-1 w-fit`}
-                  >
-                    <StatusIcon className="w-3 h-3" />
-                    {statusConfig.label}
-                  </Badge>
-                </div>
-                <StatusIcon className="w-8 h-8 text-gray-400" />
-              </div>
-            </CardContent>
-          </Card>
-
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
@@ -274,6 +276,20 @@ const InvoiceDetailsPage = ({
                   </p>
                 </div>
                 <AlertCircle className="w-8 h-8 text-red-600" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Students</p>
+                  <p className="text-2xl font-bold mt-1">
+                    {invoice.studentInvoices?.length || 0}
+                  </p>
+                </div>
+                <Users className="w-8 h-8 text-purple-600" />
               </div>
             </CardContent>
           </Card>
@@ -402,96 +418,260 @@ const InvoiceDetailsPage = ({
               </CardContent>
             </Card>
 
-            {/* Payment History */}
-            {invoice.payments && invoice.payments.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5" />
-                    Payment History
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="rounded-lg border overflow-hidden">
-                    <Table>
-                      <TableHeader className="bg-gray-50">
-                        <TableRow>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Reference</TableHead>
-                          <TableHead>Method</TableHead>
-                          <TableHead className="text-right">Amount</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {invoice.payments.map((payment: any) => (
-                          <TableRow key={payment.id}>
-                            <TableCell>
-                              {formatDateTime(payment.createdAt)}
-                            </TableCell>
-                            <TableCell className="font-mono text-sm">
-                              {payment.reference}
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline">{payment.method}</Badge>
-                            </TableCell>
-                            <TableCell className="text-right font-semibold text-green-600">
-                              {formatCurrency(payment.amount)}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-
-          {/* Right Column - Students & Metadata */}
-          <div className="space-y-6">
-            {/* Assigned Students */}
+            {/* Student Invoices Details */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="w-5 h-5" />
-                  Assigned Students ({invoice.studentInvoices?.length || 0})
-                </CardTitle>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="w-5 h-5" />
+                    Student Invoice Details
+                    {filteredStudentInvoices.length !==
+                      invoice.studentInvoices?.length && (
+                      <span className="text-sm font-normal text-gray-500">
+                        ({filteredStudentInvoices.length} of{" "}
+                        {invoice.studentInvoices?.length})
+                      </span>
+                    )}
+                  </CardTitle>
+                </div>
               </CardHeader>
               <CardContent>
-                {invoice.studentInvoices &&
-                invoice.studentInvoices.length > 0 ? (
-                  <div className="space-y-3">
-                    {invoice.studentInvoices.map((studentInvoice: any) => (
-                      <div
-                        key={studentInvoice.id}
-                        className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
-                      >
-                        <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                          <User className="w-5 h-5 text-blue-600" />
+                {/* Filters */}
+                <div className="flex flex-col sm:flex-row gap-3 mb-6">
+                  <div className="flex-1 relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Input
+                      placeholder="Search by student name or admission number..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-full sm:w-48">
+                      <Filter className="w-4 h-4 mr-2" />
+                      <SelectValue placeholder="All Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="PAID">Paid</SelectItem>
+                      <SelectItem value="PARTIALLY_PAID">
+                        Partially Paid
+                      </SelectItem>
+                      <SelectItem value="UNPAID">Unpaid</SelectItem>
+                      <SelectItem value="OVERDUE">Overdue</SelectItem>
+                      <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {filteredStudentInvoices.length > 0 ? (
+                  <div className="space-y-4">
+                    {filteredStudentInvoices.map((studentInvoice: any) => {
+                      const statusConfig = getStatusConfig(
+                        studentInvoice.status
+                      );
+                      const StatusIcon = statusConfig.icon;
+                      const paymentProgress =
+                        studentInvoice.totalAmount > 0
+                          ? (studentInvoice.amountPaid /
+                              studentInvoice.totalAmount) *
+                            100
+                          : 0;
+
+                      return (
+                        <div
+                          key={studentInvoice.id}
+                          className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+                        >
+                          {/* Student Header */}
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-start gap-3">
+                              <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                <User className="w-6 h-6 text-blue-600" />
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-lg">
+                                  {studentInvoice.student?.name}
+                                </h4>
+                                <p className="text-sm text-gray-600">
+                                  Admission #
+                                  {studentInvoice.student?.admission_number}
+                                </p>
+                              </div>
+                            </div>
+                            <Badge className={statusConfig.color}>
+                              <StatusIcon className="w-3 h-3 mr-1" />
+                              {statusConfig.label}
+                            </Badge>
+                          </div>
+
+                          {/* Financial Summary */}
+                          <div className="grid grid-cols-3 gap-4 mb-4">
+                            <div className="bg-gray-50 p-3 rounded-lg">
+                              <p className="text-xs text-gray-600 mb-1">
+                                Total Amount
+                              </p>
+                              <p className="font-semibold text-sm">
+                                {formatCurrency(studentInvoice.totalAmount)}
+                              </p>
+                            </div>
+                            <div className="bg-green-50 p-3 rounded-lg">
+                              <p className="text-xs text-gray-600 mb-1">Paid</p>
+                              <p className="font-semibold text-sm text-green-700">
+                                {formatCurrency(studentInvoice.amountPaid)}
+                              </p>
+                            </div>
+                            <div className="bg-red-50 p-3 rounded-lg">
+                              <p className="text-xs text-gray-600 mb-1">Due</p>
+                              <p className="font-semibold text-sm text-red-700">
+                                {formatCurrency(studentInvoice.amountDue)}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Payment Progress Bar */}
+                          <div className="mb-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-xs text-gray-600">
+                                Payment Progress
+                              </span>
+                              <span className="text-xs font-semibold text-gray-900">
+                                {paymentProgress.toFixed(1)}%
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div
+                                className={`h-2 rounded-full transition-all ${
+                                  paymentProgress === 100
+                                    ? "bg-green-600"
+                                    : paymentProgress > 0
+                                    ? "bg-yellow-500"
+                                    : "bg-red-500"
+                                }`}
+                                style={{ width: `${paymentProgress}%` }}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Assignment Info */}
+                          <div className="flex items-center justify-between text-xs text-gray-500 pt-3 border-t">
+                            <span>
+                              Assigned:{" "}
+                              {formatDateTime(studentInvoice.assignedAt)}
+                            </span>
+                            <span className="font-mono">
+                              {studentInvoice.id}
+                            </span>
+                          </div>
+
+                          {/* Payments for this student */}
+                          {studentInvoice.payments &&
+                            studentInvoice.payments.length > 0 && (
+                              <div className="mt-4 pt-4 border-t">
+                                <p className="text-sm font-semibold mb-3">
+                                  Payment History
+                                </p>
+                                <div className="space-y-2">
+                                  {studentInvoice.payments.map(
+                                    (payment: any) => (
+                                      <div
+                                        key={payment.id}
+                                        className="flex items-center justify-between bg-gray-50 p-2 rounded text-xs"
+                                      >
+                                        <div className="flex items-center gap-2">
+                                          <CheckCircle className="w-4 h-4 text-green-600" />
+                                          <span className="font-mono">
+                                            {payment.reference}
+                                          </span>
+                                          <Badge
+                                            variant="outline"
+                                            className="text-xs"
+                                          >
+                                            {payment.method}
+                                          </Badge>
+                                        </div>
+                                        <div className="text-right">
+                                          <p className="font-semibold text-green-600">
+                                            {formatCurrency(payment.amount)}
+                                          </p>
+                                          <p className="text-gray-500">
+                                            {formatDateTime(payment.createdAt)}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    )
+                                  )}
+                                </div>
+                              </div>
+                            )}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">
-                            {studentInvoice.student?.name}
-                          </p>
-                          <p className="text-xs text-gray-600">
-                            Admission #:{" "}
-                            {studentInvoice.student?.admission_number}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Assigned: {formatDate(studentInvoice.assignedAt)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
-                  <div className="text-center py-8">
-                    <Users className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">
-                      No students assigned
+                  <div className="text-center py-12">
+                    <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600 mb-2 font-medium">
+                      {searchQuery || statusFilter !== "all"
+                        ? "No students match your filters"
+                        : "No students assigned to this invoice"}
                     </p>
+                    {(searchQuery || statusFilter !== "all") && (
+                      <p className="text-sm text-gray-500">
+                        Try adjusting your search or filter criteria
+                      </p>
+                    )}
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Column - Metadata */}
+          <div className="space-y-6">
+            {/* Quick Stats */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Payment Statistics</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-gray-600">Paid Students</span>
+                    <span className="text-xs font-semibold">
+                      {invoice.studentInvoices?.filter(
+                        (si: any) => si.status === "PAID"
+                      ).length || 0}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-gray-600">
+                      Partially Paid
+                    </span>
+                    <span className="text-xs font-semibold">
+                      {invoice.studentInvoices?.filter(
+                        (si: any) => si.status === "PARTIALLY_PAID"
+                      ).length || 0}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-gray-600">Unpaid</span>
+                    <span className="text-xs font-semibold">
+                      {invoice.studentInvoices?.filter(
+                        (si: any) => si.status === "UNPAID"
+                      ).length || 0}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-600">Overdue</span>
+                    <span className="text-xs font-semibold text-red-600">
+                      {invoice.studentInvoices?.filter(
+                        (si: any) => si.status === "OVERDUE"
+                      ).length || 0}
+                    </span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 

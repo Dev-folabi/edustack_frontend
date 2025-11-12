@@ -26,8 +26,7 @@ const invoiceSchema = z.object({
   description: z.string().min(1, "Description is required"),
   dueDate: z.string().min(1, "Due date is required"),
   status: z.enum([
-    "DRAFT",
-    "SENT",
+    "UNPAID",
     "PAID",
     "PARTIALLY_PAID",
     "OVERDUE",
