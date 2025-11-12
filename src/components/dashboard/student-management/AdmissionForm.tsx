@@ -94,7 +94,8 @@ const formSchema = z
   .refine(
     (data) => {
       if (data.exist_guardian) {
-        return data.guardian_emailOrUsername && data.guardian_password;
+        // When using an existing guardian, require the guardian's username and password
+        return data.guardian_username && data.guardian_password;
       } else {
         return (
           data.guardian_name &&
@@ -136,6 +137,7 @@ const AdmissionForm = () => {
       father_occupation: "",
       mother_occupation: "",
       exist_guardian: false,
+      guardian_username: "",
     },
   });
 
@@ -193,8 +195,9 @@ const AdmissionForm = () => {
       guardian_phone: values.exist_guardian ? undefined : values.guardian_phone,
       guardian_name: values.exist_guardian ? undefined : values.guardian_name,
       guardian_email: values.exist_guardian ? undefined : values.guardian_email,
+      // When linking to an existing guardian, send the guardian username
       guardian_emailOrUsername: values.exist_guardian
-        ? values.guardian_emailOrUsername
+        ? values.guardian_username
         : undefined,
     };
 
@@ -794,25 +797,23 @@ const AdmissionForm = () => {
 
                     {useExistingGuardian ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <FormField
-                          control={form.control}
-                          name="guardian_emailOrUsername"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>
-                                Guardian's Email or Username
-                              </FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder="Enter guardian's email or username"
-                                  {...field}
-                                  className="h-11"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                          <FormField
+                            control={form.control}
+                            name="guardian_username"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Guardian's Username</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="Enter guardian's username"
+                                    {...field}
+                                    className="h-11"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                         <FormField
                           control={form.control}
                           name="guardian_password"
