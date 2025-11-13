@@ -5,12 +5,13 @@ import { useQuery } from "@tanstack/react-query";
 
 import { DataTable } from "@/components/ui/data-table";
 import { getPaymentColumns } from "./payment-columns";
-import { paymentService } from "@/services/payment.service";
+import { financeService } from "@/services/financeService";
 import { useAuthStore } from "@/store/authStore";
 import { Button } from "@/components/ui/button";
 import CreatePaymentModal from "./create-payment-modal";
 import ViewPaymentModal from "./view-payment-modal";
 import UpdatePaymentStatusModal from "./update-payment-status-modal";
+import { PaymentStatus } from "@/types/finance";
 
 const PaymentsPage = () => {
   const { selectedSchool } = useAuthStore();
@@ -27,10 +28,7 @@ const PaymentsPage = () => {
   const { data, isLoading } = useQuery({
     queryKey: ["payments", selectedSchool?.id, page, status],
     queryFn: () =>
-      paymentService.getPayments(selectedSchool?.id || "", {
-        page,
-        status: status ? status : undefined,
-      }),
+      financeService.getPayments(selectedSchool?.id || "", status, page),
     enabled: !!selectedSchool?.id,
   });
 
@@ -58,11 +56,11 @@ const PaymentsPage = () => {
 
       <DataTable
         columns={paymentColumns}
-        data={data?.data || []}
+        data={data?.data.data || []}
         isLoading={isLoading}
         pagination={{
           page,
-          pageCount: data?.pagination?.totalPages || 1,
+          pageCount: data?.data.totalPages || 1,
           onPageChange: setPage,
         }}
         filter={{
@@ -71,10 +69,10 @@ const PaymentsPage = () => {
           placeholder: "Filter by status...",
           options: [
             { label: "All", value: "" },
-            { label: "Pending", value: "PENDING" },
-            { label: "Completed", value: "COMPLETED" },
-            { label: "Failed", value: "FAILED" },
-            { label: "Refunded", value: "REFUNDED" },
+            { label: "Pending", value: PaymentStatus.PENDING },
+            { label: "Completed", value: PaymentStatus.COMPLETED },
+            { label: "Failed", value: PaymentStatus.FAILED },
+            { label: "Refunded", value: PaymentStatus.REFUNDED },
           ],
         }}
       />

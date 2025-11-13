@@ -24,19 +24,13 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/store/authStore";
-import { studentService } from "@/services/student.service";
-import { invoiceService } from "@/services/invoice.service";
-import {
-  ICreatePaymentPayload,
-  paymentService,
-  PaymentMethod,
-} from "@/services/payment.service";
-import { IStudent } from "@/types/student";
-import { IInvoice } from "@/types/invoice";
+import { studentService } from "@/services/studentService";
+import { financeService } from "@/services/financeService";
+import { PaymentMethod } from "@/types/finance";
+import { toast } from "sonner";
 
 const createPaymentSchema = z.object({
-  studentId: z.string().nonempty("Student is required"),
-  invoiceId: z.string().nonempty("Invoice is required"),
+  studentInvoiceId: z.string().nonempty("Invoice is required"),
   amount: z.number().positive("Amount must be positive"),
   paymentMethod: z.nativeEnum(PaymentMethod),
 });
@@ -59,41 +53,49 @@ const CreatePaymentModal: React.FC<CreatePaymentModalProps> = ({
     watch,
     setValue,
     formState: { errors },
-  } = useForm<ICreatePaymentPayload>({
+  } = useForm<{
+    studentInvoiceId: string;
+    amount: number;
+    paymentMethod: PaymentMethod;
+  }>({
     resolver: zodResolver(createPaymentSchema),
   });
 
   const studentId = watch("studentId");
 
-  const { data: students, isLoading: studentsLoading } = useQuery<{
-    data: IStudent[];
-  }>({
+  const { data: students, isLoading: studentsLoading } = useQuery({
     queryKey: ["students", selectedSchool?.id],
-    queryFn: () => studentService.getStudents(selectedSchool?.id || ""),
+    queryFn: () => studentService.getStudentsBySchool(selectedSchool?.id || ""),
     enabled: !!selectedSchool?.id,
   });
 
-  const { data: invoices, isLoading: invoicesLoading } = useQuery<{
-    data: IInvoice[];
-  }>({
-    queryKey: ["invoices", selectedSchool?.id, studentId],
-    queryFn: () =>
-      invoiceService.getInvoices(selectedSchool?.id || "", {
-        studentId,
-      }),
-    enabled: !!selectedSchool?.id && !!studentId,
+  const { data: invoices, isLoading: invoicesLoading } = useQuery({
+    queryKey: ["invoices", studentId],
+    queryFn: () => financeService.getInvoices(studentId),
+    enabled: !!studentId,
   });
 
   const createPaymentMutation = useMutation({
-    mutationFn: (payload: ICreatePaymentPayload) =>
-      paymentService.createPayment(selectedSchool?.id || "", payload),
+    mutationFn: (data: {
+      studentInvoiceId: string;
+      amount: number;
+      paymentMethod: PaymentMethod;
+    }) => financeService.createPayment(data),
     onSuccess: () => {
+      toast.success("Payment created successfully");
       queryClient.invalidateQueries({ queryKey: ["payments"] });
       onClose();
     },
+    onError: (error: any) => {
+      toast.error(error.response.data.message);
+    },
   });
 
-  const onSubmit = (data: ICreatePaymentPayload) => {
+  const onSubmit = (data: {
+    studentInvoiceId: string;
+    amount: number;
+    paymentMethod: PaymentMethod;
+  }) => {
     createPaymentMutation.mutate(data);
   };
 
@@ -113,7 +115,7 @@ const CreatePaymentModal: React.FC<CreatePaymentModalProps> = ({
                 <Select
                   onValueChange={(value) => {
                     field.onChange(value);
-                    setValue("invoiceId", "");
+                    setValue("studentInvoiceId", "");
                     setValue("amount", 0);
                   }}
                   defaultValue={field.value}
@@ -127,7 +129,7 @@ const CreatePaymentModal: React.FC<CreatePaymentModalProps> = ({
                         Loading...
                       </SelectItem>
                     ) : (
-                      students?.data.map((student) => (
+                      students?.data.data.map((student) => (
                         <SelectItem key={student.id} value={student.id}>
                           {student.name}
                         </SelectItem>
@@ -137,25 +139,22 @@ const CreatePaymentModal: React.FC<CreatePaymentModalProps> = ({
                 </Select>
               )}
             />
-            {errors.studentId && (
-              <p className="text-red-500 text-sm">{errors.studentId.message}</p>
-            )}
           </div>
 
           <div>
-            <Label htmlFor="invoiceId">Invoice</Label>
+            <Label htmlFor="studentInvoiceId">Invoice</Label>
             <Controller
-              name="invoiceId"
+              name="studentInvoiceId"
               control={control}
               render={({ field }) => (
                 <Select
                   onValueChange={(value) => {
                     field.onChange(value);
-                    const selectedInvoice = invoices?.data.find(
+                    const selectedInvoice = invoices?.data.data.find(
                       (invoice) => invoice.id === value
                     );
                     if (selectedInvoice) {
-                      setValue("amount", selectedInvoice.balance);
+                      setValue("amount", selectedInvoice.amountDue);
                     }
                   }}
                   defaultValue={field.value}
@@ -170,9 +169,9 @@ const CreatePaymentModal: React.FC<CreatePaymentModalProps> = ({
                         Loading...
                       </SelectItem>
                     ) : (
-                      invoices?.data.map((invoice) => (
+                      invoices?.data.data.map((invoice) => (
                         <SelectItem key={invoice.id} value={invoice.id}>
-                          {invoice.title} - ${invoice.balance}
+                          {invoice.invoice.invoiceNumber} - ${invoice.amountDue}
                         </SelectItem>
                       ))
                     )}
@@ -180,8 +179,10 @@ const CreatePaymentModal: React.FC<CreatePaymentModalProps> = ({
                 </Select>
               )}
             />
-            {errors.invoiceId && (
-              <p className="text-red-500 text-sm">{errors.invoiceId.message}</p>
+            {errors.studentInvoiceId && (
+              <p className="text-red-500 text-sm">
+                {errors.studentInvoiceId.message}
+              </p>
             )}
           </div>
 

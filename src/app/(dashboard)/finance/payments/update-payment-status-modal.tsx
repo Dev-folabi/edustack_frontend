@@ -22,8 +22,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { useAuthStore } from "@/store/authStore";
-import { paymentService, PaymentStatus } from "@/services/payment.service";
+import { financeService } from "@/services/financeService";
+import { PaymentStatus } from "@/types/finance";
+import { toast } from "sonner";
 
 const updatePaymentStatusSchema = z.object({
   status: z.nativeEnum(PaymentStatus),
@@ -40,7 +41,6 @@ const UpdatePaymentStatusModal: React.FC<UpdatePaymentStatusModalProps> = ({
   onClose,
   paymentId,
 }) => {
-  const { selectedSchool } = useAuthStore();
   const queryClient = useQueryClient();
 
   const {
@@ -53,14 +53,14 @@ const UpdatePaymentStatusModal: React.FC<UpdatePaymentStatusModalProps> = ({
 
   const updatePaymentStatusMutation = useMutation({
     mutationFn: (status: PaymentStatus) =>
-      paymentService.updatePaymentStatus(
-        selectedSchool?.id || "",
-        paymentId || "",
-        status
-      ),
+      financeService.updatePaymentStatus(paymentId || "", status),
     onSuccess: () => {
+      toast.success("Payment status updated successfully");
       queryClient.invalidateQueries({ queryKey: ["payments"] });
       onClose();
+    },
+    onError: (error: any) => {
+      toast.error(error.response.data.message);
     },
   });
 

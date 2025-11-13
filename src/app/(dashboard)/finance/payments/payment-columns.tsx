@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { IPayment, PaymentStatus } from "@/services/payment.service";
+import { Payment, PaymentStatus } from "@/types/finance";
 import { Checkbox } from "@/components/ui/checkbox";
 
 interface PaymentColumnsProps {
@@ -22,7 +22,7 @@ interface PaymentColumnsProps {
 export const getPaymentColumns = ({
   onView,
   onUpdateStatus,
-}: PaymentColumnsProps): ColumnDef<IPayment>[] => [
+}: PaymentColumnsProps): ColumnDef<Payment>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -46,12 +46,12 @@ export const getPaymentColumns = ({
     enableHiding: false,
   },
   {
-    accessorKey: "studentId",
-    header: "Student ID",
+    accessorKey: "studentInvoice.student.name",
+    header: "Student Name",
   },
   {
-    accessorKey: "invoiceId",
-    header: "Invoice ID",
+    accessorKey: "studentInvoice.invoice.invoiceNumber",
+    header: "Invoice Number",
   },
   {
     accessorKey: "amount",

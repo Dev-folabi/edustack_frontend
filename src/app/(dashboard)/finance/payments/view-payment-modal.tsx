@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useAuthStore } from "@/store/authStore";
-import { paymentService } from "@/services/payment.service";
+import { financeService } from "@/services/financeService";
 
 interface ViewPaymentModalProps {
   isOpen: boolean;
@@ -26,10 +26,9 @@ const ViewPaymentModal: React.FC<ViewPaymentModalProps> = ({
   const { selectedSchool } = useAuthStore();
 
   const { data, isLoading } = useQuery({
-    queryKey: ["payment", selectedSchool?.id, paymentId],
-    queryFn: () =>
-      paymentService.getPaymentById(selectedSchool?.id || "", paymentId || ""),
-    enabled: !!selectedSchool?.id && !!paymentId,
+    queryKey: ["payment", paymentId],
+    queryFn: () => financeService.getPaymentById(paymentId || ""),
+    enabled: !!paymentId,
   });
 
   return (
@@ -46,10 +45,12 @@ const ViewPaymentModal: React.FC<ViewPaymentModalProps> = ({
               <strong>ID:</strong> {data.data.id}
             </p>
             <p>
-              <strong>Student ID:</strong> {data.data.studentId}
+              <strong>Student Name:</strong>{" "}
+              {data.data.studentInvoice.student.name}
             </p>
             <p>
-              <strong>Invoice ID:</strong> {data.data.invoiceId}
+              <strong>Invoice Number:</strong>{" "}
+              {data.data.studentInvoice.invoice.invoiceNumber}
             </p>
             <p>
               <strong>Amount:</strong> ${data.data.amount}

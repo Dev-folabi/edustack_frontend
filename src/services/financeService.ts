@@ -90,4 +90,40 @@ export const financeService = {
   deleteInvoice: (id: string): Promise<ApiResponse<void>> => {
     return apiClient.delete(`/accounting/invoices/${id}`);
   },
+
+  // Payment Management
+  createPayment: (
+    data: Omit<Payment, "id" | "createdAt" | "updatedAt">
+  ): Promise<ApiResponse<Payment>> => {
+    return apiClient.post("/accounting/payments", data);
+  },
+
+  getPayments: (
+    schoolId: string,
+    status: string = "",
+    page: number = 1,
+    limit: number = 10
+  ): Promise<ApiResponse<PaginatedResponse<Payment>>> => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+    if (status) {
+      params.append("status", status);
+    }
+    return apiClient.get(
+      `/accounting/payments/${schoolId}?${params.toString()}`
+    );
+  },
+
+  getPaymentById: (id: string): Promise<ApiResponse<Payment>> => {
+    return apiClient.get(`/accounting/payments/${id}`);
+  },
+
+  updatePaymentStatus: (
+    id: string,
+    status: PaymentStatus
+  ): Promise<ApiResponse<Payment>> => {
+    return apiClient.patch(`/accounting/payments/${id}/status`, { status });
+  },
 };
