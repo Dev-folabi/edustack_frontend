@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { COLORS, SCHOOL_INFO } from "@/constants/colors";
+import { COLORS, SCHOOL_INFO } from "@/constants/config";
 import Image from "next/image";
 import { useAuthStore } from "@/store/authStore";
 import { DASHBOARD_ROUTES } from "@/constants/routes";
@@ -22,10 +22,10 @@ export default function Header() {
       return DASHBOARD_ROUTES.NOT_AUTHORIZED;
     }
     const role = userSchools[0].role; // Use the role from the first school
-    if (role === 'admin' || role === 'staff' || role === 'super_admin') {
+    if (role === "admin" || role === "staff" || role === "super_admin") {
       return DASHBOARD_ROUTES.MULTI_SCHOOL_DASHBOARD;
     }
-    if (role === 'student' || role === 'parent') {
+    if (role === "student" || role === "parent") {
       return DASHBOARD_ROUTES.STUDENT_DASHBOARD;
     }
     return DASHBOARD_ROUTES.NOT_AUTHORIZED;
@@ -67,8 +67,8 @@ export default function Header() {
                 key={item.name}
                 href={item.href}
                 className="font-medium transition-colors duration-200"
-                style={{ 
-                  color: COLORS.gray[700] 
+                style={{
+                  color: COLORS.gray[700],
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.color = COLORS.primary[600];

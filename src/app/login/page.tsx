@@ -24,7 +24,7 @@ import { Card } from "@/components/ui/card";
 import { ApiError } from "../../utils/api";
 import { authService } from "../../services/authService";
 import { DASHBOARD_ROUTES } from "@/constants/routes";
-import { COLORS } from "@/constants/colors";
+import { COLORS } from "@/constants/config";
 
 const formSchema = z.object({
   emailOrUsername: z
@@ -118,10 +118,16 @@ const LoginPage: React.FC = () => {
   // }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: COLORS.background.accent }}>
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{ backgroundColor: COLORS.background.accent }}
+    >
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-extrabold" style={{ color: COLORS.primary[700] }}>
+          <h2
+            className="text-3xl font-extrabold"
+            style={{ color: COLORS.primary[700] }}
+          >
             Welcome Back
           </h2>
           <p className="mt-2 text-sm" style={{ color: COLORS.gray[600] }}>
@@ -129,7 +135,13 @@ const LoginPage: React.FC = () => {
           </p>
         </div>
 
-        <Card className="p-8" style={{ backgroundColor: COLORS.background.primary, borderColor: COLORS.gray[200] }}>
+        <Card
+          className="p-8"
+          style={{
+            backgroundColor: COLORS.background.primary,
+            borderColor: COLORS.gray[200],
+          }}
+        >
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
@@ -137,14 +149,16 @@ const LoginPage: React.FC = () => {
                 name="emailOrUsername"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel style={{ color: COLORS.gray[700] }}>Email or Username</FormLabel>
+                    <FormLabel style={{ color: COLORS.gray[700] }}>
+                      Email or Username
+                    </FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="you@example.com" 
-                        {...field} 
-                        style={{ 
+                      <Input
+                        placeholder="you@example.com"
+                        {...field}
+                        style={{
                           borderColor: COLORS.gray[300],
-                          color: COLORS.gray[900]
+                          color: COLORS.gray[900],
                         }}
                         className="focus:ring-2 focus:border-transparent"
                       />
@@ -158,16 +172,18 @@ const LoginPage: React.FC = () => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel style={{ color: COLORS.gray[700] }}>Password</FormLabel>
+                    <FormLabel style={{ color: COLORS.gray[700] }}>
+                      Password
+                    </FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
                           type={showPassword ? "text" : "password"}
                           placeholder="••••••••"
                           {...field}
-                          style={{ 
+                          style={{
                             borderColor: COLORS.gray[300],
-                            color: COLORS.gray[900]
+                            color: COLORS.gray[900],
                           }}
                           className="focus:ring-2 focus:border-transparent pr-10"
                         />
@@ -185,13 +201,13 @@ const LoginPage: React.FC = () => {
                   </FormItem>
                 )}
               />
-              <Button 
-                type="submit" 
-                className="w-full font-medium transition-all duration-200 hover:shadow-lg" 
+              <Button
+                type="submit"
+                className="w-full font-medium transition-all duration-200 hover:shadow-lg"
                 disabled={isLoading}
-                style={{ 
+                style={{
                   backgroundColor: COLORS.primary[500],
-                  color: 'white'
+                  color: "white",
                 }}
                 onMouseEnter={(e) => {
                   if (!isLoading) {
@@ -210,7 +226,10 @@ const LoginPage: React.FC = () => {
           </Form>
         </Card>
 
-        <p className="mt-4 text-center text-sm" style={{ color: COLORS.gray[600] }}>
+        <p
+          className="mt-4 text-center text-sm"
+          style={{ color: COLORS.gray[600] }}
+        >
           Don&apos;t have an account?{" "}
           <Link
             href="/register"

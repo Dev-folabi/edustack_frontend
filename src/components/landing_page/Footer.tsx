@@ -1,6 +1,6 @@
 "use client";
 
-import { COLORS, SCHOOL_INFO } from "@/constants/colors";
+import { COLORS, SCHOOL_INFO } from "@/constants/config";
 import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
 import Image from "next/image";
 

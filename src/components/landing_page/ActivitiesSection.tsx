@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { COLORS } from "@/constants/colors";
+import { COLORS } from "@/constants/config";
 
 export default function ActivitiesSection() {
   const [currentSlide, setCurrentSlide] = useState(0);

@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { COLORS } from "@/constants/colors";
+import { COLORS } from "@/constants/config";
 import SchoolSelector from "./SchoolSelector";
 import SessionSelector from "./SessionSelector";
 
@@ -40,7 +40,7 @@ const UserProfile = () => {
             className="h-10 w-10 border-2"
             style={{ borderColor: COLORS.primary[500] }}
           >
-            <AvatarImage src={user.photo_url || ""} alt={user.username} />
+            <AvatarImage src={""} alt={user.username} />
             <AvatarFallback
               style={{
                 backgroundColor: COLORS.primary[100],

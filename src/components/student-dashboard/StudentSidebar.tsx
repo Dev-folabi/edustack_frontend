@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { usePermissions } from '@/utils/permissions';
-import { studentSidebarConfig } from '@/constants/student-sidebar-links';
-import { COLORS } from '@/constants/colors';
-import { FaChevronDown } from 'react-icons/fa';
-import { IconType } from 'react-icons';
-import { SidebarCategory } from '@/constants/sidebar-links';
+import React, { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { usePermissions } from "@/utils/permissions";
+import { studentSidebarConfig } from "@/constants/student-sidebar-links";
+import { COLORS } from "@/constants/config";
+import { FaChevronDown } from "react-icons/fa";
+import { IconType } from "react-icons";
+import { SidebarCategory } from "@/constants/sidebar-links";
 
 const StudentSidebar = () => {
   const pathname = usePathname();
@@ -16,14 +16,14 @@ const StudentSidebar = () => {
   const [openCategories, setOpenCategories] = useState<string[]>([]);
 
   const toggleCategory = (title: string) => {
-    setOpenCategories(prev =>
-      prev.includes(title) ? prev.filter(t => t !== title) : [...prev, title]
+    setOpenCategories((prev) =>
+      prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title]
     );
   };
 
   const userHasAccess = (roles: any[]) => {
     if (!roles || roles.length === 0) return true; // Default to true if no roles specified
-    return roles.some(role => hasRole(role));
+    return roles.some((role) => hasRole(role));
   };
 
   return (
@@ -34,46 +34,54 @@ const StudentSidebar = () => {
       <nav>
         <ul>
           {(studentSidebarConfig as SidebarCategory[])
-            .filter(category => userHasAccess(category.roles))
+            .filter((category) => userHasAccess(category.roles))
             .map((category) => (
-            <li key={category.title} className="mb-2">
-              <button
-                onClick={() => toggleCategory(category.title)}
-                className="w-full flex justify-between items-center p-2 rounded-md transition-colors text-gray-300 hover:bg-blue-800 hover:text-white"
-              >
-                <span>{category.title}</span>
-                <FaChevronDown className={`transition-transform ${openCategories.includes(category.title) ? 'rotate-180' : ''}`} />
-              </button>
-              {openCategories.includes(category.title) && (
-                <ul className="pl-4 mt-2">
-                  {category.links
-                    .filter(link => userHasAccess(link.roles))
-                    .map((link) => {
-                    const isActive = pathname === link.href;
-                    const LinkIcon = link.icon as IconType;
-                    return (
-                      <li key={link.href} className="mb-2">
-                        <Link
-                          href={link.href}
-                          className={`flex items-center p-2 rounded-md transition-colors ${
-                            isActive
-                              ? 'text-white'
-                              : 'text-gray-300 hover:bg-blue-800 hover:text-white'
-                          }`}
-                          style={{
-                            backgroundColor: isActive ? COLORS.primary[500] : 'transparent'
-                          }}
-                        >
-                          <LinkIcon className="mr-3" />
-                          {link.label}
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </li>
-          ))}
+              <li key={category.title} className="mb-2">
+                <button
+                  onClick={() => toggleCategory(category.title)}
+                  className="w-full flex justify-between items-center p-2 rounded-md transition-colors text-gray-300 hover:bg-blue-800 hover:text-white"
+                >
+                  <span>{category.title}</span>
+                  <FaChevronDown
+                    className={`transition-transform ${
+                      openCategories.includes(category.title)
+                        ? "rotate-180"
+                        : ""
+                    }`}
+                  />
+                </button>
+                {openCategories.includes(category.title) && (
+                  <ul className="pl-4 mt-2">
+                    {category.links
+                      .filter((link) => userHasAccess(link.roles))
+                      .map((link) => {
+                        const isActive = pathname === link.href;
+                        const LinkIcon = link.icon as IconType;
+                        return (
+                          <li key={link.href} className="mb-2">
+                            <Link
+                              href={link.href}
+                              className={`flex items-center p-2 rounded-md transition-colors ${
+                                isActive
+                                  ? "text-white"
+                                  : "text-gray-300 hover:bg-blue-800 hover:text-white"
+                              }`}
+                              style={{
+                                backgroundColor: isActive
+                                  ? COLORS.primary[500]
+                                  : "transparent",
+                              }}
+                            >
+                              <LinkIcon className="mr-3" />
+                              {link.label}
+                            </Link>
+                          </li>
+                        );
+                      })}
+                  </ul>
+                )}
+              </li>
+            ))}
         </ul>
       </nav>
     </aside>

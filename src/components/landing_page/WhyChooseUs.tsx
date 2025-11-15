@@ -1,10 +1,16 @@
 "use client";
-import { COLORS } from "@/constants/colors";
-import { FaGraduationCap, FaLaptop, FaTrophy, FaStar, FaUsers, FaGlobeAmericas } from 'react-icons/fa';
+import { COLORS } from "@/constants/config";
+import {
+  FaGraduationCap,
+  FaLaptop,
+  FaTrophy,
+  FaStar,
+  FaUsers,
+  FaGlobeAmericas,
+} from "react-icons/fa";
 
 export default function WhyChooseUs() {
-
-const features = [
+  const features = [
     {
       icon: FaGraduationCap,
       title: "Expert Faculty",
@@ -65,9 +71,7 @@ const features = [
               key={index}
               className="p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-white border border-gray-100"
             >
-              <div className="text-4xl mb-4">
-                {<feature.icon />}
-              </div>
+              <div className="text-4xl mb-4">{<feature.icon />}</div>
               <h3
                 className="text-xl font-bold mb-3"
                 style={{ color: COLORS.primary[600] }}

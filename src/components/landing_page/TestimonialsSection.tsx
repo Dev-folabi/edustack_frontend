@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { COLORS } from "@/constants/colors";
+import { COLORS } from "@/constants/config";
 
 export default function TestimonialsSection() {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
@@ -100,12 +100,15 @@ export default function TestimonialsSection() {
                     : "bg-gray-300 hover:bg-gray-400"
                 }`}
                 style={{
-                  backgroundColor: index === currentTestimonial ? COLORS.primary[500] : undefined
+                  backgroundColor:
+                    index === currentTestimonial
+                      ? COLORS.primary[500]
+                      : undefined,
                 }}
                 onClick={() => setCurrentTestimonial(index)}
               />
             ))}
-          </div> 
+          </div>
         </div>
       </div>
     </section>

@@ -1,6 +1,6 @@
 "use client";
 
-import { COLORS } from "@/constants/colors";
+import { COLORS } from "@/constants/config";
 import {
   FaTrophy,
   FaBook,
