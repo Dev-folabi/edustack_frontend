@@ -10,6 +10,10 @@ import {
   Payment,
   CreatePaymentPayload,
   StudentInvoice,
+  Expense,
+  CreateExpensePayload,
+  UpdateExpensePayload,
+  FinancialOverview,
 } from "@/types/finance";
 
 export interface PaginatedResponse<T> {
@@ -144,5 +148,51 @@ export const financeService = {
     status: PaymentStatus
   ): Promise<ApiResponse<Payment>> => {
     return apiClient.put(`/accounting/payments/${id}/status`, { status });
+  },
+
+  // Expense Management
+  createExpense: (
+    data: CreateExpensePayload
+  ): Promise<ApiResponse<Expense>> => {
+    return apiClient.post("/accounting/expenses", data);
+  },
+
+  getExpenses: (
+    schoolId: string,
+    page: number = 1,
+    limit: number = 10
+  ): Promise<ApiResponse<PaginatedResponse<Expense>>> => {
+    return apiClient.get(
+      `/accounting/expenses?schoolId=${schoolId}&page=${page}&limit=${limit}`
+    );
+  },
+
+  getExpenseById: (id: string): Promise<ApiResponse<Expense>> => {
+    return apiClient.get(`/accounting/expenses/${id}`);
+  },
+
+  updateExpense: (
+    id: string,
+    data: UpdateExpensePayload
+  ): Promise<ApiResponse<Expense>> => {
+    return apiClient.put(`/accounting/expenses/${id}`, data);
+  },
+
+  deleteExpense: (id: string): Promise<ApiResponse<void>> => {
+    return apiClient.delete(`/accounting/expenses/${id}`);
+  },
+
+  // Reports
+  getFinancialOverview: (
+    schoolId: string,
+    startDate?: string,
+    endDate?: string
+  ): Promise<ApiResponse<FinancialOverview>> => {
+    const params = new URLSearchParams();
+    if (startDate) params.append("startDate", startDate);
+    if (endDate) params.append("endDate", endDate);
+    return apiClient.get(
+      `/accounting/reports/financial-overview/${schoolId}?${params.toString()}`
+    );
   },
 };

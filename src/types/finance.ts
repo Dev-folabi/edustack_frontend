@@ -1,3 +1,60 @@
+export enum ExpenseCategory {
+  UTILITIES = "UTILITIES",
+  SUPPLIES = "SUPPLIES",
+  MAINTENANCE = "MAINTENANCE",
+  SALARIES = "SALARIES",
+  TRANSPORT = "TRANSPORT",
+  MARKETING = "MARKETING",
+  OTHER = "OTHER",
+}
+
+export interface Expense {
+  id: string;
+  title: string;
+  description?: string;
+  amount: number;
+  category: ExpenseCategory;
+  expenseDate: string;
+  schoolId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FinancialOverview {
+  totalRevenue: number;
+  totalExpenses: number;
+  netProfit: number;
+  revenueByFeeCategory: RevenueByFeeCategory[];
+  expensesByCategory: ExpensesByCategory[];
+}
+
+export interface RevenueByFeeCategory {
+  feeCategory: string;
+  total: number;
+}
+
+export interface ExpensesByCategory {
+  category: ExpenseCategory;
+  total: number;
+}
+
+export interface CreateExpensePayload {
+  title: string;
+  description?: string;
+  amount: number;
+  category: ExpenseCategory;
+  expenseDate: string;
+  schoolId: string;
+}
+
+export interface UpdateExpensePayload {
+  title?: string;
+  description?: string;
+  amount?: number;
+  category?: ExpenseCategory;
+  expenseDate?: string;
+}
+
 export interface FeeCategory {
   id: string;
   name: string;
