@@ -16,7 +16,8 @@ import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import SchoolSelector from "./SchoolSelector";
 import SessionSelector from "./SessionSelector";
-import { Bell, Settings, User, LogOut, ChevronDown } from "lucide-react";
+import { Bell, Settings, User, LogOut, ChevronDown, Menu } from "lucide-react";
+import { SCHOOL_INFO } from "@/constants/config";
 
 const NotificationDropdown = () => {
   const [notifications] = useState([
@@ -184,12 +185,40 @@ const UserProfile = () => {
   );
 };
 
-const Header = () => {
+type HeaderProps = {
+  onToggleMenu?: () => void;
+  isMobileMenuOpen?: boolean;
+};
+
+const Header: React.FC<HeaderProps> = ({ onToggleMenu, isMobileMenuOpen }) => {
   return (
-    <header className="bg-white border-b border-gray-200 px-4 md:px-6 py-3">
+    <header
+      className={`sticky top-0 z-30 bg-white border-b border-gray-200 px-4 md:px-6 py-3 ${
+        isMobileMenuOpen ? "hidden md:block" : "block"
+      }`}
+    >
       <div className="flex items-center justify-between gap-4">
-        {/* Left Section - Search */}
+        {/* Left Section - Mobile menu + selectors */}
         <div className="flex items-center gap-4 flex-1">
+          {/* Mobile menu button (visible only on small screens) */}
+          {onToggleMenu && (
+            <div className="md:hidden flex items-center">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onToggleMenu}
+                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              >
+                <Menu className="w-5 h-5" />
+              </Button>
+              <div className="ml-2">
+                <h1 className="text-lg font-bold text-gray-900">
+                  {SCHOOL_INFO.name}
+                </h1>
+              </div>
+            </div>
+          )}
+
           {/* School Selector */}
           <div className="hidden sm:block">
             <SchoolSelector />

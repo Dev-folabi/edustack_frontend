@@ -7,9 +7,8 @@ import Header from "@/components/dashboard/Header";
 import Sidebar from "@/components/dashboard/Sidebar";
 import { NotificationBanner } from "@/components/dashboard/NotificationBanner";
 import { Loader } from "@/components/ui/Loader";
-import { Menu, X, ChevronRight } from "lucide-react";
+import { X, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SCHOOL_INFO } from "@/constants/config";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -119,41 +118,16 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Top Bar - Mobile */}
-        <div className="md:hidden sticky top-0 z-30 bg-white border-b border-gray-200 shadow-sm">
-          <div className="flex items-center justify-between px-4 py-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-            >
-              <Menu className="w-5 h-5" />
-            </Button>
-
-            {/* Mobile Logo/Brand */}
-            <div className="flex items-center">
-              <h1 className="text-lg font-bold text-gray-900">
-                {SCHOOL_INFO.name}
-              </h1>
-            </div>
-
-            {/* Mobile User Avatar Placeholder */}
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-              <span className="text-white text-xs font-semibold">
-                {user?.username?.charAt(0).toUpperCase() || "U"}
-              </span>
-            </div>
-          </div>
+        {/* Header (used for both mobile and desktop). Pass mobile menu toggle so Header can render the mobile menu button. */}
+        <div className="sticky top-0 z-60">
+          <Header
+            onToggleMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            isMobileMenuOpen={isMobileMenuOpen}
+          />
         </div>
 
         {/* Notification Banner */}
         <NotificationBanner />
-
-        {/* Desktop Header */}
-        <div className="hidden md:block sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">
-          <Header />
-        </div>
 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-50">
@@ -168,29 +142,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               <div className="animate-fadeIn">{children}</div>
             </div>
           </div>
-
-          {/* Footer */}
-          <footer className="mt-auto border-t border-gray-200 bg-white py-6">
-            <div className="container mx-auto px-4 md:px-6 lg:px-8">
-              <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                <p className="text-sm text-gray-600">
-                  © {new Date().getFullYear()} School Management System. All
-                  rights reserved.
-                </p>
-                <div className="flex items-center gap-6 text-sm text-gray-600">
-                  <a href="#" className="hover:text-blue-600 transition-colors">
-                    Help
-                  </a>
-                  <a href="#" className="hover:text-blue-600 transition-colors">
-                    Privacy
-                  </a>
-                  <a href="#" className="hover:text-blue-600 transition-colors">
-                    Terms
-                  </a>
-                </div>
-              </div>
-            </div>
-          </footer>
         </main>
       </div>
 

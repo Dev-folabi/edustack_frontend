@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import StudentSidebar from "@/components/student-dashboard/StudentSidebar";
 import Header from "@/components/dashboard/Header";
