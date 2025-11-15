@@ -14,7 +14,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  ArrowLeft,
   FileText,
   Calendar,
   DollarSign,
@@ -44,6 +43,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Invoice, InvoiceItem, Payment, StudentInvoice } from "@/types/finance";
 
 const InvoiceDetailsPage = ({
   params,
@@ -52,7 +52,7 @@ const InvoiceDetailsPage = ({
 }) => {
   const { id } = use(params);
   const { showToast } = useToast();
-  const [invoice, setInvoice] = useState<any>(null);
+  const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -67,7 +67,7 @@ const InvoiceDetailsPage = ({
     try {
       const response = await financeService.getInvoiceById(id);
       if (response.success) {
-        setInvoice(response.data);
+        setInvoice(response.data as Invoice);
       } else {
         showToast({
           type: "error",
@@ -89,7 +89,11 @@ const InvoiceDetailsPage = ({
 
   const getStatusConfig = (status: string) => {
     const configs: {
-      [key: string]: { color: string; label: string; icon: any };
+      [key: string]: {
+        color: string;
+        label: string;
+        icon: any;
+      };
     } = {
       UNPAID: {
         color: "bg-red-100 text-red-800 border-red-300",
@@ -148,7 +152,7 @@ const InvoiceDetailsPage = ({
 
   // Filter student invoices
   const filteredStudentInvoices =
-    invoice?.studentInvoices?.filter((studentInvoice: any) => {
+    invoice?.studentInvoices?.filter((studentInvoice: StudentInvoice) => {
       const matchesStatus =
         statusFilter === "all" || studentInvoice.status === statusFilter;
       const matchesSearch =
@@ -244,7 +248,7 @@ const InvoiceDetailsPage = ({
                 <div>
                   <p className="text-sm text-gray-600">Total Amount</p>
                   <p className="text-2xl font-bold mt-1">
-                    {formatCurrency(invoice.totalAmount)}
+                    {formatCurrency(invoice.totalAmount || 0)}
                   </p>
                 </div>
                 <DollarSign className="w-8 h-8 text-blue-600" />
@@ -258,7 +262,7 @@ const InvoiceDetailsPage = ({
                 <div>
                   <p className="text-sm text-gray-600">Amount Paid</p>
                   <p className="text-2xl font-bold text-green-600 mt-1">
-                    {formatCurrency(invoice.amountPaid)}
+                    {formatCurrency(invoice.amountPaid || 0)}
                   </p>
                 </div>
                 <CheckCircle className="w-8 h-8 text-green-600" />
@@ -272,7 +276,7 @@ const InvoiceDetailsPage = ({
                 <div>
                   <p className="text-sm text-gray-600">Amount Due</p>
                   <p className="text-2xl font-bold text-red-600 mt-1">
-                    {formatCurrency(invoice.amountDue)}
+                    {formatCurrency(invoice.amountDue || 0)}
                   </p>
                 </div>
                 <AlertCircle className="w-8 h-8 text-red-600" />
@@ -320,7 +324,9 @@ const InvoiceDetailsPage = ({
                     <div className="flex items-center gap-2 mt-1">
                       <Calendar className="w-4 h-4 text-gray-400" />
                       <p className="font-medium">
-                        {formatDate(invoice.dueDate)}
+                        {formatDate(
+                          invoice.dueDate || new Date().toISOString()
+                        )}
                       </p>
                     </div>
                   </div>
@@ -350,16 +356,26 @@ const InvoiceDetailsPage = ({
                     <p className="text-sm text-gray-600">Session</p>
                     <p className="font-medium">{invoice.session?.name}</p>
                     <p className="text-xs text-gray-500 mt-1">
-                      {formatDate(invoice.session?.start_date)} -{" "}
-                      {formatDate(invoice.session?.end_date)}
+                      {formatDate(
+                        invoice.session?.start_date || new Date().toISOString()
+                      )}{" "}
+                      -{" "}
+                      {formatDate(
+                        invoice.session?.end_date || new Date().toISOString()
+                      )}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Term</p>
                     <p className="font-medium">{invoice.term?.name}</p>
                     <p className="text-xs text-gray-500 mt-1">
-                      {formatDate(invoice.term?.start_date)} -{" "}
-                      {formatDate(invoice.term?.end_date)}
+                      {formatDate(
+                        invoice.term?.start_date || new Date().toISOString()
+                      )}{" "}
+                      -{" "}
+                      {formatDate(
+                        invoice.term?.end_date || new Date().toISOString()
+                      )}
                     </p>
                   </div>
                 </div>
@@ -386,30 +402,32 @@ const InvoiceDetailsPage = ({
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {invoice.invoiceItems?.map((item: any, index: number) => (
-                        <TableRow key={item.id}>
-                          <TableCell className="font-medium text-gray-600">
-                            {index + 1}
-                          </TableCell>
-                          <TableCell className="font-medium">
-                            {item.feeCategory?.name || "N/A"}
-                          </TableCell>
-                          <TableCell className="text-gray-600">
-                            {item.description ||
-                              item.feeCategory?.description ||
-                              "-"}
-                          </TableCell>
-                          <TableCell className="text-right font-semibold">
-                            {formatCurrency(item.amount)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {invoice.invoiceItems?.map(
+                        (item: InvoiceItem, index: number) => (
+                          <TableRow key={item.id}>
+                            <TableCell className="font-medium text-gray-600">
+                              {index + 1}
+                            </TableCell>
+                            <TableCell className="font-medium">
+                              {item.feeCategory?.name || "N/A"}
+                            </TableCell>
+                            <TableCell className="text-gray-600">
+                              {item.description ||
+                                item.feeCategory?.description ||
+                                "-"}
+                            </TableCell>
+                            <TableCell className="text-right font-semibold">
+                              {formatCurrency(item.amount)}
+                            </TableCell>
+                          </TableRow>
+                        )
+                      )}
                       <TableRow className="bg-gray-50 font-semibold">
                         <TableCell colSpan={3} className="text-right">
                           Total Amount
                         </TableCell>
                         <TableCell className="text-right text-lg">
-                          {formatCurrency(invoice.totalAmount)}
+                          {formatCurrency(invoice.totalAmount || 0)}
                         </TableCell>
                       </TableRow>
                     </TableBody>
@@ -467,147 +485,155 @@ const InvoiceDetailsPage = ({
 
                 {filteredStudentInvoices.length > 0 ? (
                   <div className="space-y-4">
-                    {filteredStudentInvoices.map((studentInvoice: any) => {
-                      const statusConfig = getStatusConfig(
-                        studentInvoice.status
-                      );
-                      const StatusIcon = statusConfig.icon;
-                      const paymentProgress =
-                        studentInvoice.totalAmount > 0
-                          ? (studentInvoice.amountPaid /
-                              studentInvoice.totalAmount) *
-                            100
-                          : 0;
+                    {filteredStudentInvoices.map(
+                      (studentInvoice: StudentInvoice) => {
+                        const statusConfig = getStatusConfig(
+                          studentInvoice.status
+                        );
+                        const StatusIcon = statusConfig.icon;
+                        const paymentProgress =
+                          studentInvoice.totalAmount > 0
+                            ? (studentInvoice.amountPaid /
+                                studentInvoice.totalAmount) *
+                              100
+                            : 0;
 
-                      return (
-                        <div
-                          key={studentInvoice.id}
-                          className="border rounded-lg p-4 hover:shadow-md transition-shadow"
-                        >
-                          {/* Student Header */}
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex items-start gap-3">
-                              <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                                <User className="w-6 h-6 text-blue-600" />
-                              </div>
-                              <div>
-                                <h4 className="font-semibold text-lg">
-                                  {studentInvoice.student?.name}
-                                </h4>
-                                <p className="text-sm text-gray-600">
-                                  Admission #
-                                  {studentInvoice.student?.admission_number}
-                                </p>
-                              </div>
-                            </div>
-                            <Badge className={statusConfig.color}>
-                              <StatusIcon className="w-3 h-3 mr-1" />
-                              {statusConfig.label}
-                            </Badge>
-                          </div>
-
-                          {/* Financial Summary */}
-                          <div className="grid grid-cols-3 gap-4 mb-4">
-                            <div className="bg-gray-50 p-3 rounded-lg">
-                              <p className="text-xs text-gray-600 mb-1">
-                                Total Amount
-                              </p>
-                              <p className="font-semibold text-sm">
-                                {formatCurrency(studentInvoice.totalAmount)}
-                              </p>
-                            </div>
-                            <div className="bg-green-50 p-3 rounded-lg">
-                              <p className="text-xs text-gray-600 mb-1">Paid</p>
-                              <p className="font-semibold text-sm text-green-700">
-                                {formatCurrency(studentInvoice.amountPaid)}
-                              </p>
-                            </div>
-                            <div className="bg-red-50 p-3 rounded-lg">
-                              <p className="text-xs text-gray-600 mb-1">Due</p>
-                              <p className="font-semibold text-sm text-red-700">
-                                {formatCurrency(studentInvoice.amountDue)}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Payment Progress Bar */}
-                          <div className="mb-4">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-xs text-gray-600">
-                                Payment Progress
-                              </span>
-                              <span className="text-xs font-semibold text-gray-900">
-                                {paymentProgress.toFixed(1)}%
-                              </span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                              <div
-                                className={`h-2 rounded-full transition-all ${
-                                  paymentProgress === 100
-                                    ? "bg-green-600"
-                                    : paymentProgress > 0
-                                    ? "bg-yellow-500"
-                                    : "bg-red-500"
-                                }`}
-                                style={{ width: `${paymentProgress}%` }}
-                              />
-                            </div>
-                          </div>
-
-                          {/* Assignment Info */}
-                          <div className="flex items-center justify-between text-xs text-gray-500 pt-3 border-t">
-                            <span>
-                              Assigned:{" "}
-                              {formatDateTime(studentInvoice.assignedAt)}
-                            </span>
-                            <span className="font-mono">
-                              {studentInvoice.id}
-                            </span>
-                          </div>
-
-                          {/* Payments for this student */}
-                          {studentInvoice.payments &&
-                            studentInvoice.payments.length > 0 && (
-                              <div className="mt-4 pt-4 border-t">
-                                <p className="text-sm font-semibold mb-3">
-                                  Payment History
-                                </p>
-                                <div className="space-y-2">
-                                  {studentInvoice.payments.map(
-                                    (payment: any) => (
-                                      <div
-                                        key={payment.id}
-                                        className="flex items-center justify-between bg-gray-50 p-2 rounded text-xs"
-                                      >
-                                        <div className="flex items-center gap-2">
-                                          <CheckCircle className="w-4 h-4 text-green-600" />
-                                          <span className="font-mono">
-                                            {payment.reference}
-                                          </span>
-                                          <Badge
-                                            variant="outline"
-                                            className="text-xs"
-                                          >
-                                            {payment.method}
-                                          </Badge>
-                                        </div>
-                                        <div className="text-right">
-                                          <p className="font-semibold text-green-600">
-                                            {formatCurrency(payment.amount)}
-                                          </p>
-                                          <p className="text-gray-500">
-                                            {formatDateTime(payment.createdAt)}
-                                          </p>
-                                        </div>
-                                      </div>
-                                    )
-                                  )}
+                        return (
+                          <div
+                            key={studentInvoice.id}
+                            className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+                          >
+                            {/* Student Header */}
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="flex items-start gap-3">
+                                <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                  <User className="w-6 h-6 text-blue-600" />
+                                </div>
+                                <div>
+                                  <h4 className="font-semibold text-lg">
+                                    {studentInvoice.student?.name}
+                                  </h4>
+                                  <p className="text-sm text-gray-600">
+                                    Admission #
+                                    {studentInvoice.student?.admission_number}
+                                  </p>
                                 </div>
                               </div>
-                            )}
-                        </div>
-                      );
-                    })}
+                              <Badge className={statusConfig.color}>
+                                <StatusIcon className="w-3 h-3 mr-1" />
+                                {statusConfig.label}
+                              </Badge>
+                            </div>
+
+                            {/* Financial Summary */}
+                            <div className="grid grid-cols-3 gap-4 mb-4">
+                              <div className="bg-gray-50 p-3 rounded-lg">
+                                <p className="text-xs text-gray-600 mb-1">
+                                  Total Amount
+                                </p>
+                                <p className="font-semibold text-sm">
+                                  {formatCurrency(studentInvoice.totalAmount)}
+                                </p>
+                              </div>
+                              <div className="bg-green-50 p-3 rounded-lg">
+                                <p className="text-xs text-gray-600 mb-1">
+                                  Paid
+                                </p>
+                                <p className="font-semibold text-sm text-green-700">
+                                  {formatCurrency(studentInvoice.amountPaid)}
+                                </p>
+                              </div>
+                              <div className="bg-red-50 p-3 rounded-lg">
+                                <p className="text-xs text-gray-600 mb-1">
+                                  Due
+                                </p>
+                                <p className="font-semibold text-sm text-red-700">
+                                  {formatCurrency(studentInvoice.amountDue)}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Payment Progress Bar */}
+                            <div className="mb-4">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-xs text-gray-600">
+                                  Payment Progress
+                                </span>
+                                <span className="text-xs font-semibold text-gray-900">
+                                  {paymentProgress.toFixed(1)}%
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div
+                                  className={`h-2 rounded-full transition-all ${
+                                    paymentProgress === 100
+                                      ? "bg-green-600"
+                                      : paymentProgress > 0
+                                      ? "bg-yellow-500"
+                                      : "bg-red-500"
+                                  }`}
+                                  style={{ width: `${paymentProgress}%` }}
+                                />
+                              </div>
+                            </div>
+
+                            {/* Assignment Info */}
+                            <div className="flex items-center justify-between text-xs text-gray-500 pt-3 border-t">
+                              <span>
+                                Assigned:{" "}
+                                {formatDateTime(studentInvoice.assignedAt)}
+                              </span>
+                              <span className="font-mono">
+                                {studentInvoice.id}
+                              </span>
+                            </div>
+
+                            {/* Payments for this student */}
+                            {studentInvoice.payments &&
+                              studentInvoice.payments.length > 0 && (
+                                <div className="mt-4 pt-4 border-t">
+                                  <p className="text-sm font-semibold mb-3">
+                                    Payment History
+                                  </p>
+                                  <div className="space-y-2">
+                                    {studentInvoice.payments.map(
+                                      (payment: Payment) => (
+                                        <div
+                                          key={payment.id}
+                                          className="flex items-center justify-between bg-gray-50 p-2 rounded text-xs"
+                                        >
+                                          <div className="flex items-center gap-2">
+                                            <CheckCircle className="w-4 h-4 text-green-600" />
+                                            <span className="font-mono">
+                                              {payment.paymentNumber}
+                                            </span>
+                                            <Badge
+                                              variant="outline"
+                                              className="text-xs"
+                                            >
+                                              {payment.paymentMethod}
+                                            </Badge>
+                                          </div>
+                                          <div className="text-right">
+                                            <p className="font-semibold text-green-600">
+                                              {formatCurrency(payment.amount)}
+                                            </p>
+                                            <p className="text-gray-500">
+                                              {formatDateTime(
+                                                payment.createdAt
+                                              )}
+                                            </p>
+                                          </div>
+                                        </div>
+                                      )
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                          </div>
+                        );
+                      }
+                    )}
                   </div>
                 ) : (
                   <div className="text-center py-12">
@@ -641,7 +667,7 @@ const InvoiceDetailsPage = ({
                     <span className="text-xs text-gray-600">Paid Students</span>
                     <span className="text-xs font-semibold">
                       {invoice.studentInvoices?.filter(
-                        (si: any) => si.status === "PAID"
+                        (si: StudentInvoice) => si.status === "PAID"
                       ).length || 0}
                     </span>
                   </div>
@@ -651,7 +677,7 @@ const InvoiceDetailsPage = ({
                     </span>
                     <span className="text-xs font-semibold">
                       {invoice.studentInvoices?.filter(
-                        (si: any) => si.status === "PARTIALLY_PAID"
+                        (si: StudentInvoice) => si.status === "PARTIALLY_PAID"
                       ).length || 0}
                     </span>
                   </div>
@@ -659,7 +685,7 @@ const InvoiceDetailsPage = ({
                     <span className="text-xs text-gray-600">Unpaid</span>
                     <span className="text-xs font-semibold">
                       {invoice.studentInvoices?.filter(
-                        (si: any) => si.status === "UNPAID"
+                        (si: StudentInvoice) => si.status === "UNPAID"
                       ).length || 0}
                     </span>
                   </div>
@@ -667,7 +693,7 @@ const InvoiceDetailsPage = ({
                     <span className="text-xs text-gray-600">Overdue</span>
                     <span className="text-xs font-semibold text-red-600">
                       {invoice.studentInvoices?.filter(
-                        (si: any) => si.status === "OVERDUE"
+                        (si: StudentInvoice) => si.status === "OVERDUE"
                       ).length || 0}
                     </span>
                   </div>

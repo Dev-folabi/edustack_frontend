@@ -6,6 +6,10 @@ import {
   Invoice,
   CreateInvoicePayload,
   UpdateInvoicePayload,
+  PaymentStatus,
+  Payment,
+  CreatePaymentPayload,
+  StudentInvoice,
 } from "@/types/finance";
 
 export interface PaginatedResponse<T> {
@@ -76,6 +80,21 @@ export const financeService = {
     return apiClient.get(`/accounting/invoices?${params.toString()}`);
   },
 
+  getInvoicesByStudent: (
+    studentId: string,
+    schoolId: string,
+    page: number = 1,
+    limit: number = 10
+  ): Promise<ApiResponse<PaginatedResponse<StudentInvoice>>> => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+    return apiClient.get(
+      `/accounting/student-invoices/student/${studentId}/${schoolId}?${params.toString()}`
+    );
+  },
+
   getInvoiceById: (id: string): Promise<ApiResponse<Invoice>> => {
     return apiClient.get(`/accounting/invoices/${id}`);
   },
@@ -89,5 +108,41 @@ export const financeService = {
 
   deleteInvoice: (id: string): Promise<ApiResponse<void>> => {
     return apiClient.delete(`/accounting/invoices/${id}`);
+  },
+
+  // Payment Management
+  createPayment: (
+    data: CreatePaymentPayload
+  ): Promise<ApiResponse<Payment>> => {
+    return apiClient.post("/accounting/payments", data);
+  },
+
+  getPayments: (
+    schoolId: string,
+    status: string = "",
+    page: number = 1,
+    limit: number = 10
+  ): Promise<ApiResponse<PaginatedResponse<Payment>>> => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+    if (status) {
+      params.append("status", status);
+    }
+    return apiClient.get(
+      `/accounting/payments/school/${schoolId}?${params.toString()}`
+    );
+  },
+
+  getPaymentById: (id: string): Promise<ApiResponse<Payment>> => {
+    return apiClient.get(`/accounting/payments/${id}`);
+  },
+
+  updatePaymentStatus: (
+    id: string,
+    status: PaymentStatus
+  ): Promise<ApiResponse<Payment>> => {
+    return apiClient.put(`/accounting/payments/${id}/status`, { status });
   },
 };

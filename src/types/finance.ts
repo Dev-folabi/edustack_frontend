@@ -47,6 +47,13 @@ export interface Session {
   updatedAt?: string;
 }
 
+export interface CreatePaymentPayload {
+  studentInvoiceId: string;
+  amount: number;
+  paymentMethod: PaymentMethod;
+  schoolId: string;
+}
+
 export interface Payment {
   id: string;
   paymentNumber: string;
@@ -55,12 +62,12 @@ export interface Payment {
   paymentMethod: PaymentMethod;
   status: PaymentStatus;
   transactionRef?: string | null;
-  gatewayResponse?: any;
   paidAt?: string | null;
   schoolId: string;
   createdBy?: string | null;
   createdAt: string;
   updatedAt: string;
+  studentInvoice: StudentInvoice;
 }
 
 export enum PaymentStatus {
@@ -79,14 +86,19 @@ export enum PaymentMethod {
 }
 export interface StudentInvoice {
   id: string;
-  studentId: string;
-  invoiceId: string;
   assignedAt: string;
   assignedBy: string;
-  status: InvoiceStatus;
-  totalAmount: number;
+  invoice: Invoice;
+  perStudentTotal: number;
   amountPaid: number;
   amountDue: number;
+  totalAmount: number;
+  status: InvoiceStatus;
+  student: {
+    id: string;
+    name: string;
+    admission_number: number;
+  };
   payments?: Payment[];
 }
 

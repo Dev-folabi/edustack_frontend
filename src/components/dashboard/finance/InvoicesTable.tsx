@@ -47,7 +47,9 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Invoice, InvoiceItem } from "@/types/finance";
+import { Invoice } from "@/types/finance";
+import { useRouter } from "next/navigation";
+import EditInvoiceModal from "@/components/dashboard/finance/EditInvoiceModal";
 
 export const InvoicesTable = () => {
   const { selectedSchool } = useAuthStore();
@@ -60,7 +62,10 @@ export const InvoicesTable = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [invoiceToDelete, setInvoiceToDelete] = useState<any>(null);
+  const [invoiceToDelete, setInvoiceToDelete] = useState<Invoice | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [invoiceToEdit, setInvoiceToEdit] = useState<Invoice | null>(null);
+  const router = useRouter();
 
   const fetchInvoices = useCallback(async () => {
     if (!selectedSchool?.schoolId) return;
@@ -114,19 +119,18 @@ export const InvoicesTable = () => {
   };
 
   const handleViewDetails = (invoiceId: string) => {
-    window.location.href = `/finance/invoices/${invoiceId}`;
+    router.push(`/finance/invoices/${invoiceId}`);
   };
 
-  const handleEdit = (invoiceId: string) => {
-    window.location.href = `/finance/invoices/${invoiceId}/edit`;
+  const handleEdit = (invoice: Invoice) => {
+    setInvoiceToEdit(invoice);
+    setEditModalOpen(true);
   };
-
-  // Status configuration removed — API doesn't return a status field for simplified view
 
   const filteredInvoices = invoices.filter(
     (invoice) =>
       invoice.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      invoice.invoiceNumber?.toLowerCase().includes(searchQuery.toLowerCase()) 
+      invoice.invoiceNumber?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -189,23 +193,32 @@ export const InvoicesTable = () => {
                           </TableCell>
                           <TableCell>
                             <div className="max-w-xs">
-                              <p className="font-medium truncate">{invoice.title}</p>
+                              <p className="font-medium truncate">
+                                {invoice.title}
+                              </p>
                             </div>
                           </TableCell>
                           <TableCell>
                             <div className="text-sm">
-                              <p className="font-medium">{invoice.session?.name || "N/A"}</p>
-                              <p className="text-gray-500">{invoice.term?.name || "N/A"}</p>
+                              <p className="font-medium">
+                                {invoice.session?.name || "N/A"}
+                              </p>
+                              <p className="text-gray-500">
+                                {invoice.term?.name || "N/A"}
+                              </p>
                             </div>
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2 whitespace-nowrap">
                               <Calendar className="w-4 h-4 text-gray-400" />
                               <span className="text-sm">
-                                {new Date(invoice.dueDate).toLocaleDateString("en-NG", {
-                                  day: "numeric",
-                                  month: "short",
-                                })}
+                                {new Date(invoice.dueDate).toLocaleDateString(
+                                  "en-NG",
+                                  {
+                                    day: "numeric",
+                                    month: "short",
+                                  }
+                                )}
                               </span>
                             </div>
                           </TableCell>
@@ -254,7 +267,7 @@ export const InvoicesTable = () => {
                                   View Details
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  onClick={() => handleEdit(invoice.id)}
+                                  onClick={() => handleEdit(invoice)}
                                 >
                                   <Edit className="mr-2 h-4 w-4" />
                                   Edit
@@ -284,7 +297,10 @@ export const InvoicesTable = () => {
               <div className="md:hidden space-y-4">
                 {filteredInvoices.map((invoice) => {
                   return (
-                    <Card key={invoice.id} className="hover:shadow-md transition-shadow">
+                    <Card
+                      key={invoice.id}
+                      className="hover:shadow-md transition-shadow"
+                    >
                       <CardContent className="pt-6">
                         <div className="space-y-4">
                           {/* Header */}
@@ -301,18 +317,28 @@ export const InvoicesTable = () => {
 
                           {/* Session/Term */}
                           <div className="flex items-center gap-2 text-sm">
-                            <span className="font-medium">{invoice.session?.name || "N/A"}</span>
+                            <span className="font-medium">
+                              {invoice.session?.name || "N/A"}
+                            </span>
                             <span className="text-gray-400">•</span>
-                            <span className="text-gray-600">{invoice.term?.name || "N/A"}</span>
+                            <span className="text-gray-600">
+                              {invoice.term?.name || "N/A"}
+                            </span>
                           </div>
 
                           {/* Due Date */}
                           <div className="flex items-center gap-2 text-sm text-gray-600">
                             <Calendar className="w-4 h-4" />
-                             <span>Due: {new Date(invoice.dueDate).toLocaleDateString("en-NG", {
-                               day: "numeric",
-                               month: "short",
-                             })}</span>
+                            <span>
+                              Due:{" "}
+                              {new Date(invoice.dueDate).toLocaleDateString(
+                                "en-NG",
+                                {
+                                  day: "numeric",
+                                  month: "short",
+                                }
+                              )}
+                            </span>
                           </div>
 
                           {/* Financial Info */}
@@ -353,7 +379,8 @@ export const InvoicesTable = () => {
                           <div className="flex items-center gap-2 text-sm">
                             <Users className="w-4 h-4 text-gray-400" />
                             <span className="text-gray-600">
-                              {invoice.studentInvoicesCount || 0} student(s) assigned
+                              {invoice.studentInvoicesCount || 0} student(s)
+                              assigned
                             </span>
                           </div>
 
@@ -372,7 +399,7 @@ export const InvoicesTable = () => {
                               variant="outline"
                               size="sm"
                               className="flex-1"
-                              onClick={() => handleEdit(invoice.id)}
+                              onClick={() => handleEdit(invoice)}
                             >
                               <Edit className="w-4 h-4 mr-2" />
                               Edit
@@ -400,8 +427,8 @@ export const InvoicesTable = () => {
               {totalPages > 1 && (
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 pt-6 border-t">
                   <p className="text-sm text-gray-600">
-                    Showing page {currentPage} of {totalPages} ({totalItems} total
-                    invoices)
+                    Showing page {currentPage} of {totalPages} ({totalItems}{" "}
+                    total invoices)
                   </p>
                   <div className="flex items-center gap-2">
                     <Button
@@ -414,20 +441,25 @@ export const InvoicesTable = () => {
                       Previous
                     </Button>
                     <div className="flex items-center gap-1">
-                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                        const page = i + 1;
-                        return (
-                          <Button
-                            key={page}
-                            variant={currentPage === page ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setCurrentPage(page)}
-                            className="w-10"
-                          >
-                            {page}
-                          </Button>
-                        );
-                      })}
+                      {Array.from(
+                        { length: Math.min(5, totalPages) },
+                        (_, i) => {
+                          const page = i + 1;
+                          return (
+                            <Button
+                              key={page}
+                              variant={
+                                currentPage === page ? "default" : "outline"
+                              }
+                              size="sm"
+                              onClick={() => setCurrentPage(page)}
+                              className="w-10"
+                            >
+                              {page}
+                            </Button>
+                          );
+                        }
+                      )}
                       {totalPages > 5 && (
                         <>
                           <span className="px-2 text-gray-500">...</span>
@@ -462,7 +494,9 @@ export const InvoicesTable = () => {
           ) : (
             <div className="text-center py-12">
               <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600 mb-2 font-medium">No invoices found</p>
+              <p className="text-gray-600 mb-2 font-medium">
+                No invoices found
+              </p>
               <p className="text-sm text-gray-500">
                 {searchQuery
                   ? "Try adjusting your search query"
@@ -479,7 +513,8 @@ export const InvoicesTable = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Invoice?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the invoice
+              This action cannot be undone. This will permanently delete the
+              invoice
               {invoiceToDelete && (
                 <>
                   {" "}
@@ -505,6 +540,16 @@ export const InvoicesTable = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {/* Edit Invoice Modal */}
+      <EditInvoiceModal
+        invoice={invoiceToEdit}
+        open={editModalOpen}
+        onOpenChange={(open) => {
+          setEditModalOpen(open);
+          if (!open) setInvoiceToEdit(null);
+        }}
+        onUpdated={() => fetchInvoices()}
+      />
     </div>
   );
 };
