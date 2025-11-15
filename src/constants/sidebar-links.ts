@@ -144,12 +144,12 @@ export const sidebarConfig: SidebarCategory[] = [
         icon: FaUserGraduate,
         roles: [UserRole.ADMIN, UserRole.TEACHER],
       },
-      {
-        href: DASHBOARD_ROUTES.STUDENT_TRANSFER,
-        label: "Transfer Students",
-        icon: FaUserGraduate,
-        roles: [UserRole.ADMIN],
-      },
+      // {
+      //   href: DASHBOARD_ROUTES.STUDENT_TRANSFER,
+      //   label: "Transfer Students",
+      //   icon: FaUserGraduate,
+      //   roles: [UserRole.ADMIN],
+      // },
     ],
   },
   {
