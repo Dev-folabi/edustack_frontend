@@ -76,13 +76,13 @@ export const studentSidebarConfig: SidebarCategory[] = [
     roles: [UserRole.STUDENT, UserRole.PARENT],
     links: [
       {
-        href: DASHBOARD_ROUTES.FINANCE_INVOICES,
+        href: DASHBOARD_ROUTES.STUDENT_FINANCE_INVOICES,
         label: "Invoices",
         icon: FaFileInvoiceDollar,
         roles: [UserRole.STUDENT, UserRole.PARENT],
       },
       {
-        href: DASHBOARD_ROUTES.FINANCE_PAYMENTS,
+        href: DASHBOARD_ROUTES.STUDENT_FINANCE_PAYMENTS,
         label: "Payment History",
         icon: FaFileInvoiceDollar,
         roles: [UserRole.STUDENT, UserRole.PARENT],
