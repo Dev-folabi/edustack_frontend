@@ -34,19 +34,19 @@ export const studentSidebarConfig: SidebarCategory[] = [
     roles: [UserRole.STUDENT, UserRole.PARENT],
     links: [
       {
-        href: DASHBOARD_ROUTES.TIMETABLE,
+        href: DASHBOARD_ROUTES.STUDENT_TIMETABLE,
         label: "Timetable",
         icon: FaClipboardList,
         roles: [UserRole.STUDENT, UserRole.PARENT],
       },
       {
-        href: DASHBOARD_ROUTES.SUBJECTS,
+        href: DASHBOARD_ROUTES.STUDENT_SUBJECTS,
         label: "Subjects",
         icon: FaBook,
         roles: [UserRole.STUDENT, UserRole.PARENT],
       },
       {
-        href: DASHBOARD_ROUTES.ATTENDANCE_STUDENT,
+        href: DASHBOARD_ROUTES.STUDENT_ATTENDANCE,
         label: "Attendance",
         icon: FaClipboardList,
         roles: [UserRole.STUDENT, UserRole.PARENT],
