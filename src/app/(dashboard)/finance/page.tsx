@@ -5,7 +5,7 @@ import withAuth from "@/components/withAuth";
 import { UserRole } from "@/constants/roles";
 import { useQuery } from "@tanstack/react-query";
 import { financeService } from "@/services/financeService";
-import { useAuth } from "@/store/authStore";
+import { useAuthStore } from "@/store/authStore";
 import FinancialOverviewCard from "@/components/finance/FinancialOverviewCard";
 import RevenueExpenseChart from "@/components/finance/RevenueExpenseChart";
 import CategoryPieChart from "@/components/finance/CategoryPieChart";
@@ -15,7 +15,7 @@ import { subDays } from "date-fns";
 import { DollarSign, TrendingDown, TrendingUp } from "lucide-react";
 
 const FinanceDashboardPage = () => {
-  const { user } = useAuth();
+  const { selectedSchool } = useAuthStore();
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: subDays(new Date(), 29),
     to: new Date(),
@@ -24,17 +24,17 @@ const FinanceDashboardPage = () => {
   const { data, isLoading } = useQuery({
     queryKey: [
       "financialOverview",
-      user?.schoolId,
+      selectedSchool?.schoolId,
       dateRange?.from,
       dateRange?.to,
     ],
     queryFn: () =>
       financeService.getFinancialOverview(
-        user?.schoolId!,
+        selectedSchool?.schoolId || "",
         dateRange?.from?.toISOString(),
         dateRange?.to?.toISOString()
       ),
-    enabled: !!user?.schoolId,
+    enabled: !!selectedSchool?.schoolId,
   });
 
   const chartData = [
@@ -92,9 +92,7 @@ const FinanceDashboardPage = () => {
 
       <div className="grid gap-4 mt-4 md:grid-cols-2">
         <div>
-          <h2 className="text-lg font-semibold mb-2">
-            Revenue vs. Expenses
-          </h2>
+          <h2 className="text-lg font-semibold mb-2">Revenue vs. Expenses</h2>
           <RevenueExpenseChart data={chartData} />
         </div>
         <div>

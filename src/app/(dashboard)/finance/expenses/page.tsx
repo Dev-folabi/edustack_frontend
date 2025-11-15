@@ -5,7 +5,7 @@ import withAuth from "@/components/withAuth";
 import { UserRole } from "@/constants/roles";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { financeService } from "@/services/financeService";
-import { useAuth } from "@/store/authStore";
+import { useAuthStore } from "@/store/authStore";
 import { DataTable } from "@/components/ui/data-table";
 import { getColumns } from "./columns";
 import { Button } from "@/components/ui/button";
@@ -21,15 +21,15 @@ import { Expense } from "@/types/finance";
 import { toast } from "sonner";
 
 const ExpensesPage = () => {
-  const { user } = useAuth();
+  const { selectedSchool } = useAuthStore();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | undefined>();
 
   const { data, isLoading } = useQuery({
-    queryKey: ["expenses", user?.schoolId],
-    queryFn: () => financeService.getExpenses(user?.schoolId!),
-    enabled: !!user?.schoolId,
+    queryKey: ["expenses", selectedSchool?.schoolId],
+    queryFn: () => financeService.getExpenses(selectedSchool?.schoolId || ""),
+    enabled: !!selectedSchool?.schoolId,
   });
 
   const createMutation = useMutation({
@@ -73,7 +73,7 @@ const ExpensesPage = () => {
     if (selectedExpense) {
       updateMutation.mutate({ id: selectedExpense.id, data: values });
     } else {
-      createMutation.mutate({ ...values, schoolId: user?.schoolId! });
+      createMutation.mutate({ ...values, schoolId: selectedSchool?.schoolId });
     }
   };
 
@@ -107,7 +107,9 @@ const ExpensesPage = () => {
             <ExpenseForm
               onSubmit={handleSubmit}
               initialValues={selectedExpense}
-              isSubmitting={createMutation.isPending || updateMutation.isPending}
+              isSubmitting={
+                createMutation.isPending || updateMutation.isPending
+              }
             />
           </DialogContent>
         </Dialog>
