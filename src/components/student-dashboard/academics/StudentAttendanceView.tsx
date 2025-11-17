@@ -1,8 +1,8 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuthStore } from "@/store/authStore";
-import { attendanceService } from "@/services/attendanceService";
-import { StudentAttendance } from "@/types/attendance";
+import { getStudentAttendance } from "@/services/attendanceService";
+import { AttendanceRecord } from "@/types/attendance";
 import { Loader } from "@/components/ui/Loader";
 import {
   Table,
@@ -15,21 +15,20 @@ import {
 import { Badge } from "@/components/ui/badge";
 
 const StudentAttendanceView = () => {
-  const [attendance, setAttendance] = useState<StudentAttendance[]>([]);
+  const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { user, selectedSchool } = useAuthStore();
-  const studentId = user?.student?.id;
+  const { student } = useAuthStore();
 
   const fetchAttendance = useCallback(async () => {
-    if (!studentId || !selectedSchool) return;
+    if (!student) return;
     try {
       setLoading(true);
-      const response = await attendanceService.getStudentAttendance(
-        selectedSchool.schoolId,
-        studentId
-      );
+      const response = await getStudentAttendance({
+        sectionId: student.student_enrolled?.[0].sectionId,
+        studentId: student.id,
+      });
       if (response.success) {
         setAttendance(response.data.data);
       } else {
@@ -41,7 +40,7 @@ const StudentAttendanceView = () => {
     } finally {
       setLoading(false);
     }
-  }, [studentId, selectedSchool]);
+  }, [student]);
 
   useEffect(() => {
     fetchAttendance();

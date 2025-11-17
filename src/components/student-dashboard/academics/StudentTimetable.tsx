@@ -1,8 +1,7 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuthStore } from "@/store/authStore";
-import { timetableService } from "@/services/timetableService";
-import { Timetable } from "@/types/timetable";
+import { Timetable, timetableService } from "@/services/timetableService";
 import { Loader } from "@/components/ui/Loader";
 import {
   Table,
@@ -18,19 +17,18 @@ const StudentTimetable = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { user, selectedSchool } = useAuthStore();
-  const studentEnrollment = user?.student?.student_enrolled?.[0];
+  const { student, selectedSchool } = useAuthStore();
+  const studentEnrollment = student?.student_enrolled?.[0];
 
   const fetchTimetable = useCallback(async () => {
     if (!studentEnrollment || !selectedSchool) return;
     try {
       setLoading(true);
-      const response = await timetableService.getTimetableBySection(
-        selectedSchool.schoolId,
+      const response = await timetableService.getClassTimetable(
         studentEnrollment.sectionId
       );
       if (response.success) {
-        setTimetable(response.data.data);
+        setTimetable(response?.data?.data);
       } else {
         throw new Error(response.message);
       }

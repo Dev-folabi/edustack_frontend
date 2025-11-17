@@ -20,15 +20,16 @@ const StudentPaymentsList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { user, selectedSchool } = useAuthStore();
-  const studentId = user?.student?.id;
+  const { student, selectedSchool } = useAuthStore();
+  const studentId = student?.id;
 
   const fetchPayments = useCallback(async () => {
     if (!studentId || !selectedSchool) return;
     try {
       setLoading(true);
-      const response = await financeService.getStudentPayments(
+      const response = await financeService.getPayments(
         selectedSchool.schoolId,
+        "",
         studentId
       );
       if (response.success) {

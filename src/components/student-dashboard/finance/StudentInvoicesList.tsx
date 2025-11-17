@@ -22,16 +22,16 @@ const StudentInvoicesList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { user, selectedSchool } = useAuthStore();
-  const studentId = user?.student?.id;
+  const { student, selectedSchool } = useAuthStore();
+  const studentId = student?.id;
 
   const fetchInvoices = useCallback(async () => {
     if (!studentId || !selectedSchool) return;
     try {
       setLoading(true);
-      const response = await financeService.getStudentInvoices(
-        selectedSchool.schoolId,
-        studentId
+      const response = await financeService.getInvoicesByStudent(
+        studentId,
+        selectedSchool.schoolId
       );
       if (response.success) {
         setInvoices(response.data.data);
@@ -101,8 +101,8 @@ const StudentInvoicesList = () => {
                 <TableRow key={invoice.id}>
                   <TableCell>{invoice.invoice.title}</TableCell>
                   <TableCell>{invoice.invoice.totalAmount}</TableCell>
-                  <TableCell>{invoice.paidAmount}</TableCell>
-                  <TableCell>{invoice.dueAmount}</TableCell>
+                  <TableCell>{invoice.amountPaid}</TableCell>
+                  <TableCell>{invoice.amountDue}</TableCell>
                   <TableCell>
                     {new Date(invoice.invoice.dueDate).toLocaleDateString()}
                   </TableCell>
@@ -110,7 +110,9 @@ const StudentInvoicesList = () => {
                   <TableCell>
                     {invoice.status !== "PAID" && (
                       <Button asChild>
-                        <Link href={`/student/finance/make-payment?invoiceId=${invoice.id}`}>
+                        <Link
+                          href={`/student/finance/make-payment?invoiceId=${invoice.id}`}
+                        >
                           Make Payment
                         </Link>
                       </Button>
@@ -118,6 +120,7 @@ const StudentInvoicesList = () => {
                   </TableCell>
                 </TableRow>
               ))}
+
               {invoices.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center">

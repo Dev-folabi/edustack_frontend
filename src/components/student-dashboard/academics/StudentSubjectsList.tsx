@@ -18,8 +18,8 @@ const StudentSubjectsList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { user, selectedSchool } = useAuthStore();
-  const studentEnrollment = user?.student?.student_enrolled?.[0];
+  const { student, selectedSchool } = useAuthStore();
+  const studentEnrollment = student?.student_enrolled?.[0];
 
   const fetchSubjects = useCallback(async () => {
     if (!studentEnrollment || !selectedSchool) return;
@@ -74,7 +74,7 @@ const StudentSubjectsList = () => {
               <TableRow key={subject.id}>
                 <TableCell>{subject.name}</TableCell>
                 <TableCell>{subject.code}</TableCell>
-                <TableCell>{subject.teacher?.name || "Unassigned"}</TableCell>
+                <TableCell>{subject.teacher || "Unassigned"}</TableCell>
                 <TableCell>
                   <Badge
                     variant={subject.isActive ? "default" : "secondary"}
