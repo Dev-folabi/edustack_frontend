@@ -124,6 +124,7 @@ export const financeService = {
   getPayments: (
     schoolId: string,
     status: string = "",
+    studentId?: string,
     page: number = 1,
     limit: number = 10
   ): Promise<ApiResponse<PaginatedResponse<Payment>>> => {
@@ -133,6 +134,9 @@ export const financeService = {
     });
     if (status) {
       params.append("status", status);
+    }
+    if (studentId) {
+      params.append("studentId", studentId);
     }
     return apiClient.get(
       `/accounting/payments/school/${schoolId}?${params.toString()}`
@@ -195,4 +199,5 @@ export const financeService = {
       `/accounting/reports/financial-overview/${schoolId}?${params.toString()}`
     );
   },
+
 };
