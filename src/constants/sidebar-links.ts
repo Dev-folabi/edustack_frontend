@@ -276,4 +276,40 @@ export const sidebarConfig: SidebarCategory[] = [
       },
     ],
   },
+  {
+    title: "Student Dashboard",
+    roles: [UserRole.STUDENT],
+    links: [
+      {
+        href: "/student/dashboard",
+        label: "Dashboard",
+        icon: FaTachometerAlt,
+        roles: [UserRole.STUDENT],
+      },
+      {
+        href: "/student/academics",
+        label: "Academics",
+        icon: FaBook,
+        roles: [UserRole.STUDENT],
+      },
+      {
+        href: "/student/finance",
+        label: "Finance",
+        icon: FaFileInvoiceDollar,
+        roles: [UserRole.STUDENT],
+      },
+      {
+        href: "/student/examinations",
+        label: "Examinations",
+        icon: FaClipboardList,
+        roles: [UserRole.STUDENT],
+      },
+      {
+        href: "/student/notifications",
+        label: "Notifications",
+        icon: FaEnvelope,
+        roles: [UserRole.STUDENT],
+      },
+    ],
+  },
 ];

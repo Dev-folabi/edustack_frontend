@@ -73,8 +73,12 @@ export async function middleware(request: NextRequest) {
   }
 
   // If user is logged in and tries to access login/register, redirect to dashboard
-  if (token && (pathname.startsWith('/login') || pathname.startsWith('/register'))) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+  if (token && (pathname.startsWith("/login") || pathname.startsWith("/register"))) {
+    const user = JSON.parse(request.cookies.get("user")?.value || "{}");
+    if (user.role === "student") {
+      return NextResponse.redirect(new URL("/student/dashboard", request.url));
+    }
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   return NextResponse.next();
