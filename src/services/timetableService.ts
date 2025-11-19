@@ -151,9 +151,10 @@ export const timetableService = {
 
   // Get timetable for a specific class section
   getClassTimetable: (
-    sectionId: string
+    sectionId: string,
+    status?: string
   ): Promise<ApiResponse<TimetableResponse>> => {
-    return apiClient.get(`/timetables/class/${sectionId}`);
+    return apiClient.get(`/timetables/class/${sectionId}?status=${status || ""}`);
   },
 
   // Create a new timetable
