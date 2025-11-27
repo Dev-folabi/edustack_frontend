@@ -25,7 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Search, Calendar, FileText } from "lucide-react";
-import Link from "next/link";
+import PaymentReceiptModal from "./PaymentReceiptModal";
 
 const StudentPaymentsList = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -33,6 +33,8 @@ const StudentPaymentsList = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+  const [receiptModalOpen, setReceiptModalOpen] = useState(false);
 
   const { student, selectedSchool } = useAuthStore();
   const studentId = student?.id;
@@ -77,13 +79,29 @@ const StudentPaymentsList = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "COMPLETED":
-        return <Badge variant="default">Completed</Badge>;
+        return (
+          <Badge className="bg-green-100 text-green-800 border-green-300">
+            Completed
+          </Badge>
+        );
       case "PENDING":
-        return <Badge variant="secondary">Pending</Badge>;
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
+            Pending
+          </Badge>
+        );
       case "FAILED":
-        return <Badge variant="destructive">Failed</Badge>;
+        return (
+          <Badge className="bg-red-100 text-red-800 border-red-300">
+            Failed
+          </Badge>
+        );
       case "REFUNDED":
-        return <Badge variant="outline">Refunded</Badge>;
+        return (
+          <Badge className="bg-blue-100 text-blue-800 border-blue-300">
+            Refunded
+          </Badge>
+        );
       default:
         return <Badge>{status}</Badge>;
     }
@@ -99,6 +117,11 @@ const StudentPaymentsList = () => {
       : true;
     return statusMatch && searchMatch;
   });
+
+  const handleViewReceipt = (payment: Payment) => {
+    setSelectedPayment(payment);
+    setReceiptModalOpen(true);
+  };
 
   if (loading) {
     return (
@@ -162,6 +185,7 @@ const StudentPaymentsList = () => {
                 <TableHead>Payment #</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
                 <TableHead>Method</TableHead>
+                <TableHead>Transaction Ref</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Paid At</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -170,7 +194,9 @@ const StudentPaymentsList = () => {
             <TableBody>
               {filteredPayments.map((p) => (
                 <TableRow key={p.id} className="hover:bg-gray-50">
-                  <TableCell>{p.paymentNumber}</TableCell>
+                  <TableCell className="font-mono text-sm">
+                    {p.paymentNumber}
+                  </TableCell>
                   <TableCell className="text-right font-semibold whitespace-nowrap">
                     {new Intl.NumberFormat("en-NG", {
                       style: "currency",
@@ -181,6 +207,9 @@ const StudentPaymentsList = () => {
                   <TableCell className="whitespace-nowrap">
                     {p.paymentMethod}
                   </TableCell>
+                  <TableCell className="font-mono text-xs text-gray-600 max-w-[150px] truncate">
+                    {p.transactionRef || "N/A"}
+                  </TableCell>
                   <TableCell>{getStatusBadge(p.status)}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2 whitespace-nowrap">
@@ -190,6 +219,7 @@ const StudentPaymentsList = () => {
                           ? new Date(p.paidAt).toLocaleDateString("en-NG", {
                               day: "numeric",
                               month: "short",
+                              year: "numeric",
                             })
                           : "N/A"}
                       </span>
@@ -197,8 +227,8 @@ const StudentPaymentsList = () => {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button asChild size="sm">
-                        <Link href={`#`}>Receipt</Link>
+                      <Button size="sm" onClick={() => handleViewReceipt(p)}>
+                        Receipt
                       </Button>
                     </div>
                   </TableCell>
@@ -207,7 +237,7 @@ const StudentPaymentsList = () => {
 
               {filteredPayments.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center">
+                  <TableCell colSpan={7} className="text-center">
                     <div className="py-8">
                       <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-600 mb-2 font-medium">
@@ -244,11 +274,23 @@ const StudentPaymentsList = () => {
                           minimumFractionDigits: 0,
                         }).format(p.amount || 0)}
                       </h3>
-                      <p className="text-sm text-gray-600 mt-1">
+                    </div>
+                    <div>{getStatusBadge(p.status)}</div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 py-2 border-t border-b">
+                    <div>
+                      <p className="text-xs text-gray-600">Payment Method</p>
+                      <p className="font-semibold text-sm mt-1">
                         {p.paymentMethod}
                       </p>
                     </div>
-                    <div>{getStatusBadge(p.status)}</div>
+                    <div>
+                      <p className="text-xs text-gray-600">Transaction Ref</p>
+                      <p className="font-mono text-xs mt-1 truncate">
+                        {p.transactionRef || "N/A"}
+                      </p>
+                    </div>
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -259,13 +301,14 @@ const StudentPaymentsList = () => {
                           ? new Date(p.paidAt).toLocaleDateString("en-NG", {
                               day: "numeric",
                               month: "short",
+                              year: "numeric",
                             })
                           : "N/A"}
                       </span>
                     </div>
                     <div className="flex gap-2">
-                      <Button asChild size="sm">
-                        <Link href="#">Receipt</Link>
+                      <Button size="sm" onClick={() => handleViewReceipt(p)}>
+                        Receipt
                       </Button>
                     </div>
                   </div>
@@ -273,8 +316,29 @@ const StudentPaymentsList = () => {
               </CardContent>
             </Card>
           ))}
+
+          {filteredPayments.length === 0 && (
+            <div className="py-12 text-center">
+              <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600 mb-2 font-medium">
+                No payments found
+              </p>
+              <p className="text-sm text-gray-500">
+                {searchQuery
+                  ? "Try adjusting your search query"
+                  : "No payments available"}
+              </p>
+            </div>
+          )}
         </div>
       </CardContent>
+
+      {/* Receipt Modal */}
+      <PaymentReceiptModal
+        payment={selectedPayment}
+        open={receiptModalOpen}
+        onOpenChange={setReceiptModalOpen}
+      />
     </Card>
   );
 };

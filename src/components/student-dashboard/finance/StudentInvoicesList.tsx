@@ -173,7 +173,7 @@ const StudentInvoicesList = () => {
                       style: "currency",
                       currency: "NGN",
                       minimumFractionDigits: 0,
-                    }).format(invoice.invoice.totalAmount || 0)}
+                    }).format(invoice.perStudentTotal || 0)}
                   </TableCell>
                   <TableCell className="text-right font-semibold text-green-600 whitespace-nowrap">
                     {new Intl.NumberFormat("en-NG", {
@@ -273,7 +273,7 @@ const StudentInvoicesList = () => {
                           style: "currency",
                           currency: "NGN",
                           minimumFractionDigits: 0,
-                        }).format(invoice.invoice.totalAmount || 0)}
+                        }).format(invoice.perStudentTotal || 0)}
                       </p>
                     </div>
                     <div>
