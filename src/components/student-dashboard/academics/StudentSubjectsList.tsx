@@ -74,10 +74,14 @@ const StudentSubjectsList = () => {
               <TableRow key={subject.id}>
                 <TableCell>{subject.name}</TableCell>
                 <TableCell>{subject.code}</TableCell>
-                <TableCell>{subject.teacher || "Unassigned"}</TableCell>
+                <TableCell>{subject?.teacher?.name || "Unassigned"}</TableCell>
                 <TableCell>
                   <Badge
-                    variant={subject.isActive ? "default" : "secondary"}
+                    className={
+                      subject.isActive
+                        ? "bg-green-100 text-green-800 border-green-300"
+                        : "bg-red-100 text-red-800 border-red-300"
+                    }
                   >
                     {subject.isActive ? "Active" : "Inactive"}
                   </Badge>

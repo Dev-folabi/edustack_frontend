@@ -148,7 +148,6 @@ export const InvoicesTable = () => {
                 className="pl-10"
               />
             </div>
-            {/* Status filter removed to keep UI minimal; only search is available */}
           </div>
         </CardContent>
       </Card>
