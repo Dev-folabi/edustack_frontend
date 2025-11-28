@@ -161,7 +161,7 @@ const StaffRegistrationForm = () => {
             </div>
             <div className="flex items-center space-x-2 text-sm text-gray-500">
               <School className="h-4 w-4" />
-              <span>{selectedSchool?.name || "No school selected"}</span>
+              <span>{selectedSchool?.school.name || "No school selected"}</span>
             </div>
           </div>
         </div>

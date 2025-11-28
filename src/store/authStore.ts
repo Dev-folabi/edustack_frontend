@@ -14,9 +14,9 @@ interface AuthState {
   token: string | null;
   userSchools: UserSchool[] | null;
   selectedSchool: UserSchool | null;
-  staff: any | null;
-  student: any | null;
-  parent: any | null;
+  staff: unknown | null;
+  student: unknown | null;
+  parent: unknown | null;
   isLoading: boolean;
   isOnboarded: boolean;
   classes: Class[];
@@ -25,9 +25,12 @@ interface AuthState {
   isHydrated: boolean;
 
   // Actions
-  login: (emailOrUsername: string, password: string) => Promise<void>;
+  login: (
+    emailOrUsername: string,
+    password: string
+  ) => Promise<{ redirectTo?: string }>;
   logout: () => void;
-  initializeAuth: () => void; // Add initialization method
+  initializeAuth: () => void;
   setSelectedSchool: (school: UserSchool) => void;
   checkOnboardingStatus: () => Promise<{
     isOnboarded: boolean;
@@ -141,11 +144,59 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
         // Set cookie for middleware
         document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 60 * 60}`; // 7 days
+
+        return {}; // Successful login, no redirect needed
       } else {
         throw new Error(response.message || "Login failed");
       }
     } catch (error: unknown) {
       set({ isLoading: false });
+
+      // Debug: Log the full error to understand its structure
+      console.log("Login error:", error);
+
+      // Check if it's an ApiError with email verification message
+      if (error && typeof error === "object" && "message" in error) {
+        const errorMessage = (error as Error).message;
+        console.log("Error message:", errorMessage);
+
+        // Try multiple possible error data structures
+        let userId: string | undefined;
+
+        if ("data" in error) {
+          const errorData = (error as { data?: Record<string, unknown> }).data;
+          console.log("Error data:", errorData);
+
+          // Try different possible structures
+          const nestedData = errorData?.data as
+            | Record<string, unknown>
+            | undefined;
+          userId =
+            (nestedData?.userId as string) || (errorData?.userId as string);
+        }
+
+        if (errorMessage.includes("Your email is not verified")) {
+          console.log("Email verification error detected, userId:", userId);
+
+          if (userId) {
+            try {
+              // Store userId in localStorage for verify-email page
+              localStorage.setItem("pendingVerificationUserId", userId);
+
+              await authService.resendOTP(userId);
+              console.log("OTP resent successfully, will redirect...");
+
+              // Return redirect path instead of calling router
+              return { redirectTo: `/verify-email?userId=${userId}` };
+            } catch (resendError) {
+              console.error("Failed to resend OTP:", resendError);
+            }
+          } else {
+            console.error("UserId not found in error data");
+          }
+        }
+      }
+
       throw error;
     }
   },

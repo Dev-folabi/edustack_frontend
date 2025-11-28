@@ -3,7 +3,7 @@ import withAuth from "@/components/withAuth";
 import { UserRole } from "@/constants/roles";
 import { StaffTable } from "@/components/dashboard/staff-management/StaffTable";
 import { Button } from "@/components/ui/button";
-import { Download, Printer, Plus, User } from "lucide-react";
+import { Plus, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 const StaffListPage = () => {
   const router = useRouter();
@@ -29,24 +29,9 @@ const StaffListPage = () => {
             </p>{" "}
           </div>{" "}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            {" "}
-            <Button
-              variant="outline"
-              className="bg-white shadow-sm hover:shadow-md transition-shadow"
-            >
-              {" "}
-              <Download className="mr-2 h-4 w-4" /> Export Data{" "}
-            </Button>{" "}
-            <Button
-              variant="outline"
-              className="bg-white shadow-sm hover:shadow-md transition-shadow"
-            >
-              {" "}
-              <Printer className="mr-2 h-4 w-4" /> Print List{" "}
-            </Button>{" "}
             <Button
               onClick={handleAddNewStaff}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg"
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-purple-700 shadow-lg"
             >
               {" "}
               <Plus className="mr-2 h-4 w-4" /> Add New Staff{" "}

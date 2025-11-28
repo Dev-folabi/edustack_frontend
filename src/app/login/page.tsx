@@ -66,7 +66,20 @@ const LoginPage: React.FC = () => {
 
   const onSubmit = async (values: LoginFormValues) => {
     try {
-      await login(values.emailOrUsername, values.password);
+      const result = await login(values.emailOrUsername, values.password);
+
+      // Check if we need to redirect for email verification
+      if (result.redirectTo) {
+        showToast({
+          title: "Verification Required",
+          type: "info",
+          message: "A new verification code has been sent to your email.",
+        });
+        router.push(result.redirectTo);
+        return;
+      }
+
+      // Successful login
       showToast({
         title: "Login Successful",
         type: "success",
@@ -85,31 +98,11 @@ const LoginPage: React.FC = () => {
         router.push(DASHBOARD_ROUTES.MULTI_SCHOOL_DASHBOARD);
       }
     } catch (error) {
-      if (
-        error instanceof ApiError &&
-        error.message.includes("not verified") &&
-        error.data?.userId
-      ) {
-        const { userId } = error.data;
-        showToast({
-          title: "Verification Required",
-          type: "info",
-          message: "A new verification code has been sent to your email.",
-        });
-        try {
-          await authService.resendOTP(userId);
-          router.push(`/verify-email?userId=${userId}`);
-        } catch (resendError) {
-          console.error("Failed to resend OTP:", resendError);
-        }
-      } else {
-        showToast({
-          title: "Login Failed",
-          type: "error",
-          message:
-            error instanceof Error ? error.message : "Invalid credentials",
-        });
-      }
+      showToast({
+        title: "Login Failed",
+        type: "error",
+        message: error instanceof Error ? error.message : "Invalid credentials",
+      });
     }
   };
 
