@@ -28,7 +28,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { financeService } from "@/services/financeService";
 import { PaymentStatus } from "@/types/finance";
-import { toast } from "sonner";
+import { useToast } from "@/components/ui/Toast";
 import {
   CheckCircle,
   Clock,
@@ -60,6 +60,7 @@ const UpdatePaymentStatusModal: React.FC<UpdatePaymentStatusModalProps> = ({
   paymentId,
 }) => {
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
 
   const {
     control,
@@ -89,7 +90,11 @@ const UpdatePaymentStatusModal: React.FC<UpdatePaymentStatusModalProps> = ({
     mutationFn: (status: PaymentStatus) =>
       financeService.updatePaymentStatus(paymentId || "", status),
     onSuccess: () => {
-      toast.success("Payment status updated successfully");
+      showToast({
+        type: "success",
+        title: "Success",
+        message: "Payment status updated successfully",
+      });
       queryClient.invalidateQueries({ queryKey: ["payments"] });
       queryClient.invalidateQueries({ queryKey: ["payment", paymentId] });
       handleClose();
@@ -99,7 +104,11 @@ const UpdatePaymentStatusModal: React.FC<UpdatePaymentStatusModalProps> = ({
         error?.response?.data?.message ||
         error?.message ||
         "Failed to update payment status";
-      toast.error(message);
+      showToast({
+        type: "error",
+        title: "Error",
+        message,
+      });
     },
   });
 
@@ -110,7 +119,11 @@ const UpdatePaymentStatusModal: React.FC<UpdatePaymentStatusModalProps> = ({
 
   const onSubmit = (data: UpdatePaymentStatusForm) => {
     if (data.status === payment?.status) {
-      toast.info("Status is already set to this value");
+      showToast({
+        type: "info",
+        title: "Info",
+        message: "Status is already set to this value",
+      });
       return;
     }
     updatePaymentStatusMutation.mutate(data.status);

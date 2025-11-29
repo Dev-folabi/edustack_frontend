@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
+import { useToast } from "@/components/ui/Toast";
 import { saveManualResults } from "@/services/examService";
 import { useStudentStore } from "@/store/studentStore";
 
@@ -22,10 +22,15 @@ interface ImportResultsDialogProps {
   paperId: string;
 }
 
-export const ImportResultsDialog = ({ isOpen, onClose, paperId }: ImportResultsDialogProps) => {
+export const ImportResultsDialog = ({
+  isOpen,
+  onClose,
+  paperId,
+}: ImportResultsDialogProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setUploading] = useState(false);
   const { students } = useStudentStore();
+  const { showToast } = useToast();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -35,7 +40,11 @@ export const ImportResultsDialog = ({ isOpen, onClose, paperId }: ImportResultsD
 
   const handleUpload = async () => {
     if (!file) {
-      toast.error("Please select a file to upload.");
+      showToast({
+        type: "error",
+        title: "Error",
+        message: "Please select a file to upload.",
+      });
       return;
     }
 
@@ -44,23 +53,35 @@ export const ImportResultsDialog = ({ isOpen, onClose, paperId }: ImportResultsD
     const reader = new FileReader();
     reader.onload = async (e) => {
       const text = e.target?.result as string;
-      const lines = text.split('\n').slice(1); // Skip header
+      const lines = text.split("\n").slice(1); // Skip header
 
-      const results = lines.map(line => {
-        const [admissionNumber, marks] = line.split(',');
-        const student = students.find(s => s.admissionNumber === Number(admissionNumber));
-        if (student) {
-          return { studentId: student.id, marks: Number(marks) };
-        }
-        return null;
-      }).filter(r => r !== null) as { studentId: string; marks: number }[];
+      const results = lines
+        .map((line) => {
+          const [admissionNumber, marks] = line.split(",");
+          const student = students.find(
+            (s) => s.admissionNumber === Number(admissionNumber)
+          );
+          if (student) {
+            return { studentId: student.id, marks: Number(marks) };
+          }
+          return null;
+        })
+        .filter((r) => r !== null) as { studentId: string; marks: number }[];
 
       try {
         await saveManualResults(paperId, results);
-        toast.success("Results imported successfully!");
+        showToast({
+          type: "success",
+          title: "Success",
+          message: "Results imported successfully!",
+        });
         onClose();
       } catch (error) {
-        toast.error("Failed to import results.");
+        showToast({
+          type: "error",
+          title: "Error",
+          message: "Failed to import results.",
+        });
       } finally {
         setUploading(false);
       }
@@ -80,14 +101,25 @@ export const ImportResultsDialog = ({ isOpen, onClose, paperId }: ImportResultsD
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
             <Label htmlFor="csv-file">CSV File</Label>
-            <Input id="csv-file" type="file" accept=".csv" onChange={handleFileChange} />
+            <Input
+              id="csv-file"
+              type="file"
+              accept=".csv"
+              onChange={handleFileChange}
+            />
           </div>
-          <a href="/results_template.csv" download className="text-sm text-blue-600 hover:underline">
+          <a
+            href="/results_template.csv"
+            download
+            className="text-sm text-blue-600 hover:underline"
+          >
             Download sample CSV template
           </a>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
           <Button onClick={handleUpload} disabled={!file || isUploading}>
             {isUploading ? "Uploading..." : "Upload and Import"}
           </Button>

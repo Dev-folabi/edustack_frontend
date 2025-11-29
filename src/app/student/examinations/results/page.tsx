@@ -51,13 +51,14 @@ import {
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
-import { toast } from "sonner";
+import { useToast } from "@/components/ui/Toast";
 import { format } from "date-fns";
 import { ExamPaper } from "@/types/exam";
 
 const StudentResultsPage = () => {
   const { student } = useAuthStore();
   const { selectedSession } = useSessionStore();
+  const { showToast } = useToast();
   const [examPapers, setExamPapers] = useState<ExamPaper[]>([]);
   const [groupedPapers, setGroupedPapers] = useState<Record<string, any[]>>({});
   const [openTerms, setOpenTerms] = useState<Record<string, boolean>>({});
@@ -118,7 +119,11 @@ const StudentResultsPage = () => {
           );
           setOpenTerms(initialOpenState);
         } catch (error) {
-          toast.error("Failed to load exam papers");
+          showToast({
+            type: "error",
+            title: "Error",
+            message: "Failed to load exam papers",
+          });
         } finally {
           setLoadingPapers(false);
         }
@@ -167,13 +172,21 @@ const StudentResultsPage = () => {
         setIsResultDialogOpen(true);
       }
     } catch (error) {
-      toast.error("Failed to load result");
+      showToast({
+        type: "error",
+        title: "Error",
+        message: "Failed to load result",
+      });
     }
   };
 
   const handleGenerateReport = async () => {
     if (!selectedTerm) {
-      toast.error("Please select a term first");
+      showToast({
+        type: "error",
+        title: "Error",
+        message: "Please select a term first",
+      });
       return;
     }
 
@@ -187,9 +200,17 @@ const StudentResultsPage = () => {
         );
         setReportData(data.data);
         setIsReportModalOpen(true);
-        toast.success("Report generated successfully!");
+        showToast({
+          type: "success",
+          title: "Success",
+          message: "Report generated successfully!",
+        });
       } catch (error) {
-        toast.error("Failed to generate report");
+        showToast({
+          type: "error",
+          title: "Error",
+          message: "Failed to generate report",
+        });
       } finally {
         setLoading(false);
       }

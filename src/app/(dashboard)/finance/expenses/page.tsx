@@ -52,7 +52,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import ExpenseForm from "@/components/finance/ExpenseForm";
 import { Expense } from "@/types/finance";
-import { toast } from "sonner";
+import { useToast } from "@/components/ui/Toast";
 import {
   DollarSign,
   Search,
@@ -74,6 +74,7 @@ import {
 const ExpensesPage = () => {
   const { selectedSchool } = useAuthStore();
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | undefined>();
   const [searchQuery, setSearchQuery] = useState("");
@@ -93,11 +94,19 @@ const ExpensesPage = () => {
     mutationFn: financeService.createExpense,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
-      toast.success("Expense created successfully");
+      showToast({
+        type: "success",
+        title: "Success",
+        message: "Expense created successfully",
+      });
       setIsDialogOpen(false);
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Failed to create expense");
+      showToast({
+        type: "error",
+        title: "Error",
+        message: error?.response?.data?.message || "Failed to create expense",
+      });
     },
   });
 
@@ -106,12 +115,20 @@ const ExpensesPage = () => {
       financeService.updateExpense(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
-      toast.success("Expense updated successfully");
+      showToast({
+        type: "success",
+        title: "Success",
+        message: "Expense updated successfully",
+      });
       setIsDialogOpen(false);
       setSelectedExpense(undefined);
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Failed to update expense");
+      showToast({
+        type: "error",
+        title: "Error",
+        message: error?.response?.data?.message || "Failed to update expense",
+      });
     },
   });
 
@@ -119,12 +136,20 @@ const ExpensesPage = () => {
     mutationFn: financeService.deleteExpense,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
-      toast.success("Expense deleted successfully");
+      showToast({
+        type: "success",
+        title: "Success",
+        message: "Expense deleted successfully",
+      });
       setDeleteDialogOpen(false);
       setExpenseToDelete(null);
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Failed to delete expense");
+      showToast({
+        type: "error",
+        title: "Error",
+        message: error?.response?.data?.message || "Failed to delete expense",
+      });
     },
   });
 

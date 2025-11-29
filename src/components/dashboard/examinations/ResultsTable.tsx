@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Student } from "@/types/student";
 import { CheckCircle2, Circle } from "lucide-react";
-import { toast } from "sonner";
+import { useToast } from "@/components/ui/Toast";
 import { Attempt, ExamPaper } from "@/types/exam";
 import { Badge } from "@/components/ui/badge";
 
@@ -29,6 +29,7 @@ export const ResultsTable = ({
   scores,
   onScoreChange,
 }: ResultsTableProps) => {
+  const { showToast } = useToast();
   const getAttemptForStudent = (studentId: string) => {
     return paper.attempts?.find(
       (attempt: Attempt) => attempt.studentId === studentId
@@ -110,7 +111,11 @@ export const ResultsTable = ({
                         if (numValue <= paper.maxMarks) {
                           onScoreChange(studentId, numValue);
                         } else {
-                          toast.error(`Score cannot exceed ${paper.maxMarks}`);
+                          showToast({
+                            type: "error",
+                            title: "Error",
+                            message: `Score cannot exceed ${paper.maxMarks}`,
+                          });
                         }
                       }}
                       className="w-20 text-center"

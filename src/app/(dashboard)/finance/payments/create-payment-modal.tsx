@@ -30,7 +30,7 @@ import { studentService } from "@/services/studentService";
 import { classService } from "@/services/classService";
 import { financeService } from "@/services/financeService";
 import { PaymentMethod } from "@/types/finance";
-import { toast } from "sonner";
+import { useToast } from "@/components/ui/Toast";
 import {
   DollarSign,
   Calendar,
@@ -60,6 +60,7 @@ const CreatePaymentModal: React.FC<CreatePaymentModalProps> = ({
   onClose,
 }) => {
   const { selectedSchool } = useAuthStore();
+  const { showToast } = useToast();
   const [selectedClassId, setSelectedClassId] = React.useState<string>("");
   const [selectedSectionId, setSelectedSectionId] = React.useState<string>("");
   const [selectedStudentId, setSelectedStudentId] = React.useState<string>("");
@@ -135,7 +136,11 @@ const CreatePaymentModal: React.FC<CreatePaymentModalProps> = ({
     mutationFn: (data: PaymentFormData & { schoolId: string }) =>
       financeService.createPayment(data),
     onSuccess: () => {
-      toast.success("Payment created successfully");
+      showToast({
+        type: "success",
+        title: "Success",
+        message: "Payment created successfully",
+      });
       queryClient.invalidateQueries({ queryKey: ["payments"] });
       queryClient.invalidateQueries({ queryKey: ["student-invoices"] });
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
@@ -146,7 +151,11 @@ const CreatePaymentModal: React.FC<CreatePaymentModalProps> = ({
         error?.response?.data?.message ||
         error?.message ||
         "Failed to create payment";
-      toast.error(msg);
+      showToast({
+        type: "error",
+        title: "Error",
+        message: msg,
+      });
     },
   });
 
@@ -160,7 +169,11 @@ const CreatePaymentModal: React.FC<CreatePaymentModalProps> = ({
 
   const onSubmit = (data: PaymentFormData) => {
     if (!selectedSchool?.schoolId) {
-      toast.error("No school selected");
+      showToast({
+        type: "error",
+        title: "Error",
+        message: "No school selected",
+      });
       return;
     }
     createPaymentMutation.mutate({

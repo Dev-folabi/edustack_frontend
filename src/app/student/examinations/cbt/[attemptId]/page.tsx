@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
+import { useToast } from "@/components/ui/Toast";
 import { Flag, Clock, BookOpen, AlertCircle } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import QuestionRenderer from "@/components/student-dashboard/QuestionRenderer";
@@ -25,6 +25,7 @@ const CBTPage = () => {
   const { fetchExamAttempt, currentAttempt, loading, error } =
     useStudentExamStore();
   const { selectedSchool } = useAuthStore();
+  const { showToast } = useToast();
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
@@ -98,9 +99,20 @@ const CBTPage = () => {
         saveAnswer(currentAttempt?.attempt.id, responses)
           .then((res) => {
             if (res.success) dirtyAnswersRef.current.clear();
-            else toast.error(res.message || "Failed to save answers.");
+            else
+              showToast({
+                type: "error",
+                title: "Error",
+                message: res.message || "Failed to save answers.",
+              });
           })
-          .catch(() => toast.error("Error saving answers. Check connection."));
+          .catch(() =>
+            showToast({
+              type: "error",
+              title: "Error",
+              message: "Error saving answers. Check connection.",
+            })
+          );
       }
     }, 30000);
 
@@ -125,11 +137,19 @@ const CBTPage = () => {
       }
 
       await submitExam(currentAttempt.attempt.id);
-      toast.success("Time's up! Exam submitted automatically.");
+      showToast({
+        type: "success",
+        title: "Success",
+        message: "Time's up! Exam submitted automatically.",
+      });
       router.push("/student/examinations");
     } catch (error) {
       console.error("Auto-submit error:", error);
-      toast.error("Failed to submit exam.");
+      showToast({
+        type: "error",
+        title: "Error",
+        message: "Failed to submit exam.",
+      });
       setIsSubmitting(false);
     }
   }, [currentAttempt, router, isSubmitting, answers]);
@@ -166,11 +186,19 @@ const CBTPage = () => {
       }
 
       await submitExam(currentAttempt.attempt.id);
-      toast.success("Exam submitted successfully!");
+      showToast({
+        type: "success",
+        title: "Success",
+        message: "Exam submitted successfully!",
+      });
       router.push("/student/examinations");
     } catch (error) {
       console.error("Submit error:", error);
-      toast.error("Failed to submit exam.");
+      showToast({
+        type: "error",
+        title: "Error",
+        message: "Failed to submit exam.",
+      });
       setIsSubmitting(false);
     }
   }, [currentAttempt, router, isSubmitting, answers]);

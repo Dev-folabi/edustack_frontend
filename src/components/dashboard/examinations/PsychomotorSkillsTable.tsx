@@ -10,7 +10,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { PsychomotorSkill } from '@/types/examSettings';
@@ -26,7 +25,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { deletePsychomotorSkill } from '@/services/examSettingsService';
-import { toast } from 'sonner';
+import { useToast } from "@/components/ui/Toast";
 
 export const PsychomotorSkillsTable = () => {
   const { psychomotorSkills, loading, fetchPsychomotorSkills, error } = useExamSettingsStore();
@@ -34,6 +33,8 @@ export const PsychomotorSkillsTable = () => {
   const [selectedSkill, setSelectedSkill] = useState<PsychomotorSkill | null>(null);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [skillToDelete, setSkillToDelete] = useState<PsychomotorSkill | null>(null);
+
+  const { showToast } = useToast();
 
   useEffect(() => {
     fetchPsychomotorSkills();
@@ -53,10 +54,18 @@ export const PsychomotorSkillsTable = () => {
     if (skillToDelete) {
       try {
         await deletePsychomotorSkill(skillToDelete.id);
-        toast.success("Psychomotor skill deleted successfully!");
+        showToast({
+          type: "success",
+          title: "Success",
+          message: "Psychomotor skill deleted successfully!",
+        });
         fetchPsychomotorSkills();
       } catch (error) {
-        toast.error("Failed to delete psychomotor skill.");
+        showToast({
+          type: "error",
+          title: "Error",
+          message: "Failed to delete psychomotor skill.",
+        });
       } finally {
         setDeleteDialogOpen(false);
         setSkillToDelete(null);

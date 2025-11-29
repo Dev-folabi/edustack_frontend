@@ -22,7 +22,7 @@ import {
   publishResults,
   finalizeCbtResult,
 } from "@/services/examService";
-import { toast } from "sonner";
+import { useToast } from "@/components/ui/Toast";
 import { getPsychomotorSkills } from "@/services/examSettingsService";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -61,6 +61,7 @@ const ResultEntryPage = () => {
     error: studentsError,
   } = useStudentStore();
   const { selectedSchool } = useAuthStore();
+  const { showToast } = useToast();
 
   const [scores, setScores] = useState<{
     [studentId: string]: number;
@@ -161,7 +162,11 @@ const ResultEntryPage = () => {
         });
 
       if (studentMarks.length === 0) {
-        toast.warning("No marks to save.");
+        showToast({
+          type: "warning",
+          title: "Warning",
+          message: "No marks to save.",
+        });
         return;
       }
 
@@ -172,10 +177,18 @@ const ResultEntryPage = () => {
         studentMarks,
       });
 
-      toast.success("Results saved successfully!");
+      showToast({
+        type: "success",
+        title: "Success",
+        message: "Results saved successfully!",
+      });
       await fetchExamPaperById(paperId);
     } catch (error) {
-      toast.error("Failed to save results.");
+      showToast({
+        type: "error",
+        title: "Error",
+        message: "Failed to save results.",
+      });
       console.error(error);
     } finally {
       setSaving(false);
@@ -187,10 +200,18 @@ const ResultEntryPage = () => {
     setSaving(true);
     try {
       await finalizeCbtResult(selectedPaper?.id || "");
-      toast.success("CBT results finalized successfully!");
+      showToast({
+        type: "success",
+        title: "Success",
+        message: "CBT results finalized successfully!",
+      });
       await fetchExamPaperById(paperId);
     } catch (error) {
-      toast.error("Failed to finalize CBT results.");
+      showToast({
+        type: "error",
+        title: "Error",
+        message: "Failed to finalize CBT results.",
+      });
     } finally {
       setSaving(false);
     }
@@ -201,14 +222,20 @@ const ResultEntryPage = () => {
     setPublishing(true);
     try {
       await publishResults(paperId, !selectedPaper.isResultPublished);
-      toast.success(
-        `Results ${
+      showToast({
+        type: "success",
+        title: "Success",
+        message: `Results ${
           !selectedPaper.isResultPublished ? "published" : "unpublished"
-        } successfully!`
-      );
+        } successfully!`,
+      });
       await fetchExamPaperById(paperId);
     } catch (error) {
-      toast.error("Failed to update results status.");
+      showToast({
+        type: "error",
+        title: "Error",
+        message: "Failed to update results status.",
+      });
     } finally {
       setPublishing(false);
     }
