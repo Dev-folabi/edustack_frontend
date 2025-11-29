@@ -218,7 +218,7 @@ const PaymentsPage = () => {
                     {formatCurrency(stats.total)}
                   </p>
                 </div>
-                <DollarSign className="w-8 h-8 text-purple-600" />
+                <DollarSign className="w-8 h-8 text-indigo-600" />
               </div>
             </CardContent>
           </Card>

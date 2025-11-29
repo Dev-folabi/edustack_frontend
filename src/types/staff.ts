@@ -20,9 +20,12 @@ export interface Staff {
   currentClass?: string;
   currentSection?: string;
   admissionNumber?: string;
-  admissionDate?: string;
+  admission_date?: string;
 }
 
-export type StaffRegistrationPayload = Omit<Staff, "id" | "schoolId" | "userId"> & {
+export type StaffRegistrationPayload = Omit<
+  Staff,
+  "id" | "schoolId" | "userId"
+> & {
   password?: string;
 };

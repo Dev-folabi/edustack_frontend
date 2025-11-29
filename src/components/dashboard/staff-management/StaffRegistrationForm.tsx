@@ -23,19 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DatePicker } from "@/components/ui/DatePicker";
-import { Switch } from "@/components/ui/switch";
-import {
-  User,
-  Briefcase,
-  DollarSign,
-  UserPlus,
-  School,
-  Calendar,
-  Phone,
-  Mail,
-  MapPin,
-  Upload,
-} from "lucide-react";
+import { User, Briefcase, UserPlus, School, Upload } from "lucide-react";
 import { staffService } from "@/services/staffService";
 import { StaffRegistrationPayload } from "@/types/staff";
 import { useAuthStore } from "@/store/authStore";
@@ -60,15 +48,15 @@ const formSchema = z.object({
   }),
   designation: z.string().nonempty({ message: "Designation is required." }),
   dob: z.date({ required_error: "Date of birth is required." }),
-  salary: z.coerce.number().min(0, { message: "Salary must be a positive number." }),
+  salary: z.coerce
+    .number()
+    .min(0, { message: "Salary must be a positive number." }),
   joining_date: z.date({ required_error: "Joining date is required." }),
   gender: z.enum(["male", "female"], {
     required_error: "Gender is required.",
   }),
   isActive: z.boolean().default(true),
-  qualification: z
-    .string()
-    .nonempty({ message: "Qualification is required." }),
+  qualification: z.string().nonempty({ message: "Qualification is required." }),
   notes: z.string().optional(),
   photo: z.any().optional(),
 });
@@ -114,9 +102,7 @@ const StaffRegistrationForm = () => {
     };
 
     try {
-      const response = await staffService.createStaff(
-        payload
-      );
+      const response = await staffService.createStaff(payload);
       if (response.success) {
         showToast({
           type: "success",
@@ -147,47 +133,58 @@ const StaffRegistrationForm = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between py-4 sm:h-16 gap-3 sm:gap-0">
             <div className="flex items-center space-x-3">
               <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-2 rounded-xl">
-                <UserPlus className="h-6 w-6 text-white" />
+                <UserPlus className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">
+                <h1 className="text-lg sm:text-xl font-bold text-gray-900">
                   Staff Registration
                 </h1>
-                <p className="text-sm text-gray-500">Register new staff members</p>
+                <p className="text-xs sm:text-sm text-gray-500">
+                  Register new staff members
+                </p>
               </div>
             </div>
-            <div className="flex items-center space-x-2 text-sm text-gray-500">
-              <School className="h-4 w-4" />
-              <span>{selectedSchool?.school.name || "No school selected"}</span>
+            <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-500">
+              <School className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="truncate max-w-[200px] sm:max-w-none">
+                {selectedSchool?.school.name || "No school selected"}
+              </span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-4 sm:space-y-8"
+          >
             <Card className="shadow-sm">
-              <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
-                <CardTitle className="flex items-center gap-2 text-gray-900">
-                  <User className="w-5 h-5 text-blue-600" />
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-gray-900 text-base sm:text-lg">
+                  <User className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                   Personal Information
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <CardContent className="p-4 sm:p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {/* Form fields for personal information */}
                   <FormField
                     control={form.control}
                     name="name"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="min-w-0">
                         <FormLabel>Full Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter full name" {...field} />
+                          <Input
+                            className="w-full"
+                            placeholder="Enter full name"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -197,10 +194,15 @@ const StaffRegistrationForm = () => {
                     control={form.control}
                     name="email"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="min-w-0">
                         <FormLabel>Email Address</FormLabel>
                         <FormControl>
-                          <Input type="email" placeholder="Enter email address" {...field} />
+                          <Input
+                            className="w-full"
+                            type="email"
+                            placeholder="Enter email address"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -210,10 +212,14 @@ const StaffRegistrationForm = () => {
                     control={form.control}
                     name="username"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="min-w-0">
                         <FormLabel>Username</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter username" {...field} />
+                          <Input
+                            className="w-full"
+                            placeholder="Enter username"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -223,10 +229,15 @@ const StaffRegistrationForm = () => {
                     control={form.control}
                     name="password"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="min-w-0">
                         <FormLabel>Password</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="Enter password" {...field} />
+                          <Input
+                            className="w-full"
+                            type="password"
+                            placeholder="Enter password"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -236,10 +247,17 @@ const StaffRegistrationForm = () => {
                     control={form.control}
                     name="phone"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="min-w-0">
                         <FormLabel>Phone Number</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter phone number" {...field} onChange={(e) => field.onChange(e.target.value.split(','))} />
+                          <Input
+                            className="w-full"
+                            placeholder="Enter phone number"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(e.target.value.split(","))
+                            }
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -249,18 +267,22 @@ const StaffRegistrationForm = () => {
                     control={form.control}
                     name="gender"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="min-w-0">
                         <FormLabel>Gender</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger className="w-full">
                               <SelectValue placeholder="Select gender" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             {genders.map((gender) => (
                               <SelectItem key={gender} value={gender}>
-                                {gender.charAt(0).toUpperCase() + gender.slice(1)}
+                                {gender.charAt(0).toUpperCase() +
+                                  gender.slice(1)}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -273,7 +295,7 @@ const StaffRegistrationForm = () => {
                     control={form.control}
                     name="dob"
                     render={({ field }) => (
-                      <FormItem className="flex flex-col">
+                      <FormItem className="flex flex-col min-w-0">
                         <FormLabel>Date of Birth</FormLabel>
                         <DatePicker
                           value={field.value}
@@ -288,10 +310,14 @@ const StaffRegistrationForm = () => {
                     control={form.control}
                     name="address"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="min-w-0">
                         <FormLabel>Address</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter address" {...field} />
+                          <Input
+                            className="w-full"
+                            placeholder="Enter address"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -302,23 +328,26 @@ const StaffRegistrationForm = () => {
             </Card>
 
             <Card className="shadow-sm">
-              <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b">
-                <CardTitle className="flex items-center gap-2 text-gray-900">
-                  <Briefcase className="w-5 h-5 text-green-600" />
+              <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-gray-900 text-base sm:text-lg">
+                  <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                   Professional Information
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <FormField
+              <CardContent className="p-4 sm:p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  <FormField
                     control={form.control}
                     name="role"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="min-w-0">
                         <FormLabel>Role</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger className="w-full">
                               <SelectValue placeholder="Select role" />
                             </SelectTrigger>
                           </FormControl>
@@ -338,10 +367,14 @@ const StaffRegistrationForm = () => {
                     control={form.control}
                     name="designation"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="min-w-0">
                         <FormLabel>Designation</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter designation" {...field} />
+                          <Input
+                            className="w-full"
+                            placeholder="Enter designation"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -351,7 +384,7 @@ const StaffRegistrationForm = () => {
                     control={form.control}
                     name="joining_date"
                     render={({ field }) => (
-                      <FormItem className="flex flex-col">
+                      <FormItem className="flex flex-col min-w-0">
                         <FormLabel>Joining Date</FormLabel>
                         <DatePicker
                           value={field.value}
@@ -366,23 +399,32 @@ const StaffRegistrationForm = () => {
                     control={form.control}
                     name="qualification"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="min-w-0">
                         <FormLabel>Qualification</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter qualification" {...field} />
+                          <Input
+                            className="w-full"
+                            placeholder="Enter qualification"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                   <FormField
+                  <FormField
                     control={form.control}
                     name="salary"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="min-w-0">
                         <FormLabel>Salary</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="Enter salary" {...field} />
+                          <Input
+                            className="w-full"
+                            type="number"
+                            placeholder="Enter salary"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -392,10 +434,14 @@ const StaffRegistrationForm = () => {
                     control={form.control}
                     name="notes"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="min-w-0">
                         <FormLabel>Notes</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter notes" {...field} />
+                          <Input
+                            className="w-full"
+                            placeholder="Enter notes"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -406,31 +452,40 @@ const StaffRegistrationForm = () => {
             </Card>
 
             <Card className="shadow-sm">
-                <CardHeader className="bg-gradient-to-r from-amber-50 to-orange-50 border-b">
-                    <CardTitle className="flex items-center gap-2 text-gray-900">
-                    <Upload className="w-5 h-5 text-amber-600" />
-                    Photo Upload
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
-                    <FormField
-                    control={form.control}
-                    name="photo"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Staff Photo</FormLabel>
-                        <FormControl>
-                            <Input type="file" onChange={(e) => field.onChange(e.target.files?.[0])} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                </CardContent>
+              <CardHeader className="bg-gradient-to-r from-amber-50 to-orange-50 border-b p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-gray-900 text-base sm:text-lg">
+                  <Upload className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />
+                  Photo Upload
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 sm:p-6">
+                <FormField
+                  control={form.control}
+                  name="photo"
+                  render={({ field }) => (
+                    <FormItem className="min-w-0">
+                      <FormLabel>Staff Photo</FormLabel>
+                      <FormControl>
+                        <Input
+                          className="w-full"
+                          type="file"
+                          onChange={(e) => field.onChange(e.target.files?.[0])}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
             </Card>
 
             <div className="flex justify-end">
-              <Button type="submit" disabled={isLoading} size="lg">
+              <Button
+                type="submit"
+                disabled={isLoading}
+                size="lg"
+                className="w-full sm:w-auto"
+              >
                 {isLoading ? "Registering..." : "Register Staff"}
               </Button>
             </div>

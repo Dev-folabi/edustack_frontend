@@ -55,7 +55,7 @@ const getTypeColor = (type: string) => {
     case "LUNCH":
       return "bg-green-100 border-green-200 text-green-800";
     case "ASSEMBLY":
-      return "bg-purple-100 border-purple-200 text-purple-800";
+      return "bg-indigo-100 border-indigo-200 text-indigo-800";
     case "SPORTS":
       return "bg-red-100 border-red-200 text-red-800";
     case "LIBRARY":
@@ -68,8 +68,7 @@ const getTypeColor = (type: string) => {
 };
 
 const TimetableGrid = () => {
-  const { selectedTimetable, isLoading } =
-    useTimetableStore();
+  const { selectedTimetable, isLoading } = useTimetableStore();
 
   const entries: TimetableEntry[] = selectedTimetable?.entries || [];
 

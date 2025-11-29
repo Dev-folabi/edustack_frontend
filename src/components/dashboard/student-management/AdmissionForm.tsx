@@ -30,9 +30,6 @@ import {
   GraduationCap,
   Users,
   Shield,
-  FileText,
-  Upload,
-  Download,
   UserPlus,
   School,
   Calendar,
@@ -117,8 +114,8 @@ const AdmissionForm = () => {
   const [classes, setClasses] = useState<Class[]>([]);
   const [sections, setSections] = useState<ClassSection[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [csvFile, setCsvFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
+  // const [csvFile, setCsvFile] = useState<File | null>(null);
+  // const [isUploading, setIsUploading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -163,7 +160,7 @@ const AdmissionForm = () => {
           console.error("Error loading classes:", error);
         });
     }
-  }, [selectedSchool?.schoolId]);
+  }, [selectedSchool?.schoolId, showToast]);
 
   useEffect(() => {
     if (selectedClassId) {
@@ -232,47 +229,47 @@ const AdmissionForm = () => {
     }
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      setCsvFile(event.target.files[0]);
-    }
-  };
+  // const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (event.target.files) {
+  //     setCsvFile(event.target.files[0]);
+  //   }
+  // };
 
-  const handleBulkUpload = async () => {
-    if (!csvFile) {
-      showToast({
-        type: "error",
-        title: "Please select a CSV file to upload",
-        message: "Please select a CSV file to upload.",
-      });
-      return;
-    }
-    setIsUploading(true);
+  // const handleBulkUpload = async () => {
+  //   if (!csvFile) {
+  //     showToast({
+  //       type: "error",
+  //       title: "Please select a CSV file to upload",
+  //       message: "Please select a CSV file to upload.",
+  //     });
+  //     return;
+  //   }
+  //   setIsUploading(true);
 
-    try {
-      // Simulate API call - replace with actual implementation
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      showToast({
-        type: "success",
-        title: "Bulk upload completed successfully",
-        message: "You can now log in with your credentials.",
-      });
-      setCsvFile(null);
-      // Reset file input
-      const fileInput = document.querySelector(
-        'input[type="file"]'
-      ) as HTMLInputElement;
-      if (fileInput) fileInput.value = "";
-    } catch (error: any) {
-      showToast({
-        type: "error",
-        title: "Bulk upload failed",
-        message: error.message || "Bulk upload failed. Please try again.",
-      });
-    } finally {
-      setIsUploading(false);
-    }
-  };
+  //   try {
+  //     // Simulate API call - replace with actual implementation
+  //     await new Promise((resolve) => setTimeout(resolve, 2000));
+  //     showToast({
+  //       type: "success",
+  //       title: "Bulk upload completed successfully",
+  //       message: "You can now log in with your credentials.",
+  //     });
+  //     setCsvFile(null);
+  //     // Reset file input
+  //     const fileInput = document.querySelector(
+  //       'input[type="file"]'
+  //     ) as HTMLInputElement;
+  //     if (fileInput) fileInput.value = "";
+  //   } catch (error: any) {
+  //     showToast({
+  //       type: "error",
+  //       title: "Bulk upload failed",
+  //       message: error.message || "Bulk upload failed. Please try again.",
+  //     });
+  //   } finally {
+  //     setIsUploading(false);
+  //   }
+  // };
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -306,7 +303,7 @@ const AdmissionForm = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs defaultValue="single" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
+          {/* <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
             <TabsTrigger value="single" className="flex items-center gap-2">
               <User className="w-4 h-4" />
               Individual Registration
@@ -315,7 +312,7 @@ const AdmissionForm = () => {
               <Upload className="w-4 h-4" />
               Bulk Upload
             </TabsTrigger>
-          </TabsList>
+          </TabsList> */}
 
           <TabsContent value="single">
             <Form {...form}>
@@ -682,9 +679,9 @@ const AdmissionForm = () => {
 
                 {/* Parent Information */}
                 <Card className="shadow-sm">
-                  <CardHeader className="bg-gradient-to-r from-purple-50 to-violet-50 border-b">
+                  <CardHeader className="bg-gradient-to-r from-indigo-50 to-violet-50 border-b">
                     <CardTitle className="flex items-center gap-2 text-gray-900">
-                      <Users className="w-5 h-5 text-purple-600" />
+                      <Users className="w-5 h-5 text-indigo-600" />
                       Parent Information
                     </CardTitle>
                   </CardHeader>
@@ -797,23 +794,23 @@ const AdmissionForm = () => {
 
                     {useExistingGuardian ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <FormField
-                            control={form.control}
-                            name="guardian_username"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Guardian's Username</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    placeholder="Enter guardian's username"
-                                    {...field}
-                                    className="h-11"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                        <FormField
+                          control={form.control}
+                          name="guardian_username"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Guardian's Username</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="Enter guardian's username"
+                                  {...field}
+                                  className="h-11"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                         <FormField
                           control={form.control}
                           name="guardian_password"
@@ -951,7 +948,7 @@ const AdmissionForm = () => {
             </Form>
           </TabsContent>
 
-          <TabsContent value="bulk">
+          {/* <TabsContent value="bulk">
             <Card className="shadow-sm">
               <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50 border-b">
                 <CardTitle className="flex items-center gap-2 text-gray-900">
@@ -1008,7 +1005,7 @@ const AdmissionForm = () => {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </TabsContent> */}
         </Tabs>
       </div>
     </div>

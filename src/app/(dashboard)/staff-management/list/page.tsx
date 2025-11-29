@@ -31,7 +31,7 @@ const StaffListPage = () => {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <Button
               onClick={handleAddNewStaff}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-purple-700 shadow-lg"
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg"
             >
               {" "}
               <Plus className="mr-2 h-4 w-4" /> Add New Staff{" "}

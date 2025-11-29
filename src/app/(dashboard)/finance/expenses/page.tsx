@@ -172,7 +172,7 @@ const ExpensesPage = () => {
         icon: FileText,
       },
       SALARY: {
-        color: "bg-purple-100 text-purple-800 border-purple-300",
+        color: "bg-indigo-100 text-indigo-800 border-indigo-300",
         label: "Salary",
         icon: DollarSign,
       },

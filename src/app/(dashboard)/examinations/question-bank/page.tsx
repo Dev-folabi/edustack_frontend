@@ -33,7 +33,7 @@ const QuestionBankPage = () => {
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
                 onClick={() => setCreateEditDialogOpen(true)}
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-md"
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md"
               >
                 <Plus className="mr-2 h-4 w-4" />
                 New Question Bank

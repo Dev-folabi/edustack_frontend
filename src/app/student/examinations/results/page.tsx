@@ -36,10 +36,7 @@ import {
 } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
 import { Term } from "@/services/sessionService";
-import {
-  getStudentExams,
-  getStudentTermReport,
-} from "@/services/examService";
+import { getStudentExams, getStudentTermReport } from "@/services/examService";
 import { ReportModal } from "@/components/dashboard/reports/reportsModal";
 import {
   FileText,
@@ -168,7 +165,7 @@ const StudentResultsPage = () => {
           remarks: studentAttempt.remarks || "",
         });
         setIsResultDialogOpen(true);
-      } 
+      }
     } catch (error) {
       toast.error("Failed to load result");
     }
@@ -218,7 +215,7 @@ const StudentResultsPage = () => {
       case "D":
         return "bg-orange-600";
       case "E":
-        return "bg-purple-600";
+        return "bg-indigo-600";
       case "F":
         return "bg-red-600";
       default:
@@ -362,7 +359,7 @@ const StudentResultsPage = () => {
                                         }
                                         className={
                                           paper.mode === "CBT"
-                                            ? "bg-purple-600"
+                                            ? "bg-indigo-600"
                                             : "bg-orange-100 text-orange-800"
                                         }
                                       >

@@ -123,10 +123,26 @@ const StudentProfilePage = () => {
           if (studentData) {
             form.reset({
               ...studentData,
-              dob: new Date(studentData.dob),
-              admission_date: new Date(studentData.admission_date),
-              classId: studentData.class?.id || "",
-              sectionId: studentData.section?.id || "",
+              email: studentData.email || undefined,
+              username: studentData.username || undefined,
+              phone: studentData.phone || undefined,
+              address: studentData.address || undefined,
+              religion: studentData.religion || undefined,
+              blood_group: studentData.blood_group || undefined,
+              father_name: studentData.father_name || undefined,
+              mother_name: studentData.mother_name || undefined,
+              father_occupation: studentData.father_occupation || undefined,
+              mother_occupation: studentData.mother_occupation || undefined,
+              city: studentData.city || undefined,
+              state: studentData.state || undefined,
+              country: studentData.country || undefined,
+              photo_url: studentData.photo_url || undefined,
+              dob: studentData.dob ? new Date(studentData.dob) : undefined,
+              admission_date: studentData.admission_date
+                ? new Date(studentData.admission_date)
+                : undefined,
+              classId: studentData.class?.id || undefined,
+              sectionId: studentData.section?.id || undefined,
             });
           }
         })
@@ -227,12 +243,26 @@ const StudentProfilePage = () => {
     if (isEditing && student) {
       form.reset({
         ...student,
+        email: student.email || undefined,
+        username: student.username || undefined,
+        phone: student.phone || undefined,
+        address: student.address || undefined,
+        religion: student.religion || undefined,
+        blood_group: student.blood_group || undefined,
+        father_name: student.father_name || undefined,
+        mother_name: student.mother_name || undefined,
+        father_occupation: student.father_occupation || undefined,
+        mother_occupation: student.mother_occupation || undefined,
+        city: student.city || undefined,
+        state: student.state || undefined,
+        country: student.country || undefined,
+        photo_url: student.photo_url || "",
         dob: student.dob ? new Date(student.dob) : undefined,
         admission_date: student.admission_date
           ? new Date(student.admission_date)
           : undefined,
-        classId: student.class?.id || "",
-        sectionId: student.section?.id || "",
+        classId: student.class?.id || undefined,
+        sectionId: student.section?.id || undefined,
       });
     }
     setIsEditing(!isEditing);
@@ -366,12 +396,12 @@ const StudentProfilePage = () => {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Profile Header Card */}
             <Card className="bg-white shadow-xl rounded-2xl border-0 overflow-hidden">
-              <div className="bg-gradient-to-r from-blue-600 to-purple-600 h-24"></div>
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 h-24"></div>
               <CardContent className="p-8 -mt-12 relative">
                 <div className="flex flex-col md:flex-row items-start md:items-end gap-6">
                   <Avatar className="w-24 h-24 ring-4 ring-white shadow-xl">
                     <AvatarImage src={student.photo_url} alt={student.name} />
-                    <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-blue-500 to-purple-500 text-white">
+                    <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-blue-500 to-indigo-500 text-white">
                       {student.name.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
@@ -677,7 +707,7 @@ const StudentProfilePage = () => {
               <Card className="bg-white shadow-lg rounded-2xl border-0 hover:shadow-xl transition-shadow">
                 <CardHeader className="pb-4">
                   <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-800">
-                    <GraduationCap className="w-5 h-5 text-purple-600" />
+                    <GraduationCap className="w-5 h-5 text-indigo-600" />
                     Academic Details
                   </CardTitle>
                 </CardHeader>
@@ -900,7 +930,7 @@ const StudentProfilePage = () => {
 
         {/* Report Generation */}
         {canDownloadReport && (
-          <Card className="bg-gradient-to-r from-blue-50 to-purple-50 shadow-lg rounded-2xl border-0">
+          <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 shadow-lg rounded-2xl border-0">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-800">
                 <FileText className="w-5 h-5 text-blue-600" />
@@ -955,7 +985,7 @@ const StudentProfilePage = () => {
                 <Button
                   onClick={handleDownloadReport}
                   disabled={isDownloading || !selectedTermId}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg"
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg"
                 >
                   <Download className="w-4 h-4 mr-2" />
                   {isDownloading ? "Generating..." : "Download Report"}

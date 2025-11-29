@@ -33,7 +33,7 @@ export interface Entry {
   timetableId: string;
   day: WeekDay[]; // API returns an array of days
   startTime: string; // ISO string
-  endTime: string;   // ISO string
+  endTime: string; // ISO string
   subjectId?: string;
   teacherId?: string;
   type: PeriodType;
@@ -154,7 +154,9 @@ export const timetableService = {
     sectionId: string,
     status?: string
   ): Promise<ApiResponse<TimetableResponse>> => {
-    return apiClient.get(`/timetables/class/${sectionId}?status=${status || ""}`);
+    return apiClient.get(
+      `/timetables/class/${sectionId}?status=${status || ""}`
+    );
   },
 
   // Create a new timetable
@@ -178,9 +180,7 @@ export const timetableService = {
   },
 
   // Create a new timetable entry
-  createEntry: (
-    data: CreateEntryData
-  ): Promise<ApiResponse<EntryResponse>> => {
+  createEntry: (data: CreateEntryData): Promise<ApiResponse<EntryResponse>> => {
     return apiClient.post("/timetables/entries", data);
   },
 

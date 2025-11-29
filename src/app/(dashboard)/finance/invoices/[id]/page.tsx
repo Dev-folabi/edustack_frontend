@@ -293,7 +293,7 @@ const InvoiceDetailsPage = ({
                     {invoice.studentInvoices?.length || 0}
                   </p>
                 </div>
-                <Users className="w-8 h-8 text-purple-600" />
+                <Users className="w-8 h-8 text-indigo-600" />
               </div>
             </CardContent>
           </Card>
