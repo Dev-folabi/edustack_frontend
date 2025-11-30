@@ -236,7 +236,7 @@ const StudentResultsPage = () => {
       case "D":
         return "bg-orange-600";
       case "E":
-        return "bg-indigo-600";
+        return "bg-blue-600";
       case "F":
         return "bg-red-600";
       default:
@@ -380,7 +380,7 @@ const StudentResultsPage = () => {
                                         }
                                         className={
                                           paper.mode === "CBT"
-                                            ? "bg-indigo-600"
+                                            ? "bg-blue-600"
                                             : "bg-orange-100 text-orange-800"
                                         }
                                       >

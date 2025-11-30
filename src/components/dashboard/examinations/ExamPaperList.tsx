@@ -87,9 +87,7 @@ export const ExamPaperList = ({ papers }: ExamPaperListProps) => {
                     <Badge
                       variant={isCBT ? "default" : "secondary"}
                       className={
-                        isCBT
-                          ? "bg-indigo-600"
-                          : "bg-orange-100 text-orange-800"
+                        isCBT ? "bg-blue-600" : "bg-orange-100 text-orange-800"
                       }
                     >
                       {paper.mode}

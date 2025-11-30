@@ -39,11 +39,11 @@ const StudentProfilesPage = () => {
               Manage and view all students in your school system
             </p>
           </div>
-          
+
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <Button 
+            <Button
               onClick={handleAddNewStudent}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg"
+              className="bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 shadow-lg"
             >
               <Plus className="mr-2 h-4 w-4" />
               Add New Student

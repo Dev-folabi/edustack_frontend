@@ -396,12 +396,12 @@ const StudentProfilePage = () => {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Profile Header Card */}
             <Card className="bg-white shadow-xl rounded-2xl border-0 overflow-hidden">
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 h-24"></div>
+              <div className="bg-gradient-to-r from-blue-600 to-blue-600 h-24"></div>
               <CardContent className="p-8 -mt-12 relative">
                 <div className="flex flex-col md:flex-row items-start md:items-end gap-6">
                   <Avatar className="w-24 h-24 ring-4 ring-white shadow-xl">
                     <AvatarImage src={student.photo_url} alt={student.name} />
-                    <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-blue-500 to-indigo-500 text-white">
+                    <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-blue-500 to-blue-500 text-white">
                       {student.name.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
@@ -707,7 +707,7 @@ const StudentProfilePage = () => {
               <Card className="bg-white shadow-lg rounded-2xl border-0 hover:shadow-xl transition-shadow">
                 <CardHeader className="pb-4">
                   <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-800">
-                    <GraduationCap className="w-5 h-5 text-indigo-600" />
+                    <GraduationCap className="w-5 h-5 text-blue-600" />
                     Academic Details
                   </CardTitle>
                 </CardHeader>
@@ -930,7 +930,7 @@ const StudentProfilePage = () => {
 
         {/* Report Generation */}
         {canDownloadReport && (
-          <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 shadow-lg rounded-2xl border-0">
+          <Card className="bg-gradient-to-r from-blue-50 to-blue-50 shadow-lg rounded-2xl border-0">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-800">
                 <FileText className="w-5 h-5 text-blue-600" />
@@ -985,7 +985,7 @@ const StudentProfilePage = () => {
                 <Button
                   onClick={handleDownloadReport}
                   disabled={isDownloading || !selectedTermId}
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg"
+                  className="bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 shadow-lg"
                 >
                   <Download className="w-4 h-4 mr-2" />
                   {isDownloading ? "Generating..." : "Download Report"}

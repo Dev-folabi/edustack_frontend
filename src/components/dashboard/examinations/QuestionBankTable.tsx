@@ -86,8 +86,9 @@ export const QuestionBankTable = () => {
         showToast({
           type: "error",
           title: "Error",
-          message: (error as Error).message || "Failed to delete question bank.",
-        }); 
+          message:
+            (error as Error).message || "Failed to delete question bank.",
+        });
       } finally {
         setDeleteDialogOpen(false);
         setBankToDelete(null);
@@ -117,7 +118,9 @@ export const QuestionBankTable = () => {
         <TableHeader className="bg-slate-50">
           <TableRow>
             <TableHead className="font-semibold text-slate-700">Name</TableHead>
-            <TableHead className="font-semibold text-slate-700">Subject</TableHead>
+            <TableHead className="font-semibold text-slate-700">
+              Subject
+            </TableHead>
             <TableHead className="font-semibold text-slate-700">
               No. of Questions
             </TableHead>
@@ -145,7 +148,7 @@ export const QuestionBankTable = () => {
                 className="hover:bg-slate-50 transition-colors"
               >
                 <TableCell className="font-medium flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-indigo-500" />
+                  <BookOpen className="w-4 h-4 text-blue-500" />
                   {bank.name}
                 </TableCell>
                 <TableCell>

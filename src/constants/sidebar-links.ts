@@ -176,15 +176,15 @@ export const sidebarConfig: SidebarCategory[] = [
     roles: [UserRole.ADMIN, UserRole.TEACHER],
     links: [
       {
-        href: DASHBOARD_ROUTES.EXAMS_MANAGE,
-        label: "Manage Exams",
-        icon: FaClipboardList,
-        roles: [UserRole.ADMIN, UserRole.TEACHER],
-      },
-      {
         href: DASHBOARD_ROUTES.EXAMS_QUESTION_BANK,
         label: "Question Bank",
         icon: FaBook,
+        roles: [UserRole.ADMIN, UserRole.TEACHER],
+      },
+      {
+        href: DASHBOARD_ROUTES.EXAMS_MANAGE,
+        label: "Manage Exams",
+        icon: FaClipboardList,
         roles: [UserRole.ADMIN, UserRole.TEACHER],
       },
       {

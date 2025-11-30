@@ -61,10 +61,10 @@ const ExamDetailsPage = () => {
 
   return (
     <>
-      <div className="max-w-7xl mx-auto p-6 space-y-6 min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-indigo-50">
+      <div className="max-w-7xl mx-auto p-6 space-y-6 min-h-screen bg-gradient-to-br from-blue-50 via-blue-50 to-blue-50">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <BackButton/>
+            <BackButton />
             <CardTitle>{selectedExam.title}</CardTitle>
             <CustomButton onClick={() => setAddPaperOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />

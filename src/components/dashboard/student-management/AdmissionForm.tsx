@@ -277,13 +277,13 @@ const AdmissionForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-blue-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-2 rounded-xl">
+              <div className="bg-gradient-to-r from-blue-600 to-blue-600 p-2 rounded-xl">
                 <UserPlus className="h-6 w-6 text-white" />
               </div>
               <div>
@@ -319,7 +319,7 @@ const AdmissionForm = () => {
               <div onSubmit={handleFormSubmit} className="space-y-8">
                 {/* Student Information */}
                 <Card className="shadow-sm">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-50 border-b">
                     <CardTitle className="flex items-center gap-2 text-gray-900">
                       <User className="w-5 h-5 text-blue-600" />
                       Student Information
@@ -679,9 +679,9 @@ const AdmissionForm = () => {
 
                 {/* Parent Information */}
                 <Card className="shadow-sm">
-                  <CardHeader className="bg-gradient-to-r from-indigo-50 to-violet-50 border-b">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-violet-50 border-b">
                     <CardTitle className="flex items-center gap-2 text-gray-900">
-                      <Users className="w-5 h-5 text-indigo-600" />
+                      <Users className="w-5 h-5 text-blue-600" />
                       Parent Information
                     </CardTitle>
                   </CardHeader>
@@ -939,7 +939,7 @@ const AdmissionForm = () => {
                     onClick={() => form.handleSubmit(onSubmit)()}
                     disabled={isLoading}
                     size="lg"
-                    className="min-w-[200px] h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                    className="min-w-[200px] h-12 bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700"
                   >
                     {isLoading ? "Registering..." : "Register Student"}
                   </Button>

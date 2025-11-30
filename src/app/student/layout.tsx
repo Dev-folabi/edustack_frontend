@@ -57,7 +57,7 @@ const StudentDashboardLayout: React.FC<StudentDashboardLayoutProps> = ({
   // Show a loader while auth state is loading or if user is not yet available
   if (isLoading || !user || !token) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
         <div className="text-center space-y-4">
           <Loader />
           <p className="text-gray-600 text-sm">Loading your dashboard...</p>

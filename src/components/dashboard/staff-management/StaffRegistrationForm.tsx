@@ -130,12 +130,12 @@ const StaffRegistrationForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-blue-50">
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between py-4 sm:h-16 gap-3 sm:gap-0">
             <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-2 rounded-xl">
+              <div className="bg-gradient-to-r from-blue-600 to-blue-600 p-2 rounded-xl">
                 <UserPlus className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
               <div>
@@ -164,7 +164,7 @@ const StaffRegistrationForm = () => {
             className="space-y-4 sm:space-y-8"
           >
             <Card className="shadow-sm">
-              <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b p-4 sm:p-6">
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-50 border-b p-4 sm:p-6">
                 <CardTitle className="flex items-center gap-2 text-gray-900 text-base sm:text-lg">
                   <User className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                   Personal Information

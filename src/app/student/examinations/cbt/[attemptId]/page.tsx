@@ -16,6 +16,16 @@ import { Flag, Clock, BookOpen, AlertCircle } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import QuestionRenderer from "@/components/student-dashboard/QuestionRenderer";
 import { CustomButton } from "@/components/ui/CustomButton";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const CBTPage = () => {
   const params = useParams();
@@ -40,11 +50,13 @@ const CBTPage = () => {
 
   // Fetch exam attempt
   useEffect(() => {
-    if (!selectedSchool?.schoolId || !attemptId) return;
+    if (!attemptId || !selectedSchool?.schoolId) return;
+    if (currentAttempt?.attempt?.id === attemptId) return;
     fetchExamAttempt(attemptId, selectedSchool.schoolId).catch((err) =>
       console.error("Failed to fetch exam attempt:", err)
     );
-  }, [attemptId, selectedSchool?.schoolId, fetchExamAttempt]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attemptId, selectedSchool?.schoolId]);
 
   // Setup duration + initial time
   useEffect(() => {
@@ -164,15 +176,21 @@ const CBTPage = () => {
     );
 
     if (unanswered && unanswered.length > 0) {
-      const confirmed = window.confirm(
-        `You have ${unanswered.length} unanswered question${
-          unanswered.length > 1 ? "s" : ""
-        }. Are you sure you want to submit?`
-      );
-      if (!confirmed) return;
+      setShowSubmitDialog(true);
+      return;
     }
 
+    // Proceed with submission
+    await proceedWithSubmission();
+  }, [currentAttempt, isSubmitting, answers]);
+
+  // Actual submission logic
+  const proceedWithSubmission = useCallback(async () => {
+    if (!currentAttempt) return;
+
     setIsSubmitting(true);
+    setShowSubmitDialog(false);
+
     try {
       // Save any pending answers before submitting
       const dirty = Array.from(dirtyAnswersRef.current);
@@ -197,11 +215,14 @@ const CBTPage = () => {
       showToast({
         type: "error",
         title: "Error",
-        message: "Failed to submit exam.",
+        message:
+          error && typeof error === "object" && "data" in error && error.data && typeof error.data === "object" && "message" in error.data
+            ? String(error.data.message)
+            : "Failed to submit exam.",
       });
       setIsSubmitting(false);
     }
-  }, [currentAttempt, router, isSubmitting, answers]);
+  }, [currentAttempt, router, answers]);
 
   // Answer change
   const handleAnswerChange = (qid: string, answer: any) => {
@@ -508,6 +529,48 @@ const CBTPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Submit Confirmation Dialog */}
+      <AlertDialog open={showSubmitDialog} onOpenChange={setShowSubmitDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-yellow-500" />
+              Unanswered Questions
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              You have{" "}
+              <span className="font-semibold text-yellow-600">
+                {
+                  currentAttempt?.questions.filter(
+                    (q) => !answers[q.id] || answers[q.id] === ""
+                  ).length
+                }
+              </span>{" "}
+              unanswered question
+              {currentAttempt?.questions.filter(
+                (q) => !answers[q.id] || answers[q.id] === ""
+              ).length !== 1
+                ? "s"
+                : ""}
+              . Are you sure you want to submit your exam? You won&apos;t be
+              able to make changes after submission.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isSubmitting}>
+              Review Answers
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={proceedWithSubmission}
+              disabled={isSubmitting}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {isSubmitting ? "Submitting..." : "Submit Anyway"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

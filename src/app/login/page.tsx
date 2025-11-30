@@ -24,7 +24,7 @@ import { Card } from "@/components/ui/card";
 import { ApiError } from "../../utils/api";
 import { authService } from "../../services/authService";
 import { DASHBOARD_ROUTES } from "@/constants/routes";
-import { COLORS } from "@/constants/config";
+import { COLORS, SCHOOL_INFO } from "@/constants/config";
 
 const formSchema = z.object({
   emailOrUsername: z
@@ -124,7 +124,7 @@ const LoginPage: React.FC = () => {
             Welcome Back
           </h2>
           <p className="mt-2 text-sm" style={{ color: COLORS.gray[600] }}>
-            Sign in to your EduStack account
+            Sign in to {SCHOOL_INFO.name} account
           </p>
         </div>
 

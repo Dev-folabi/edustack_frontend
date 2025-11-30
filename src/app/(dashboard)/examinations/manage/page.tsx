@@ -34,7 +34,7 @@ const ManageExamsPage = () => {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <Button
                 onClick={handleAddNewExam}
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg text-white"
+                className="bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 shadow-lg text-white"
               >
                 <Plus className="mr-2 h-4 w-4" />
                 Create New Exam

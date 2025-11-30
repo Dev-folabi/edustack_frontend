@@ -206,7 +206,7 @@ export const StudentTable = ({ classes = [] }: StudentTableProps) => {
   return (
     <Card className="bg-white shadow-xl rounded-2xl border-0 overflow-hidden ">
       {/* Filters Header */}
-      <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-100">
+      <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-50 border-b border-gray-100">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Filter className="w-5 h-5 text-blue-600" />
@@ -369,7 +369,7 @@ export const StudentTable = ({ classes = [] }: StudentTableProps) => {
                             src={student.photo_url}
                             alt={student.name}
                           />
-                          <AvatarFallback className="bg-gradient-to-br from-blue-300 to-indigo-300 text-white text-sm">
+                          <AvatarFallback className="bg-gradient-to-br from-blue-300 to-blue-300 text-white text-sm">
                             {student.name.charAt(0)}
                           </AvatarFallback>
                         </Avatar>

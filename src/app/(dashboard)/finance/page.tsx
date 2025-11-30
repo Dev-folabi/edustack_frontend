@@ -252,8 +252,8 @@ const FinanceDashboardPage = () => {
                         {formatCurrency(summary?.totalInvoiceAmount || 0)}
                       </p>
                     </div>
-                    <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
-                      <Receipt className="w-6 h-6 text-indigo-600" />
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Receipt className="w-6 h-6 text-blue-600" />
                     </div>
                   </div>
                 </CardContent>
