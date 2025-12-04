@@ -25,6 +25,7 @@ const settingsSchema = z.object({
   showSchoolRemarks: z.boolean(),
   showTeacherRemarks: z.boolean(),
   enablePsychomotor: z.boolean(),
+  enablePosition: z.boolean(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -36,10 +37,11 @@ export const GeneralSettingsForm = () => {
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
-        passMark: 40,
-        showSchoolRemarks: true,
-        showTeacherRemarks: true,
-        enablePsychomotor: true,
+      passMark: 40,
+      showSchoolRemarks: true,
+      showTeacherRemarks: true,
+      enablePsychomotor: true,
+      enablePosition: true,
     },
   });
 
@@ -130,6 +132,20 @@ export const GeneralSettingsForm = () => {
             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                 <div className="space-y-0.5">
                     <FormLabel>Enable Psychomotor Analysis</FormLabel>
+                </div>
+                <FormControl>
+                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="enablePosition"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                    <FormLabel>Enable Position For Student Result</FormLabel>
                 </div>
                 <FormControl>
                     <Switch checked={field.value} onCheckedChange={field.onChange} />

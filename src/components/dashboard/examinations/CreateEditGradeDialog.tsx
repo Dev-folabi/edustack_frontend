@@ -86,10 +86,11 @@ export const CreateEditGradeDialog = ({
         });
       }
     } catch (error) {
+      console.error("Error:", error);
       showToast({
         type: "error",
         title: "Error",
-        message: "An error occurred while saving the grade criterion.",
+        message: error instanceof Error ? error.message : "An error occurred while saving the grade criterion.",
       });
     }
   };

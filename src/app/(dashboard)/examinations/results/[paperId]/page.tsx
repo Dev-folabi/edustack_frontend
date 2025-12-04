@@ -67,6 +67,10 @@ const ResultEntryPage = () => {
     [studentId: string]: number;
   }>({});
 
+  const [remarks, setRemarks] = useState<{
+    [studentId: string]: string;
+  }>({});
+
   const [psychomotorSkills, setPsychomotorSkills] = useState<
     PsychomotorSkill[]
   >([]);
@@ -77,7 +81,6 @@ const ResultEntryPage = () => {
   const [showPsychomotor, setShowPsychomotor] = useState(false);
   const [isSaving, setSaving] = useState(false);
   const [isPublishing, setPublishing] = useState(false);
-  // const [isImportDialogOpen, setImportDialogOpen] = useState(false);
 
   useEffect(() => {
     if (paperId) {
@@ -118,6 +121,10 @@ const ResultEntryPage = () => {
     setScores((prev) => ({ ...prev, [studentId]: value }));
   };
 
+  const handleRemarkChange = (studentId: string, value: string) => {
+    setRemarks((prev) => ({ ...prev, [studentId]: value }));
+  };
+
   const handlePsychomotorChange = (
     studentId: string,
     skillId: string,
@@ -134,7 +141,7 @@ const ResultEntryPage = () => {
   };
 
   const handleSaveResults = async () => {
-    if (!selectedPaper || selectedPaper.mode !== "PaperBased") return;
+    if (!selectedPaper) return;
 
     setSaving(true);
     try {
@@ -147,7 +154,17 @@ const ResultEntryPage = () => {
             marksObtained: scores[studentId] || 0,
           };
 
-          if (showPsychomotor && psychomotorScores[studentId]) {
+          // Add teacher remark if provided
+          if (remarks[studentId]) {
+            payload.teacherRemark = remarks[studentId];
+          }
+
+          // Add psychomotor assessments for PaperBased mode
+          if (
+            selectedPaper.mode === "PaperBased" &&
+            showPsychomotor &&
+            psychomotorScores[studentId]
+          ) {
             payload.psychomotorAssessments = Object.keys(
               psychomotorScores[studentId]
             )
@@ -303,31 +320,17 @@ const ResultEntryPage = () => {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              {/* {selectedPaper.mode === "PaperBased" && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setImportDialogOpen(true)}
-                >
-                  <Upload className="mr-2 h-4 w-4" />
-                  Import
-                </Button>
-              )} */}
+              <Button onClick={handleSaveResults} disabled={isSaving} size="sm">
+                <Save className="mr-2 h-4 w-4" />
+                {isSaving ? "Saving..." : "Save Results"}
+              </Button>
 
-              {selectedPaper.mode === "PaperBased" ? (
-                <Button
-                  onClick={handleSaveResults}
-                  disabled={isSaving}
-                  size="sm"
-                >
-                  <Save className="mr-2 h-4 w-4" />
-                  {isSaving ? "Saving..." : "Save Results"}
-                </Button>
-              ) : (
+              {selectedPaper.mode === "CBT" && (
                 <Button
                   onClick={handleCbtFinalize}
                   disabled={isSaving}
                   size="sm"
+                  variant="outline"
                 >
                   {isSaving ? "Finalizing..." : "Finalize Results"}
                 </Button>
@@ -372,7 +375,9 @@ const ResultEntryPage = () => {
             paper={selectedPaper}
             students={students}
             scores={scores}
+            remarks={remarks}
             onScoreChange={handleScoreChange}
+            onRemarkChange={handleRemarkChange}
           />
         </CardContent>
       </Card>
@@ -477,12 +482,6 @@ const ResultEntryPage = () => {
           )}
         </Card>
       )}
-
-      {/* <ImportResultsDialog
-        isOpen={isImportDialogOpen}
-        onClose={() => setImportDialogOpen(false)}
-        paperId={paperId}
-      /> */}
     </div>
   );
 };

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -20,28 +19,24 @@ interface ResultsTableProps {
   paper: ExamPaper;
   students: Student[];
   scores: { [studentId: string]: number };
+  remarks?: { [studentId: string]: string };
   onScoreChange: (studentId: string, value: number) => void;
+  onRemarkChange?: (studentId: string, value: string) => void;
 }
 
 export const ResultsTable = ({
   paper,
   students,
   scores,
+  remarks = {},
   onScoreChange,
+  onRemarkChange,
 }: ResultsTableProps) => {
   const { showToast } = useToast();
   const getAttemptForStudent = (studentId: string) => {
     return paper.attempts?.find(
       (attempt: Attempt) => attempt.studentId === studentId
     );
-  };
-
-  const getScoreColor = (score: number, maxMarks: number) => {
-    const percentage = (score / maxMarks) * 100;
-    if (percentage >= 70) return "text-green-600 font-semibold";
-    if (percentage >= 50) return "text-blue-600 font-semibold";
-    if (percentage >= 40) return "text-orange-600 font-semibold";
-    return "text-red-600 font-semibold";
   };
 
   if (students.length === 0) {
@@ -67,6 +62,7 @@ export const ResultsTable = ({
                 (Max: {paper.maxMarks})
               </span>
             </TableHead>
+            <TableHead className="min-w-[200px]">Remark (Optional)</TableHead>
             <TableHead className="w-24 text-center">Status</TableHead>
           </TableRow>
         </TableHeader>
@@ -98,39 +94,40 @@ export const ResultsTable = ({
                   {student.admissionNumber}
                 </TableCell>
                 <TableCell className="text-center">
-                  {paper.mode === "PaperBased" ? (
-                    <Input
-                      type="number"
-                      min={0}
-                      max={paper.maxMarks}
-                      value={currentScore}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        const numValue = value === "" ? 0 : Number(value);
+                  <Input
+                    type="number"
+                    min={0}
+                    max={paper.maxMarks}
+                    value={currentScore}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      const numValue = value === "" ? 0 : Number(value);
 
-                        if (numValue <= paper.maxMarks) {
-                          onScoreChange(studentId, numValue);
-                        } else {
-                          showToast({
-                            type: "error",
-                            title: "Error",
-                            message: `Score cannot exceed ${paper.maxMarks}`,
-                          });
-                        }
-                      }}
-                      className="w-20 text-center"
-                      placeholder="0"
-                    />
-                  ) : (
-                    <span
-                      className={
-                        hasScore
-                          ? getScoreColor(Number(currentScore), paper.maxMarks)
-                          : "text-muted-foreground"
+                      if (numValue <= paper.maxMarks) {
+                        onScoreChange(studentId, numValue);
+                      } else {
+                        showToast({
+                          type: "error",
+                          title: "Error",
+                          message: `Score cannot exceed ${paper.maxMarks}`,
+                        });
                       }
-                    >
-                      {hasScore ? `${currentScore}/${paper.maxMarks}` : "—"}
-                    </span>
+                    }}
+                    className="w-20 text-center"
+                    placeholder="0"
+                  />
+                </TableCell>
+                <TableCell>
+                  {onRemarkChange && (
+                    <Input
+                      type="text"
+                      value={remarks[studentId] || ""}
+                      onChange={(e) =>
+                        onRemarkChange(studentId, e.target.value)
+                      }
+                      className="w-full"
+                      placeholder="Enter remark (optional)"
+                    />
                   )}
                 </TableCell>
                 <TableCell className="text-center">

@@ -25,6 +25,10 @@ export interface Staff {
   user: {
     id: string;
     username: string;
+    staff: {
+      id: string;
+      name: string;
+    };
   };
 }
 

@@ -81,6 +81,8 @@ interface School {
   phone: string[];
   address: string;
   isActive: boolean;
+  adminId?: string;
+  userSchools?: UserSchool[];
   createdAt: string;
   updatedAt: string;
 }
@@ -125,11 +127,20 @@ interface ClassesResponse {
 
 // Types for the new login response structure
 interface UserSchool {
-  schoolId: string;
-  role: "super_admin" | "school_admin" | "teacher" | "staff";
-  school: {
+  schoolId?: string;
+  role?: "super_admin" | "admin" | "teacher" | "staff";
+  school?: {
     name: string;
     isActive: boolean;
+  };
+  user?: {
+    id: string;
+    email: string;
+    staff?: {
+      id: string;
+      name: string;
+    } | null;
+    student?: unknown | null;
   };
 }
 
