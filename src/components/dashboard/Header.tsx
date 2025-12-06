@@ -163,13 +163,13 @@ const UserProfile = () => {
           <span>My Profile</span>
         </DropdownMenuItem>
 
-        <DropdownMenuItem
+        {/* <DropdownMenuItem
           onClick={() => router.push("/settings")}
           className="cursor-pointer py-2"
         >
           <Settings className="mr-3 h-4 w-4 text-gray-500" />
           <span>Settings</span>
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
 
         <DropdownMenuSeparator />
 

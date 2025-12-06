@@ -40,11 +40,13 @@ class ApiClient {
   private async handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
     const data = await response.json();
 
-    // Check for token expiration
+    // Check for authentication/authorization errors
     if (
       !data.success &&
       data.message &&
-      data.message.includes("Invalid or missing token")
+      (data.message.includes("Invalid or missing token") ||
+        data.message.includes("User ID not found in token") ||
+        data.message.includes("Unauthorized"))
     ) {
       // Get the logout function from auth store
       const { logout } = useAuthStore.getState();

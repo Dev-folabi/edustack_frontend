@@ -55,13 +55,16 @@ export function DateRangePicker({
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="end">
           <Calendar
-            initialFocus
+            autoFocus
             mode="range"
+            captionLayout="dropdown"
+            startMonth={new Date(1900, 0, 1)}
+            endMonth={new Date(2100, 11, 31)}
             defaultMonth={date?.from}
             selected={date}
             onSelect={onDateChange}
             numberOfMonths={2}
-            disabled={(day) => day > (maxDate || new Date())}
+            disabled={maxDate ? (day) => day > maxDate : undefined}
           />
         </PopoverContent>
       </Popover>
@@ -102,9 +105,12 @@ export function DatePicker({
           <Calendar
             initialFocus
             mode="single"
+            captionLayout="dropdown"
+            fromYear={1900}
+            toYear={2100}
             selected={value}
             onSelect={(d: Date | undefined) => onChange(d)}
-            disabled={(day) => day > (maxDate || new Date())}
+            disabled={maxDate ? (day) => day > maxDate : undefined}
           />
         </PopoverContent>
       </Popover>

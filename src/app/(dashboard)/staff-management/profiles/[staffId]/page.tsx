@@ -256,8 +256,8 @@ const StaffProfilePage = () => {
             Back to Profiles
           </Button>
         </div>
-        <div className="flex items-center">
-          <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
                 Staff Profile
@@ -267,15 +267,7 @@ const StaffProfilePage = () => {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" className="text-gray-600">
-              <Printer className="mr-2 h-4 w-4" />
-              Print
-            </Button>
-            <Button variant="outline" size="sm" className="text-gray-600">
-              <FileText className="mr-2 h-4 w-4" />
-              Export
-            </Button>
+          <div className="flex items-center gap-4">
             {isEditing ? (
               <Button className="bg-blue-600 hover:bg-blue-700">
                 <Save className="mr-2 h-4 w-4" />

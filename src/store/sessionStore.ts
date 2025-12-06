@@ -1,15 +1,15 @@
 import { create } from "zustand";
 import { sessionService } from "@/services/sessionService";
 import type { Session, Term } from "@/services/sessionService";
-export type { Session };
+export type { Session, Term };
 
 interface SessionState {
   sessions: Session[];
   selectedSession: Session | null;
   isLoading: boolean;
-  fetchSessions: () => Promise<void>;
+  fetchSessions: (schoolId: string) => Promise<void>;
   setSelectedSession: (session: Session) => void;
-  fetchTerms: (sessionId: string) => Promise<void>;
+  fetchTerms: (sessionId: string, schoolId: string) => Promise<void>;
   terms: Term[];
 }
 
@@ -19,13 +19,14 @@ export const useSessionStore = create<SessionState>((set) => ({
   isLoading: false,
   terms: [],
 
-  fetchSessions: async () => {
+  fetchSessions: async (schoolId: string) => {
     try {
       set({ isLoading: true });
-      const response = await sessionService.getSessions();
+      const response = await sessionService.getSessions(schoolId);
       if (response.success && response.data) {
         const sessions = response.data.data;
-        const activeSession = sessions.find((s: Session) => s.isActive) || sessions[0] || null;
+        const activeSession =
+          sessions.find((s: Session) => s.isActive) || sessions[0] || null;
         set({
           sessions,
           selectedSession: activeSession,
@@ -44,10 +45,13 @@ export const useSessionStore = create<SessionState>((set) => ({
     set({ selectedSession: session });
   },
 
-  fetchTerms: async (sessionId: string) => {
+  fetchTerms: async (sessionId: string, schoolId: string) => {
     try {
       set({ isLoading: true });
-      const response = await sessionService.getSessionTerms(sessionId || "");
+      const response = await sessionService.getSessionTerms(
+        sessionId || "",
+        schoolId
+      );
       if (response.success && response.data) {
         const terms = response.data.data;
         set({

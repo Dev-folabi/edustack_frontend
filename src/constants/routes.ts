@@ -11,8 +11,6 @@ export const DASHBOARD_ROUTES = {
 
   // School View (Super Admin, Admin)
   SCHOOL_DASHBOARD: '/school-dashboard', // A school-specific dashboard
-  INQUIRIES: '/school-dashboard/inquiries',
-  RECENT_ADMISSIONS: '/school-dashboard/recent-admissions',
 
   // Academics
   ACADEMICS_OVERVIEW: '/academics',

@@ -156,10 +156,12 @@ const StudentProfilePage = () => {
         .finally(() => setIsLoading(false));
     }
 
-    if (canDownloadReport) {
-      sessionService.getSessions().then((res) => setSessions(res.data.data));
+    if (canDownloadReport && selectedSchool?.schoolId) {
+      sessionService
+        .getSessions(selectedSchool.schoolId)
+        .then((res) => setSessions(res.data.data));
     }
-  }, [studentId, canDownloadReport, form, isUpdated]);
+  }, [studentId, canDownloadReport, form, isUpdated, selectedSchool?.schoolId]);
 
   useEffect(() => {
     if (selectedSchool?.schoolId && canEditStudent) {

@@ -34,8 +34,8 @@ export interface SidebarCategory {
 
 export const sidebarConfig: SidebarCategory[] = [
   {
-    title: "Dashboard",
-    roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN],
+    title: "School Management",
+    roles: [UserRole.SUPER_ADMIN],
     links: [
       {
         href: DASHBOARD_ROUTES.MULTI_SCHOOL_DASHBOARD,
@@ -44,34 +44,29 @@ export const sidebarConfig: SidebarCategory[] = [
         roles: [UserRole.SUPER_ADMIN],
       },
       {
-        href: DASHBOARD_ROUTES.SCHOOL_DASHBOARD,
-        label: "School Dashboard",
-        icon: FaTachometerAlt,
-        roles: [UserRole.ADMIN],
-      },
-    ],
-  },
-  {
-    title: "School Management",
-    roles: [UserRole.SUPER_ADMIN],
-    links: [
-      {
         href: DASHBOARD_ROUTES.SCHOOL_MANAGEMENT,
         label: "Schools",
         icon: FaSchool,
         roles: [UserRole.SUPER_ADMIN],
       },
+    ],
+  },
+  {
+    title: "Dashboard",
+    roles: [],
+    links: [
       {
-        href: DASHBOARD_ROUTES.SESSIONS,
-        label: "Sessions & Terms",
-        icon: FaBook,
-        roles: [UserRole.SUPER_ADMIN],
+        href: DASHBOARD_ROUTES.PROFILE,
+        label: "Profile",
+        icon: FaUserCircle,
+        allAuthenticated: true,
+        roles: [],
       },
       {
-        href: DASHBOARD_ROUTES.CLASSES,
-        label: "Classes",
-        icon: FaUsers,
-        roles: [UserRole.SUPER_ADMIN],
+        href: DASHBOARD_ROUTES.SCHOOL_DASHBOARD,
+        label: "School Dashboard",
+        icon: FaTachometerAlt,
+        roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN],
       },
     ],
   },
@@ -80,6 +75,18 @@ export const sidebarConfig: SidebarCategory[] = [
     isStaff: true,
     roles: [UserRole.ADMIN],
     links: [
+      {
+        href: DASHBOARD_ROUTES.SESSIONS,
+        label: "Sessions & Terms",
+        icon: FaBook,
+        roles: [UserRole.ADMIN],
+      },
+      {
+        href: DASHBOARD_ROUTES.CLASSES,
+        label: "Classes",
+        icon: FaUsers,
+        roles: [UserRole.ADMIN],
+      },
       {
         href: DASHBOARD_ROUTES.ACADEMICS_OVERVIEW,
         label: "Overview",
@@ -91,7 +98,7 @@ export const sidebarConfig: SidebarCategory[] = [
         label: "Class Sections",
         icon: FaUsers,
         isStaff: true,
-        roles: [],
+        roles: [UserRole.ADMIN],
       },
       {
         href: DASHBOARD_ROUTES.SUBJECTS,
@@ -106,18 +113,6 @@ export const sidebarConfig: SidebarCategory[] = [
         icon: FaClipboardList,
         isStaff: true,
         roles: [],
-      },
-      {
-        href: DASHBOARD_ROUTES.ATTENDANCE_STUDENT,
-        label: "Student Attendance",
-        icon: FaUserGraduate,
-        roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.TEACHER],
-      },
-      {
-        href: DASHBOARD_ROUTES.ATTENDANCE_STAFF,
-        label: "Staff Attendance",
-        icon: FaUserTie,
-        roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.TEACHER],
       },
     ],
   },
@@ -144,6 +139,12 @@ export const sidebarConfig: SidebarCategory[] = [
         icon: FaUserGraduate,
         roles: [UserRole.ADMIN, UserRole.TEACHER],
       },
+      {
+        href: DASHBOARD_ROUTES.ATTENDANCE_STUDENT,
+        label: "Student Attendance",
+        icon: FaUserGraduate,
+        roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.TEACHER],
+      },
       // {
       //   href: DASHBOARD_ROUTES.STUDENT_TRANSFER,
       //   label: "Transfer Students",
@@ -154,7 +155,7 @@ export const sidebarConfig: SidebarCategory[] = [
   },
   {
     title: "Staff Management",
-    roles: [UserRole.ADMIN],
+    roles: [UserRole.ADMIN, UserRole.TEACHER],
     links: [
       {
         href: DASHBOARD_ROUTES.STAFF_REGISTRATION,
@@ -167,6 +168,12 @@ export const sidebarConfig: SidebarCategory[] = [
         label: "Staff List",
         icon: FaUsers,
         roles: [UserRole.ADMIN],
+      },
+      {
+        href: DASHBOARD_ROUTES.ATTENDANCE_STAFF,
+        label: "Staff Attendance",
+        icon: FaUserTie,
+        roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.TEACHER],
       },
     ],
   },
@@ -255,25 +262,18 @@ export const sidebarConfig: SidebarCategory[] = [
       },
     ],
   },
-  {
-    title: "General",
-    allAuthenticated: true,
-    roles: [],
-    links: [
-      {
-        href: DASHBOARD_ROUTES.PROFILE,
-        label: "Profile",
-        icon: FaUserCircle,
-        allAuthenticated: true,
-        roles: [],
-      },
-      {
-        href: DASHBOARD_ROUTES.SETTINGS,
-        label: "Settings",
-        icon: FaCog,
-        allAuthenticated: true,
-        roles: [],
-      },
-    ],
-  },
+  // {
+  //   title: "General",
+  //   allAuthenticated: true,
+  //   roles: [],
+  //   links: [
+  //     {
+  //       href: DASHBOARD_ROUTES.SETTINGS,
+  //       label: "Settings",
+  //       icon: FaCog,
+  //       allAuthenticated: true,
+  //       roles: [],
+  //     },
+  //   ],
+  // },
 ];
