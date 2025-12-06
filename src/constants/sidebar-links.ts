@@ -220,7 +220,7 @@ export const sidebarConfig: SidebarCategory[] = [
     links: [
       {
         href: DASHBOARD_ROUTES.FINANCE_DASHBOARD,
-        label: "Financial Dashboard",
+        label: "Financial Overview",
         icon: FaFileInvoiceDollar,
         roles: [UserRole.ADMIN, UserRole.FINANCE],
       },
