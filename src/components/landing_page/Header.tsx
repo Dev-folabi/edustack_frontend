@@ -1,15 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { COLORS, SCHOOL_INFO } from "@/constants/config";
 import Image from "next/image";
 import { useAuthStore } from "@/store/authStore";
 import { DASHBOARD_ROUTES } from "@/constants/routes";
+import { UserRole } from "@/constants/roles";
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { isLoggedIn, userSchools } = useAuthStore();
+  const { isLoggedIn, userSchools, initializeAuth, isHydrated } = useAuthStore();
+
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
 
   const navItems = [
     { name: "Home", href: "#home" },
@@ -17,19 +22,31 @@ export default function Header() {
     { name: "Contact", href: "#contact" },
   ];
 
-  // const getDashboardUrl = () => {
-  //   if (!userSchools || userSchools.length === 0) {
-  //     return DASHBOARD_ROUTES.NOT_AUTHORIZED;
-  //   }
-  //   const role = userSchools[0].role;
-  //   if (role && ["admin", "teacher", "finance", "super_admin"].includes(role)) {
-  //     return DASHBOARD_ROUTES.MULTI_SCHOOL_DASHBOARD;
-  //   }
-  //   if (role && ["student", "parent"].includes(role)) {
-  //     return DASHBOARD_ROUTES.STUDENT_DASHBOARD;
-  //   }
-  //   return DASHBOARD_ROUTES.NOT_AUTHORIZED;
-  // };
+  const getDashboardUrl = () => {
+    if (!userSchools || userSchools.length === 0) {
+      return DASHBOARD_ROUTES.NOT_AUTHORIZED;
+    }
+    const role = userSchools[0].role;
+    if (
+      role &&
+      [
+        UserRole.ADMIN,
+        UserRole.TEACHER,
+        UserRole.FINANCE,
+        UserRole.SUPER_ADMIN,
+      ].includes(role)
+    ) {
+      return DASHBOARD_ROUTES.PROFILE;
+    }
+    if (role && [UserRole.STUDENT, UserRole.PARENT].includes(role)) {
+      return DASHBOARD_ROUTES.STUDENT_PROFILE;
+    }
+    return DASHBOARD_ROUTES.NOT_AUTHORIZED;
+  };
+
+  if (!isHydrated) {
+    return null;
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-lg">
@@ -86,7 +103,7 @@ export default function Header() {
           <div className="hidden md:flex items-center space-x-4">
             {isLoggedIn ? (
               <Link
-                href={DASHBOARD_ROUTES.PROFILE}
+                href={getDashboardUrl()}
                 className="px-6 py-2 rounded-full text-white font-medium transition-all duration-200 hover:shadow-lg"
                 style={{ backgroundColor: COLORS.primary[500] }}
               >
@@ -168,7 +185,7 @@ export default function Header() {
               <div className="pt-4 border-t border-gray-200">
                 {isLoggedIn ? (
                   <Link
-                    href={DASHBOARD_ROUTES.PROFILE}
+                    href={getDashboardUrl()}
                     className="block w-full text-center px-6 py-2 rounded-full text-white font-medium"
                     style={{ backgroundColor: COLORS.primary[500] }}
                   >

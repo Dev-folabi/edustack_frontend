@@ -43,28 +43,10 @@ const LoginPage: React.FC = () => {
     defaultValues: { emailOrUsername: "", password: "" },
   });
 
-  // useEffect(() => {
-  //   const checkSystemStatus = async () => {
-  //     try {
-  //       const onboard = await checkOnboardingStatus();
-  //       if (!onboard.isOnboarded) {
-  //         router.push("/onboarding");
-  //         return;
-  //       }
-  //     } catch (error) {
-  //       console.error("Error checking onboarding status:", error);
-  //     } finally {
-  //       setIsCheckingOnboarding(false);
-  //     }
-  //   };
-  //   checkSystemStatus();
-  // }, [checkOnboardingStatus, router]);
-
   const onSubmit = async (values: LoginFormValues) => {
     try {
       const result = await login(values.emailOrUsername, values.password);
 
-      // Check if we need to redirect for email verification
       if (result.redirectTo) {
         showToast({
           title: "Verification Required",
@@ -75,22 +57,20 @@ const LoginPage: React.FC = () => {
         return;
       }
 
-      // Successful login
       showToast({
         title: "Login Successful",
         type: "success",
         message: "Welcome back!",
       });
 
-      // Get the latest state from the store to decide on redirection
       const authState = useAuthStore.getState();
 
       if (authState.user?.isSuperAdmin || authState.staff) {
         router.push(DASHBOARD_ROUTES.PROFILE);
       } else if (authState.student || authState.parent) {
-        router.push(DASHBOARD_ROUTES.STUDENT_DASHBOARD);
+        router.push(DASHBOARD_ROUTES.STUDENT_PROFILE);
       } else {
-        router.push(DASHBOARD_ROUTES.PROFILE);
+        router.push("/");
       }
     } catch (error) {
       showToast({
@@ -100,10 +80,6 @@ const LoginPage: React.FC = () => {
       });
     }
   };
-
-  // if (isCheckingOnboarding) {
-  //   return <Loader fullScreen text="Checking system status..." />;
-  // }
 
   return (
     <div

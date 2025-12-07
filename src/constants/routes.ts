@@ -11,6 +11,7 @@ export const DASHBOARD_ROUTES = {
 
   // School View (Super Admin, Admin)
   SCHOOL_DASHBOARD: '/school-dashboard', // A school-specific dashboard
+  PROFILE: '/profile',
 
   // Academics
   ACADEMICS_OVERVIEW: '/academics',
@@ -63,7 +64,6 @@ export const DASHBOARD_ROUTES = {
   STUDENT_NOTIFICATIONS: '/student/notifications',
 
   // Shared Routes
-  PROFILE: '/profile',
   SETTINGS: '/settings',
   NOT_AUTHORIZED: '/not-authorized',
 };

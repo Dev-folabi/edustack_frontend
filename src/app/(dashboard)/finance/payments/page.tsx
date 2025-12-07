@@ -70,13 +70,14 @@ const PaymentsPage = () => {
   const [selectedPaymentId, setSelectedPaymentId] = React.useState<
     string | null
   >(null);
-
+  const studentId = "";
   const { data, isLoading } = useQuery({
     queryKey: ["payments", selectedSchool?.schoolId, page, status],
     queryFn: () =>
       financeService.getPayments(
         selectedSchool?.schoolId || "",
         status === "all" ? "" : status,
+        studentId,
         page
       ),
     enabled: !!selectedSchool?.schoolId,

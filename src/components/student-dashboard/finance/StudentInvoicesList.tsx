@@ -206,7 +206,8 @@ const StudentInvoicesList = () => {
                   </TableCell>
                   <TableCell>{getStatusBadge(invoice.status)}</TableCell>
                   <TableCell className="text-right">
-                    {invoice.status !== "PAID" ? (
+                    {/* {
+                    invoice.status !== "PAID" ? (
                       <Button asChild>
                         <Link
                           href={`/student/finance/make-payment?invoiceId=${invoice.id}`}
@@ -214,11 +215,15 @@ const StudentInvoicesList = () => {
                           Make Payment
                         </Link>
                       </Button>
-                    ) : (
+                    ) :
+                     (
                       <Button variant="ghost" size="sm">
                         View
                       </Button>
-                    )}
+                    )} */}
+                    <Button variant="ghost" size="sm">
+                        View
+                      </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -314,7 +319,7 @@ const StudentInvoicesList = () => {
                       </span>
                     </div>
                     <div className="flex gap-2">
-                      {invoice.status !== "PAID" && (
+                      {/* {invoice.status !== "PAID" && (
                         <Button asChild size="sm">
                           <Link
                             href={`/student/finance/make-payment?invoiceId=${invoice.id}`}
@@ -322,7 +327,7 @@ const StudentInvoicesList = () => {
                             Pay
                           </Link>
                         </Button>
-                      )}
+                      )} */}
                       <Button variant="outline" size="sm">
                         View
                       </Button>

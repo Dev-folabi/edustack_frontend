@@ -79,6 +79,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             staff: staff ? JSON.parse(staff) : null,
             student: student ? JSON.parse(student) : null,
             parent: parent ? JSON.parse(parent) : null,
+            isLoggedIn: true,
           });
 
           // Set cookie for middleware
