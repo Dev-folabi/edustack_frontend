@@ -244,24 +244,24 @@ export const sidebarConfig: SidebarCategory[] = [
       },
     ],
   },
-  {
-    title: "Notification & Mail",
-    roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN],
-    links: [
-      {
-        href: DASHBOARD_ROUTES.NOTIFICATION_SEND,
-        label: "Send Bulk Messages",
-        icon: FaEnvelope,
-        roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN],
-      },
-      {
-        href: DASHBOARD_ROUTES.NOTIFICATION_VIEW,
-        label: "View Notifications",
-        icon: FaEnvelope,
-        roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN],
-      },
-    ],
-  },
+  // {
+  //   title: "Notification & Mail",
+  //   roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN],
+  //   links: [
+  //     {
+  //       href: DASHBOARD_ROUTES.NOTIFICATION_SEND,
+  //       label: "Send Bulk Messages",
+  //       icon: FaEnvelope,
+  //       roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN],
+  //     },
+  //     {
+  //       href: DASHBOARD_ROUTES.NOTIFICATION_VIEW,
+  //       label: "View Notifications",
+  //       icon: FaEnvelope,
+  //       roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN],
+  //     },
+  //   ],
+  // },
   // {
   //   title: "General",
   //   allAuthenticated: true,

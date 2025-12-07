@@ -95,16 +95,16 @@ export const studentSidebarConfig: SidebarCategory[] = [
       },
     ],
   },
-  {
-    title: "Notifications",
-    roles: [UserRole.STUDENT, UserRole.PARENT],
-    links: [
-      {
-        href: DASHBOARD_ROUTES.STUDENT_NOTIFICATIONS,
-        label: "View All Notifications",
-        icon: FaBell,
-        roles: [UserRole.STUDENT, UserRole.PARENT],
-      },
-    ],
-  },
+  // {
+  //   title: "Notifications",
+  //   roles: [UserRole.STUDENT, UserRole.PARENT],
+  //   links: [
+  //     {
+  //       href: DASHBOARD_ROUTES.STUDENT_NOTIFICATIONS,
+  //       label: "View All Notifications",
+  //       icon: FaBell,
+  //       roles: [UserRole.STUDENT, UserRole.PARENT],
+  //     },
+  //   ],
+  // },
 ];

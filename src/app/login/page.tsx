@@ -66,11 +66,11 @@ const LoginPage: React.FC = () => {
       const authState = useAuthStore.getState();
 
       if (authState.user?.isSuperAdmin || authState.staff) {
-        router.push(DASHBOARD_ROUTES.MULTI_SCHOOL_DASHBOARD);
+        router.push(DASHBOARD_ROUTES.PROFILE);
       } else if (authState.student || authState.parent) {
         router.push(DASHBOARD_ROUTES.STUDENT_DASHBOARD);
       } else {
-        router.push(DASHBOARD_ROUTES.PROFILE);
+        router.push("/");
       }
     } catch (error) {
       showToast({
