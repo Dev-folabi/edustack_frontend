@@ -91,7 +91,7 @@ export async function middleware(request: NextRequest) {
     (pathname.startsWith("/login") || pathname.startsWith("/register"))
   ) {
     return NextResponse.redirect(
-      new URL(DASHBOARD_ROUTES.PROFILE, request.url)
+      new URL(DASHBOARD_ROUTES.MULTI_SCHOOL_DASHBOARD, request.url)
     );
   }
 

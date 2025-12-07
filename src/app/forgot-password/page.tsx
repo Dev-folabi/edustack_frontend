@@ -185,7 +185,6 @@ const ForgotPasswordPage: React.FC = () => {
               <form
                 onSubmit={resetForm.handleSubmit(onResetSubmit)}
                 className="space-y-6"
-                autoComplete="off"
               >
                 <FormField
                   control={resetForm.control}
@@ -198,7 +197,6 @@ const ForgotPasswordPage: React.FC = () => {
                       <FormControl>
                         <Input
                           type="text"
-                          autoComplete="off"
                           placeholder="123456"
                           {...field}
                           style={{
