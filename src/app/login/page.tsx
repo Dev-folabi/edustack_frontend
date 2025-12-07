@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,7 +9,6 @@ import Link from "next/link";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useAuthStore } from "../../store/authStore";
 import { useToast } from "../../components/ui/Toast";
-import { Loader } from "../../components/ui/Loader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,8 +20,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
-import { ApiError } from "../../utils/api";
-import { authService } from "../../services/authService";
 import { DASHBOARD_ROUTES } from "@/constants/routes";
 import { COLORS, SCHOOL_INFO } from "@/constants/config";
 
@@ -37,9 +34,8 @@ type LoginFormValues = z.infer<typeof formSchema>;
 
 const LoginPage: React.FC = () => {
   const router = useRouter();
-  const { login, checkOnboardingStatus, isLoading } = useAuthStore();
+  const { login, isLoading } = useAuthStore();
   const { showToast } = useToast();
-  const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<LoginFormValues>({
@@ -193,6 +189,16 @@ const LoginPage: React.FC = () => {
                   </FormItem>
                 )}
               />
+              <div className="flex justify-end">
+                <Link
+                  href="/forgot-password"
+                  className="text-sm font-medium transition-colors duration-200 hover:underline"
+                  style={{ color: COLORS.primary[600] }}
+                >
+                  Forgot Password?
+                </Link>
+              </div>
+
               <Button
                 type="submit"
                 className="w-full font-medium transition-all duration-200 hover:shadow-lg"

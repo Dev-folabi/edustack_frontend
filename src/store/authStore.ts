@@ -55,10 +55,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isOnboarded: false,
   classes: [],
   sections: [],
+  isLoggedIn: false,
   isHydrated: false,
-  get isLoggedIn() {
-    return !!get().user && !!get().token;
-  },
 
   // Initialize auth state from localStorage
   initializeAuth: () => {
@@ -114,7 +112,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
         const selectedSchool =
           userSchools && userSchools.length > 0
-            ? userSchools.find((s) => s.school.isActive) || userSchools[0]
+            ? userSchools.find((s) => s?.school?.isActive) || userSchools[0]
             : null;
 
         set({
@@ -125,6 +123,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           staff,
           student,
           parent,
+          isLoggedIn: true,
           isLoading: false,
         });
 
