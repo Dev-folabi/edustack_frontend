@@ -68,7 +68,7 @@ const LoginPage: React.FC = () => {
       if (authState.user?.isSuperAdmin || authState.staff) {
         router.push(DASHBOARD_ROUTES.PROFILE);
       } else if (authState.student || authState.parent) {
-        router.push(DASHBOARD_ROUTES.STUDENT_DASHBOARD);
+        router.push(DASHBOARD_ROUTES.STUDENT_PROFILE);
       } else {
         router.push("/");
       }
