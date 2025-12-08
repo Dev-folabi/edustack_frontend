@@ -113,7 +113,7 @@ export const CreateEditQuestionBankDialog = ({
   }, [selectedSectionId, form]);
 
   const onSubmit = async (values: QuestionBankFormValues) => {
-    if (!selectedSchool) return;
+    if (!selectedSchool?.schoolId) return;
 
     try {
       const data = { ...values, schoolId: selectedSchool.schoolId };

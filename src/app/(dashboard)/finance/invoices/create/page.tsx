@@ -107,7 +107,7 @@ const CreateInvoicePage = () => {
   }, [selectedSession]);
 
   const onSubmit = async (data: InvoiceFormData) => {
-    if (!selectedSchool) return;
+    if (!selectedSchool?.schoolId) return;
 
     const payload = {
       ...data,
