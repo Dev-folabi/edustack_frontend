@@ -159,7 +159,7 @@ const StudentProfilePage = () => {
     if (canDownloadReport && selectedSchool?.schoolId) {
       sessionService
         .getSessions(selectedSchool.schoolId)
-        .then((res) => setSessions(res.data.data));
+        .then((res) => setSessions(res.data?.data || []));
     }
   }, [studentId, canDownloadReport, form, isUpdated, selectedSchool?.schoolId]);
 

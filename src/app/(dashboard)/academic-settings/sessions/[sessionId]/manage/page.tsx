@@ -5,8 +5,8 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { EditSessionForm } from "@/components/dashboard/sessions/EditSessionForm";
-import { sessionService } from "@/services/sessionService";
-import { Session } from "@/store/sessionStore";
+import { sessionService, Session } from "@/services/sessionService";
+import { ApiResponse } from "@/utils/api";
 import { DASHBOARD_ROUTES } from "@/constants/routes";
 import { Loader } from "@/components/ui/Loader";
 import withAuth from "@/components/withAuth";
@@ -28,10 +28,10 @@ const ManageSessionPage = () => {
     const fetchSessionData = async () => {
       try {
         setIsLoading(true);
-        const response = await sessionService.getSessionById(
+        const response = (await sessionService.getSessionById(
           sessionId,
           schoolId
-        );
+        )) as ApiResponse<Session>;
         if (response.success && response.data) {
           setSession(response.data);
         } else {
