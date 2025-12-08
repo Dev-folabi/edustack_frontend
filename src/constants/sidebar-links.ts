@@ -119,19 +119,19 @@ export const sidebarConfig: SidebarCategory[] = [
   {
     title: "Student Management",
     isStaff: true,
-    roles: [UserRole.ADMIN, UserRole.TEACHER],
+    roles: [UserRole.ADMIN, UserRole.TEACHER, UserRole.FINANCE],
     links: [
       {
         href: DASHBOARD_ROUTES.STUDENT_ADMISSION,
         label: "Admission",
         icon: FaUserGraduate,
-        roles: [UserRole.ADMIN],
+        roles: [UserRole.ADMIN, UserRole.FINANCE],
       },
       {
         href: DASHBOARD_ROUTES.STUDENT_PROFILES,
         label: "Student Profiles",
         icon: FaUsers,
-        roles: [UserRole.ADMIN, UserRole.TEACHER],
+        roles: [UserRole.ADMIN, UserRole.TEACHER, UserRole.FINANCE],
       },
       {
         href: DASHBOARD_ROUTES.STUDENT_PROMOTION,
@@ -155,7 +155,8 @@ export const sidebarConfig: SidebarCategory[] = [
   },
   {
     title: "Staff Management",
-    roles: [UserRole.ADMIN, UserRole.TEACHER],
+    isStaff: true,
+    roles: [UserRole.ADMIN, UserRole.TEACHER, UserRole.FINANCE],
     links: [
       {
         href: DASHBOARD_ROUTES.STAFF_REGISTRATION,
@@ -173,13 +174,12 @@ export const sidebarConfig: SidebarCategory[] = [
         href: DASHBOARD_ROUTES.ATTENDANCE_STAFF,
         label: "Staff Attendance",
         icon: FaUserTie,
-        roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.TEACHER],
+        roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.TEACHER, UserRole.FINANCE],
       },
     ],
   },
   {
     title: "Examinations",
-    isStaff: true,
     roles: [UserRole.ADMIN, UserRole.TEACHER],
     links: [
       {
