@@ -24,12 +24,13 @@ const ManageSessionPage = () => {
   useEffect(() => {
     if (!sessionId || !selectedSchool?.schoolId) return;
 
+    const schoolId = selectedSchool.schoolId;
     const fetchSessionData = async () => {
       try {
         setIsLoading(true);
         const response = await sessionService.getSessionById(
           sessionId,
-          selectedSchool.schoolId
+          schoolId
         );
         if (response.success && response.data) {
           setSession(response.data);

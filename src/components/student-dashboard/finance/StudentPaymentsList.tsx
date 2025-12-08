@@ -38,13 +38,13 @@ const StudentPaymentsList = () => {
 
   const { student, selectedSchool } = useAuthStore();
   const studentId = student?.id;
-
+const schoolId = selectedSchool?.schoolId;
   const fetchPayments = useCallback(async () => {
-    if (!studentId || !selectedSchool) return;
+    if (!studentId || !schoolId) return;
     try {
       setLoading(true);
       const response = await financeService.getPayments(
-        selectedSchool.schoolId,
+        schoolId,
         "",
         studentId
       );

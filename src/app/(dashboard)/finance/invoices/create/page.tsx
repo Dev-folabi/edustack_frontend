@@ -102,7 +102,7 @@ const CreateInvoicePage = () => {
 
   useEffect(() => {
     if (selectedSession) {
-      fetchTerms(selectedSession.id);
+      fetchTerms(selectedSession.id, selectedSchool?.schoolId || "");
     }
   }, [selectedSession]);
 
