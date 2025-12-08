@@ -121,7 +121,7 @@ const EntryFormModal = ({
 
   useEffect(() => {
     const loadData = async () => {
-      if (selectedSchool) {
+      if (selectedSchool?.schoolId) {
         try {
           const subjectFilters: { schoolId: string; sectionId?: string } = {
             schoolId: selectedSchool.schoolId,

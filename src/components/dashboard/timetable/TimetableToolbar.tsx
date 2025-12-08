@@ -26,7 +26,7 @@ const TimetableToolbar = () => {
 
   // Fetch classes when selectedSchool changes
   useEffect(() => {
-    if (selectedSchool) {
+    if (selectedSchool?.schoolId) {
       fetchClasses(selectedSchool.schoolId);
     }
   }, [selectedSchool, fetchClasses]);

@@ -72,7 +72,7 @@ const CreateTimetablePage = () => {
   });
 
   useEffect(() => {
-    if (selectedSchool) {
+    if (selectedSchool?.schoolId) {
       fetchSessions();
       fetchClasses(selectedSchool.schoolId);
       subjectService

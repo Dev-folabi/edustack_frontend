@@ -133,7 +133,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         localStorage.setItem("userData", JSON.stringify(userData));
         if (userSchools)
           localStorage.setItem("userSchools", JSON.stringify(userSchools));
-        if (selectedSchool)
+        if (selectedSchool?.schoolId)
           localStorage.setItem(
             "selectedSchool",
             JSON.stringify(selectedSchool)

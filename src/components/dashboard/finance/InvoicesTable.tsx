@@ -89,7 +89,7 @@ export const InvoicesTable = () => {
   }, [selectedSchool, currentPage, showToast]);
 
   useEffect(() => {
-    if (selectedSchool) {
+    if (selectedSchool?.schoolId) {
       fetchInvoices();
     }
   }, [selectedSchool, fetchInvoices]);

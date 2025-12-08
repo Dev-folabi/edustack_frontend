@@ -89,7 +89,7 @@ const CreateInvoicePage = () => {
   const assignmentType = watch("assignmentType");
 
   useEffect(() => {
-    if (selectedSchool) {
+    if (selectedSchool?.schoolId) {
       fetchClasses(selectedSchool.schoolId);
       financeService
         .getFeeCategories(selectedSchool.schoolId, 1, 100)
