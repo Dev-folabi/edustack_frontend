@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,7 +9,6 @@ import Link from "next/link";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useAuthStore } from "../../store/authStore";
 import { useToast } from "../../components/ui/Toast";
-import { Loader } from "../../components/ui/Loader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,10 +20,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
-import { ApiError } from "../../utils/api";
-import { authService } from "../../services/authService";
 import { DASHBOARD_ROUTES } from "@/constants/routes";
-import { COLORS } from "@/constants/colors";
+import { COLORS, SCHOOL_INFO } from "@/constants/config";
 
 const formSchema = z.object({
   emailOrUsername: z
@@ -37,9 +34,8 @@ type LoginFormValues = z.infer<typeof formSchema>;
 
 const LoginPage: React.FC = () => {
   const router = useRouter();
-  const { login, checkOnboardingStatus, isLoading } = useAuthStore();
+  const { login, isLoading } = useAuthStore();
   const { showToast } = useToast();
-  const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<LoginFormValues>({
@@ -47,89 +43,69 @@ const LoginPage: React.FC = () => {
     defaultValues: { emailOrUsername: "", password: "" },
   });
 
-  // useEffect(() => {
-  //   const checkSystemStatus = async () => {
-  //     try {
-  //       const onboard = await checkOnboardingStatus();
-  //       if (!onboard.isOnboarded) {
-  //         router.push("/onboarding");
-  //         return;
-  //       }
-  //     } catch (error) {
-  //       console.error("Error checking onboarding status:", error);
-  //     } finally {
-  //       setIsCheckingOnboarding(false);
-  //     }
-  //   };
-  //   checkSystemStatus();
-  // }, [checkOnboardingStatus, router]);
-
   const onSubmit = async (values: LoginFormValues) => {
     try {
-      await login(values.emailOrUsername, values.password);
+      const result = await login(values.emailOrUsername, values.password);
+
+      if (result.redirectTo) {
+        showToast({
+          title: "Verification Required",
+          type: "info",
+          message: "A new verification code has been sent to your email.",
+        });
+        router.push(result.redirectTo);
+        return;
+      }
+
       showToast({
         title: "Login Successful",
         type: "success",
         message: "Welcome back!",
       });
 
-      // Get the latest state from the store to decide on redirection
       const authState = useAuthStore.getState();
 
       if (authState.user?.isSuperAdmin || authState.staff) {
-        router.push(DASHBOARD_ROUTES.MULTI_SCHOOL_DASHBOARD);
+        router.push(DASHBOARD_ROUTES.PROFILE);
       } else if (authState.student || authState.parent) {
-        router.push(DASHBOARD_ROUTES.STUDENT_DASHBOARD);
+        router.push(DASHBOARD_ROUTES.STUDENT_PROFILE);
       } else {
-        // Fallback to the main dashboard
-        router.push(DASHBOARD_ROUTES.MULTI_SCHOOL_DASHBOARD);
+        router.push("/");
       }
     } catch (error) {
-      if (
-        error instanceof ApiError &&
-        error.message.includes("not verified") &&
-        error.data?.userId
-      ) {
-        const { userId } = error.data;
-        showToast({
-          title: "Verification Required",
-          type: "info",
-          message: "A new verification code has been sent to your email.",
-        });
-        try {
-          await authService.resendOTP(userId);
-          router.push(`/verify-email?userId=${userId}`);
-        } catch (resendError) {
-          console.error("Failed to resend OTP:", resendError);
-        }
-      } else {
-        showToast({
-          title: "Login Failed",
-          type: "error",
-          message:
-            error instanceof Error ? error.message : "Invalid credentials",
-        });
-      }
+      showToast({
+        title: "Login Failed",
+        type: "error",
+        message: error instanceof Error ? error.message : "Invalid credentials",
+      });
     }
   };
 
-  // if (isCheckingOnboarding) {
-  //   return <Loader fullScreen text="Checking system status..." />;
-  // }
-
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: COLORS.background.accent }}>
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{ backgroundColor: COLORS.background.accent }}
+    >
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-extrabold" style={{ color: COLORS.primary[700] }}>
+          <h2
+            className="text-3xl font-extrabold"
+            style={{ color: COLORS.primary[700] }}
+          >
             Welcome Back
           </h2>
           <p className="mt-2 text-sm" style={{ color: COLORS.gray[600] }}>
-            Sign in to your EduStack account
+            Sign in to {SCHOOL_INFO.name} account
           </p>
         </div>
 
-        <Card className="p-8" style={{ backgroundColor: COLORS.background.primary, borderColor: COLORS.gray[200] }}>
+        <Card
+          className="p-8"
+          style={{
+            backgroundColor: COLORS.background.primary,
+            borderColor: COLORS.gray[200],
+          }}
+        >
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
@@ -137,14 +113,16 @@ const LoginPage: React.FC = () => {
                 name="emailOrUsername"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel style={{ color: COLORS.gray[700] }}>Email or Username</FormLabel>
+                    <FormLabel style={{ color: COLORS.gray[700] }}>
+                      Email or Username
+                    </FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="you@example.com" 
-                        {...field} 
-                        style={{ 
+                      <Input
+                        placeholder="you@example.com"
+                        {...field}
+                        style={{
                           borderColor: COLORS.gray[300],
-                          color: COLORS.gray[900]
+                          color: COLORS.gray[900],
                         }}
                         className="focus:ring-2 focus:border-transparent"
                       />
@@ -158,16 +136,18 @@ const LoginPage: React.FC = () => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel style={{ color: COLORS.gray[700] }}>Password</FormLabel>
+                    <FormLabel style={{ color: COLORS.gray[700] }}>
+                      Password
+                    </FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
                           type={showPassword ? "text" : "password"}
                           placeholder="••••••••"
                           {...field}
-                          style={{ 
+                          style={{
                             borderColor: COLORS.gray[300],
-                            color: COLORS.gray[900]
+                            color: COLORS.gray[900],
                           }}
                           className="focus:ring-2 focus:border-transparent pr-10"
                         />
@@ -185,13 +165,23 @@ const LoginPage: React.FC = () => {
                   </FormItem>
                 )}
               />
-              <Button 
-                type="submit" 
-                className="w-full font-medium transition-all duration-200 hover:shadow-lg" 
+              <div className="flex justify-end">
+                <Link
+                  href="/forgot-password"
+                  className="text-sm font-medium transition-colors duration-200 hover:underline"
+                  style={{ color: COLORS.primary[600] }}
+                >
+                  Forgot Password?
+                </Link>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full font-medium transition-all duration-200 hover:shadow-lg"
                 disabled={isLoading}
-                style={{ 
+                style={{
                   backgroundColor: COLORS.primary[500],
-                  color: 'white'
+                  color: "white",
                 }}
                 onMouseEnter={(e) => {
                   if (!isLoading) {
@@ -210,7 +200,10 @@ const LoginPage: React.FC = () => {
           </Form>
         </Card>
 
-        <p className="mt-4 text-center text-sm" style={{ color: COLORS.gray[600] }}>
+        <p
+          className="mt-4 text-center text-sm"
+          style={{ color: COLORS.gray[600] }}
+        >
           Don&apos;t have an account?{" "}
           <Link
             href="/register"

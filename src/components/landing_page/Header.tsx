@@ -1,15 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { COLORS, SCHOOL_INFO } from "@/constants/colors";
+import { COLORS, SCHOOL_INFO } from "@/constants/config";
 import Image from "next/image";
 import { useAuthStore } from "@/store/authStore";
 import { DASHBOARD_ROUTES } from "@/constants/routes";
+import { UserRole } from "@/constants/roles";
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { isLoggedIn, userSchools } = useAuthStore();
+  const { isLoggedIn, userSchools, initializeAuth, isHydrated } = useAuthStore();
+
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
 
   const navItems = [
     { name: "Home", href: "#home" },
@@ -21,15 +26,27 @@ export default function Header() {
     if (!userSchools || userSchools.length === 0) {
       return DASHBOARD_ROUTES.NOT_AUTHORIZED;
     }
-    const role = userSchools[0].role; // Use the role from the first school
-    if (role === 'admin' || role === 'staff' || role === 'super_admin') {
-      return DASHBOARD_ROUTES.MULTI_SCHOOL_DASHBOARD;
+    const role = userSchools[0].role;
+    if (
+      role &&
+      [
+        UserRole.ADMIN,
+        UserRole.TEACHER,
+        UserRole.FINANCE,
+        UserRole.SUPER_ADMIN,
+      ].includes(role)
+    ) {
+      return DASHBOARD_ROUTES.PROFILE;
     }
-    if (role === 'student' || role === 'parent') {
-      return DASHBOARD_ROUTES.STUDENT_DASHBOARD;
+    if (role && [UserRole.STUDENT, UserRole.PARENT].includes(role)) {
+      return DASHBOARD_ROUTES.STUDENT_PROFILE;
     }
     return DASHBOARD_ROUTES.NOT_AUTHORIZED;
   };
+
+  if (!isHydrated) {
+    return null;
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-lg">
@@ -67,8 +84,8 @@ export default function Header() {
                 key={item.name}
                 href={item.href}
                 className="font-medium transition-colors duration-200"
-                style={{ 
-                  color: COLORS.gray[700] 
+                style={{
+                  color: COLORS.gray[700],
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.color = COLORS.primary[600];

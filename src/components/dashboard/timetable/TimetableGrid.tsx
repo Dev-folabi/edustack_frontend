@@ -55,11 +55,11 @@ const getTypeColor = (type: string) => {
     case "LUNCH":
       return "bg-green-100 border-green-200 text-green-800";
     case "ASSEMBLY":
-      return "bg-purple-100 border-purple-200 text-purple-800";
+      return "bg-blue-100 border-blue-200 text-blue-800";
     case "SPORTS":
       return "bg-red-100 border-red-200 text-red-800";
     case "LIBRARY":
-      return "bg-indigo-100 border-indigo-200 text-indigo-800";
+      return "bg-blue-100 border-blue-200 text-blue-800";
     case "FREE_PERIOD":
       return "bg-gray-100 border-gray-200 text-gray-800";
     default:
@@ -68,8 +68,7 @@ const getTypeColor = (type: string) => {
 };
 
 const TimetableGrid = () => {
-  const { selectedTimetable, isLoading } =
-    useTimetableStore();
+  const { selectedTimetable, isLoading } = useTimetableStore();
 
   const entries: TimetableEntry[] = selectedTimetable?.entries || [];
 
@@ -150,9 +149,9 @@ const TimetableGrid = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-blue-50 flex items-center justify-center">
         <div className="bg-white rounded-2xl shadow-sm border p-12 text-center">
-          <div className="bg-gradient-to-r from-blue-100 to-indigo-100 p-4 rounded-full mx-auto mb-4 w-16 h-16 flex items-center justify-center">
+          <div className="bg-gradient-to-r from-blue-100 to-blue-100 p-4 rounded-full mx-auto mb-4 w-16 h-16 flex items-center justify-center">
             <Loader className="h-8 w-8 animate-spin text-blue-600" />
           </div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -168,9 +167,9 @@ const TimetableGrid = () => {
 
   if (!selectedTimetable) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-blue-50 flex items-center justify-center">
         <div className="bg-white rounded-2xl shadow-sm border p-12 text-center max-w-md">
-          <div className="bg-gradient-to-r from-blue-100 to-indigo-100 p-4 rounded-full mx-auto mb-6 w-20 h-20 flex items-center justify-center">
+          <div className="bg-gradient-to-r from-blue-100 to-blue-100 p-4 rounded-full mx-auto mb-6 w-20 h-20 flex items-center justify-center">
             <Calendar className="w-10 h-10 text-blue-600" />
           </div>
           <h3 className="text-xl font-medium text-gray-900 mb-3">
@@ -185,13 +184,13 @@ const TimetableGrid = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-blue-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-2 rounded-xl">
+              <div className="bg-gradient-to-r from-blue-600 to-blue-600 p-2 rounded-xl">
                 <Calendar className="h-6 w-6 text-white" />
               </div>
               <div>

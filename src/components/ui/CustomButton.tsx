@@ -20,8 +20,8 @@ export function CustomButton({
     <Button
       onClick={onClick}
       disabled={disabled}
-      className={`bg-gradient-to-r from-blue-500 via-indigo-500 to-indigo-500 
-        hover:from-blue-600 hover:via-indigo-600 hover:to-indigo-600 
+      className={`bg-gradient-to-r from-blue-500 via-blue-500 to-blue-500 
+        hover:from-blue-600 hover:via-blue-600 hover:to-blue-600 
         text-white px-4 sm:px-6 py-2 sm:py-3 rounded-2xl font-semibold shadow-lg 
         hover:shadow-xl transition-all duration-200 transform hover:scale-105 ${className}`}
     >

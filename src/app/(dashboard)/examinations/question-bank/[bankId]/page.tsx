@@ -20,7 +20,6 @@ const QuestionBankDetailsPage = () => {
     useQuestionBankStore();
   const [isAddEditDialogOpen, setAddEditDialogOpen] = useState(false);
   const [isImportDialogOpen, setImportDialogOpen] = useState(false);
- 
 
   useEffect(() => {
     if (bankId) {
@@ -30,7 +29,7 @@ const QuestionBankDetailsPage = () => {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-indigo-50">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-50 to-blue-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header Skeleton */}
           <div className="mb-8">
@@ -85,12 +84,12 @@ const QuestionBankDetailsPage = () => {
 
   if (!selectedQuestionBank)
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-indigo-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-50 to-blue-50 flex items-center justify-center">
         <div className="max-w-md mx-auto text-center bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/20">
-          <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full mx-auto mb-6 flex items-center justify-center">
+          <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-blue-500 rounded-full mx-auto mb-6 flex items-center justify-center">
             <BookOpen className="w-12 h-12 text-white" />
           </div>
-          <h3 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4">
+          <h3 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-600 bg-clip-text text-transparent mb-4">
             Question Bank Empty
           </h3>
           <p className="text-gray-600 mb-6 leading-relaxed">
@@ -100,7 +99,7 @@ const QuestionBankDetailsPage = () => {
           <div className="flex gap-3 justify-center">
             <Button
               onClick={() => setAddEditDialogOpen(true)}
-              className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+              className="bg-gradient-to-r from-blue-500 to-blue-500 hover:from-blue-600 hover:to-blue-600 text-white px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Question
@@ -120,7 +119,7 @@ const QuestionBankDetailsPage = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-indigo-50">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-50 to-blue-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header Section */}
           <div className="mb-8">
@@ -128,7 +127,7 @@ const QuestionBankDetailsPage = () => {
               <div className="flex items-center gap-4">
                 <BackButton /> {/* Use the new BackButton component */}
                 <div>
-                  <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+                  <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 via-blue-600 to-blue-600 bg-clip-text text-transparent mb-2">
                     {selectedQuestionBank.name}
                   </h1>
                   <p className="text-base sm:text-lg text-gray-600 max-w-2xl leading-relaxed">
@@ -140,8 +139,8 @@ const QuestionBankDetailsPage = () => {
                 <Button
                   variant="outline"
                   onClick={() => setImportDialogOpen(true)}
-                  className="bg-white/80 backdrop-blur-sm border-2 border-indigo-200 hover:border-indigo-300 
-                   text-indigo-600 hover:bg-indigo-50 px-4 sm:px-6 py-2 sm:py-3 rounded-2xl font-semibold 
+                  className="bg-white/80 backdrop-blur-sm border-2 border-blue-200 hover:border-blue-300 
+                   text-blue-600 hover:bg-blue-50 px-4 sm:px-6 py-2 sm:py-3 rounded-2xl font-semibold 
                    shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 >
                   <Upload className="mr-2 h-5 w-5" />
@@ -149,8 +148,8 @@ const QuestionBankDetailsPage = () => {
                 </Button>
                 <Button
                   onClick={() => setAddEditDialogOpen(true)}
-                  className="bg-gradient-to-r from-blue-500 via-indigo-500 to-indigo-500 
-                   hover:from-blue-600 hover:via-indigo-600 hover:to-indigo-600 
+                  className="bg-gradient-to-r from-blue-500 via-blue-500 to-blue-500 
+                   hover:from-blue-600 hover:via-blue-600 hover:to-blue-600 
                    text-white px-4 sm:px-6 py-2 sm:py-3 rounded-2xl font-semibold shadow-lg 
                    hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 >
@@ -163,7 +162,7 @@ const QuestionBankDetailsPage = () => {
 
           {/* Main Content */}
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
-            <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-blue-500/5 to-indigo-500/5">
+            <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-blue-500/5 to-blue-500/5">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">
@@ -175,7 +174,7 @@ const QuestionBankDetailsPage = () => {
                 </div>
                 <div className="flex items-center space-x-2 sm:space-x-4 text-xs sm:text-sm text-gray-500">
                   <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full font-medium">
-                    Subject: {selectedQuestionBank.name}
+                    {selectedQuestionBank.name}
                   </span>
                 </div>
               </div>

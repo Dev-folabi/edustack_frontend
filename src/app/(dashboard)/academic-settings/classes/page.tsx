@@ -437,18 +437,18 @@ const ClassesPage = () => {
   );
 
   useEffect(() => {
-    if (selectedSchool) {
+    if (selectedSchool?.schoolId) {
       fetchClasses(selectedSchool.schoolId);
     }
   }, [selectedSchool, fetchClasses]);
 
   const handleClassCreated = () => {
-    if (selectedSchool) {
+    if (selectedSchool?.schoolId) {
     }
   };
 
   const handleClassUpdated = () => {
-    if (selectedSchool) {
+    if (selectedSchool?.schoolId) {
       // No need to fetch again, the store is updated optimistically
     }
   };

@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
-import { useAuthStore } from "@/store/authStore";
 import Header from "@/components/landing_page/Header";
 import HeroSection from "@/components/landing_page/HeroSection";
 import AboutSection from "@/components/landing_page/AboutSection";
@@ -16,11 +14,9 @@ import ContactSection from "@/components/landing_page/ContactSection";
 import Footer from "@/components/landing_page/Footer";
 
 export default function Home() {
-  const { isLoggedIn } = useAuthStore();
-
   return (
     <div className="min-h-screen bg-white">
-      <Header isLoggedIn={isLoggedIn} />
+      <Header />
       <main>
         <HeroSection />
         <AboutSection />

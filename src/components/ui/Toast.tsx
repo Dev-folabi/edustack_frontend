@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { CheckCircle, XCircle, AlertTriangle, Info, X } from "lucide-react";
 
 interface Toast {
   id: string;
@@ -12,7 +13,9 @@ interface Toast {
 }
 
 interface ToastContextType {
-  showToast: (toast: Omit<Toast, "id" | "duration"> & { duration?: number }) => void;
+  showToast: (
+    toast: Omit<Toast, "id" | "duration"> & { duration?: number }
+  ) => void;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -25,11 +28,31 @@ export const useToast = () => {
   return context;
 };
 
-const toastColors = {
-  success: "border-green-500",
-  error: "border-red-500",
-  warning: "border-yellow-500",
-  info: "border-blue-500",
+const toastConfig = {
+  success: {
+    bgColor: "bg-green-50",
+    borderColor: "border-green-500",
+    iconColor: "text-green-600",
+    icon: CheckCircle,
+  },
+  error: {
+    bgColor: "bg-red-50",
+    borderColor: "border-red-500",
+    iconColor: "text-red-600",
+    icon: XCircle,
+  },
+  warning: {
+    bgColor: "bg-yellow-50",
+    borderColor: "border-yellow-500",
+    iconColor: "text-yellow-600",
+    icon: AlertTriangle,
+  },
+  info: {
+    bgColor: "bg-blue-50",
+    borderColor: "border-blue-500",
+    iconColor: "text-blue-600",
+    icon: Info,
+  },
 };
 
 const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
@@ -44,38 +67,37 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
     return () => clearTimeout(timer);
   }, [toast.id, toast.duration, onRemove]);
 
+  const config = toastConfig[toast.type];
+  const Icon = config.icon;
+
   return (
     <motion.div
-      initial={{ opacity: 0, x: 100 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 100, transition: { duration: 0.2 } }}
-      className={`relative bg-white border-l-4 ${
-        toastColors[toast.type]
-      } rounded-md shadow-lg max-w-sm w-full pointer-events-auto`}
+      initial={{ opacity: 0, y: -20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+      className={`relative ${config.bgColor} ${config.borderColor} border-l-4 rounded-lg shadow-2xl max-w-md w-full pointer-events-auto overflow-hidden`}
+      style={{ boxShadow: "0 10px 40px rgba(0, 0, 0, 0.2)" }}
     >
       <div className="p-4">
-        <div className="flex items-start">
-          <div className="ml-3 w-0 flex-1">
-            <p className="text-sm font-medium text-gray-900">{toast.title}</p>
+        <div className="flex items-start gap-3">
+          <div className={`flex-shrink-0 ${config.iconColor}`}>
+            <Icon className="h-6 w-6" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-gray-900">{toast.title}</p>
             {toast.message && (
-              <p className="mt-1 text-sm text-gray-600">{toast.message}</p>
+              <p className="mt-1 text-sm text-gray-700 leading-relaxed">
+                {toast.message}
+              </p>
             )}
           </div>
-          <div className="ml-4 flex-shrink-0 flex">
-            <button
-              className="inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              onClick={() => onRemove(toast.id)}
-            >
-              <span className="sr-only">Close</span>
-              <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path
-                  fillRule="evenodd"
-                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
-          </div>
+          <button
+            className="flex-shrink-0 inline-flex text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 rounded-md transition-colors"
+            onClick={() => onRemove(toast.id)}
+          >
+            <span className="sr-only">Close</span>
+            <X className="h-5 w-5" />
+          </button>
         </div>
       </div>
     </motion.div>
@@ -108,7 +130,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div className="fixed top-4 right-4 z-50 space-y-2">
+      <div className="fixed top-4 right-4 z-[99999] space-y-3 pointer-events-none max-w-md w-full px-4 sm:px-0">
         <AnimatePresence>
           {toasts.map((toast) => (
             <ToastItem key={toast.id} toast={toast} onRemove={removeToast} />

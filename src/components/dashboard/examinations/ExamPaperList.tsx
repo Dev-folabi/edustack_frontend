@@ -87,9 +87,7 @@ export const ExamPaperList = ({ papers }: ExamPaperListProps) => {
                     <Badge
                       variant={isCBT ? "default" : "secondary"}
                       className={
-                        isCBT
-                          ? "bg-purple-600"
-                          : "bg-orange-100 text-orange-800"
+                        isCBT ? "bg-blue-600" : "bg-orange-100 text-orange-800"
                       }
                     >
                       {paper.mode}
@@ -179,7 +177,8 @@ export const ExamPaperList = ({ papers }: ExamPaperListProps) => {
                   <div className="flex items-center gap-1">
                     <Clock className="w-3 h-3" />
                     <span>
-                      Created {format(new Date(paper.createdAt), "MMM dd, yyyy")}
+                      Created{" "}
+                      {format(new Date(paper.createdAt), "MMM dd, yyyy")}
                     </span>
                   </div>
                 </div>

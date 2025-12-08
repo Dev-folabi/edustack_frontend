@@ -67,7 +67,7 @@ const ViewTimetablePage = () => {
       <div className="flex items-center gap-4">
         <Button variant="outline" size="sm" onClick={handleBack}>
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Timetables
+          Back
         </Button>
         <div>
           <h1 className="text-2xl font-bold">

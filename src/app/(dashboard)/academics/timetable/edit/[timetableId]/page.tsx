@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, use } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -54,13 +54,13 @@ const formSchema = z.object({
 });
 
 interface EditTimetablePageProps {
-  params: {
+  params: Promise<{
     timetableId: string;
-  };
+  }>;
 }
 
 const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
-  const { timetableId } = React.use(params);
+  const { timetableId } = use(params);
   const router = useRouter();
   const { showToast } = useToast();
   const { selectedSchool } = useAuthStore();

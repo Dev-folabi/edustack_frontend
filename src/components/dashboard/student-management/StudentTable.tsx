@@ -11,8 +11,6 @@ import {
 import { useDebounce } from "@/hooks/useDebounce";
 import { Student } from "@/types/student";
 import { useToast } from "@/components/ui/Toast";
-import { useClassStore } from "@/store/classStore";
-import withAuth from "@/components/withAuth";
 import { UserRole, ADMINS_ROLES } from "@/constants/roles";
 
 // Icons
@@ -34,12 +32,6 @@ import {
 // UI Components
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -155,7 +147,7 @@ export const StudentTable = ({ classes = [] }: StudentTableProps) => {
       // Refresh the data
       const currentFilters = { ...filters, search: debouncedSearchQuery };
       const res = await studentService.getStudentsBySchool(
-        selectedSchool?.schoolId!,
+        selectedSchool?.schoolId || "",
         currentFilters
       );
       setStudents(res.data || null);
@@ -214,7 +206,7 @@ export const StudentTable = ({ classes = [] }: StudentTableProps) => {
   return (
     <Card className="bg-white shadow-xl rounded-2xl border-0 overflow-hidden ">
       {/* Filters Header */}
-      <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-100">
+      <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-50 border-b border-gray-100">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Filter className="w-5 h-5 text-blue-600" />
@@ -297,7 +289,7 @@ export const StudentTable = ({ classes = [] }: StudentTableProps) => {
           <div className="px-6 py-4 bg-gray-50 border-b border-gray-100">
             <div className="flex items-center justify-between text-sm text-gray-600 pl-2 pr-2">
               <span>
-                Showing {(students.currentPage - 1) * filters.limit + 1} to{" "}
+                Showing {(students.currentPage - 1) * filters?.limit + 1} to{" "}
                 {Math.min(
                   students.currentPage * filters.limit,
                   students.totalItems
@@ -377,7 +369,7 @@ export const StudentTable = ({ classes = [] }: StudentTableProps) => {
                             src={student.photo_url}
                             alt={student.name}
                           />
-                          <AvatarFallback className="bg-gradient-to-br from-blue-300 to-indigo-300 text-white text-sm">
+                          <AvatarFallback className="bg-gradient-to-br from-blue-300 to-blue-300 text-white text-sm">
                             {student.name.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
@@ -396,7 +388,7 @@ export const StudentTable = ({ classes = [] }: StudentTableProps) => {
                         </span>
                         {student.currentSection && (
                           <Badge variant="outline" className="text-xs">
-                            {student.currentSection}
+                            {student.currentSection || "N/A"}
                           </Badge>
                         )}
                       </div>
@@ -408,7 +400,9 @@ export const StudentTable = ({ classes = [] }: StudentTableProps) => {
                         </div>
                         <div className="flex items-center gap-1 text-xs text-gray-500">
                           <Calendar className="w-3 h-3" />
-                          {new Date(student.admissionDate).toLocaleDateString()}
+                          {new Date(
+                            student.admission_date
+                          ).toLocaleDateString()}
                         </div>
                       </div>
                     </TableCell>

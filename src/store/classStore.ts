@@ -96,7 +96,7 @@ export const useClassStore = create<ClassState>((set, get) => ({
       set({ isLoading: true });
       await classService.createClass(data);
       const selectedSchool = useAuthStore.getState().selectedSchool;
-      if (selectedSchool) {
+      if (selectedSchool?.schoolId) {
         await get().fetchClasses(selectedSchool.schoolId);
       }
     } catch (error) {
@@ -118,7 +118,7 @@ export const useClassStore = create<ClassState>((set, get) => ({
       set({ isLoading: true });
       await classService.updateClass(classId, data);
       const selectedSchool = useAuthStore.getState().selectedSchool;
-      if (selectedSchool) {
+      if (selectedSchool?.schoolId) {
         await get().fetchClasses(selectedSchool.schoolId);
       }
     } catch (error) {
@@ -137,7 +137,7 @@ export const useClassStore = create<ClassState>((set, get) => ({
       set({ isLoading: true });
       await classService.deleteClass(classId);
       const selectedSchool = useAuthStore.getState().selectedSchool;
-      if (selectedSchool) {
+      if (selectedSchool?.schoolId) {
         await get().fetchClasses(selectedSchool.schoolId);
       }
     } catch (error) {
@@ -159,7 +159,7 @@ export const useClassStore = create<ClassState>((set, get) => ({
       set({ isLoading: true });
       await classService.updateSection(sectionId, data);
       const selectedSchool = useAuthStore.getState().selectedSchool;
-      if (selectedSchool) {
+      if (selectedSchool?.schoolId) {
         await get().fetchClasses(selectedSchool.schoolId);
       }
     } catch (error) {
@@ -178,7 +178,7 @@ export const useClassStore = create<ClassState>((set, get) => ({
       set({ isLoading: true });
       await classService.deleteSection(sectionId);
       const selectedSchool = useAuthStore.getState().selectedSchool;
-      if (selectedSchool) {
+      if (selectedSchool?.schoolId) {
         await get().fetchClasses(selectedSchool.schoolId);
       }
     } catch (error) {

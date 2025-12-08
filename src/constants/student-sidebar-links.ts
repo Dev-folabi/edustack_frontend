@@ -15,12 +15,12 @@ export const studentSidebarConfig: SidebarCategory[] = [
     title: "Dashboard",
     roles: [UserRole.STUDENT, UserRole.PARENT],
     links: [
-      {
-        href: DASHBOARD_ROUTES.STUDENT_DASHBOARD,
-        label: "Overview",
-        icon: FaTachometerAlt,
-        roles: [UserRole.STUDENT, UserRole.PARENT],
-      },
+      // {
+      //   href: DASHBOARD_ROUTES.STUDENT_DASHBOARD,
+      //   label: "Overview",
+      //   icon: FaTachometerAlt,
+      //   roles: [UserRole.STUDENT, UserRole.PARENT],
+      // },
       {
         href: DASHBOARD_ROUTES.STUDENT_PROFILE,
         label: "My Profile",
@@ -34,19 +34,19 @@ export const studentSidebarConfig: SidebarCategory[] = [
     roles: [UserRole.STUDENT, UserRole.PARENT],
     links: [
       {
-        href: DASHBOARD_ROUTES.TIMETABLE,
+        href: DASHBOARD_ROUTES.STUDENT_TIMETABLE,
         label: "Timetable",
         icon: FaClipboardList,
         roles: [UserRole.STUDENT, UserRole.PARENT],
       },
       {
-        href: DASHBOARD_ROUTES.SUBJECTS,
+        href: DASHBOARD_ROUTES.STUDENT_SUBJECTS,
         label: "Subjects",
         icon: FaBook,
         roles: [UserRole.STUDENT, UserRole.PARENT],
       },
       {
-        href: DASHBOARD_ROUTES.ATTENDANCE_STUDENT,
+        href: DASHBOARD_ROUTES.STUDENT_ATTENDANCE,
         label: "Attendance",
         icon: FaClipboardList,
         roles: [UserRole.STUDENT, UserRole.PARENT],
@@ -76,35 +76,35 @@ export const studentSidebarConfig: SidebarCategory[] = [
     roles: [UserRole.STUDENT, UserRole.PARENT],
     links: [
       {
-        href: DASHBOARD_ROUTES.FINANCE_INVOICES,
+        href: DASHBOARD_ROUTES.STUDENT_FINANCE_INVOICES,
         label: "Invoices",
         icon: FaFileInvoiceDollar,
         roles: [UserRole.STUDENT, UserRole.PARENT],
       },
       {
-        href: DASHBOARD_ROUTES.FINANCE_PAYMENTS,
+        href: DASHBOARD_ROUTES.STUDENT_FINANCE_PAYMENTS,
         label: "Payment History",
         icon: FaFileInvoiceDollar,
         roles: [UserRole.STUDENT, UserRole.PARENT],
       },
-      {
-        href: DASHBOARD_ROUTES.STUDENT_FINANCE_MAKE_PAYMENT,
-        label: "Make a Payment",
-        icon: FaFileInvoiceDollar,
-        roles: [UserRole.STUDENT, UserRole.PARENT],
-      },
+      // {
+      //   href: DASHBOARD_ROUTES.STUDENT_FINANCE_MAKE_PAYMENT,
+      //   label: "Make a Payment",
+      //   icon: FaFileInvoiceDollar,
+      //   roles: [UserRole.STUDENT, UserRole.PARENT],
+      // },
     ],
   },
-  {
-    title: "Notifications",
-    roles: [UserRole.STUDENT, UserRole.PARENT],
-    links: [
-      {
-        href: DASHBOARD_ROUTES.STUDENT_NOTIFICATIONS,
-        label: "View All Notifications",
-        icon: FaBell,
-        roles: [UserRole.STUDENT, UserRole.PARENT],
-      },
-    ],
-  },
+  // {
+  //   title: "Notifications",
+  //   roles: [UserRole.STUDENT, UserRole.PARENT],
+  //   links: [
+  //     {
+  //       href: DASHBOARD_ROUTES.STUDENT_NOTIFICATIONS,
+  //       label: "View All Notifications",
+  //       icon: FaBell,
+  //       roles: [UserRole.STUDENT, UserRole.PARENT],
+  //     },
+  //   ],
+  // },
 ];

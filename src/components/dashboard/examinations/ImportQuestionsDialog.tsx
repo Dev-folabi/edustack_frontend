@@ -39,6 +39,31 @@ export const ImportQuestionsDialog = ({
     }
   };
 
+  // Helper function to properly parse CSV line with empty fields
+  const parseCSVLine = (line: string): string[] => {
+    const result: string[] = [];
+    let current = "";
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === "," && !inQuotes) {
+        result.push(current.trim());
+        current = "";
+      } else {
+        current += char;
+      }
+    }
+
+    // Push the last field
+    result.push(current.trim());
+
+    return result;
+  };
+
   const handleUpload = async () => {
     if (!file) {
       showToast({
@@ -55,10 +80,11 @@ export const ImportQuestionsDialog = ({
     reader.onload = async (e) => {
       const text = e.target?.result as string;
       const lines = text.split("\n").slice(1); // Skip header
-      const questions: Omit<Question, 'id'>[] = lines
+      const questions: Omit<Question, "id">[] = lines
         .map((line) => {
-          const regex = /(".*?"|[^",]+)(?=\s*,|\s*$)/g;
-          const matches = line.match(regex) || [];
+          if (!line.trim()) return null; // Skip empty lines
+
+          const fields = parseCSVLine(line);
           const [
             type,
             questionText,
@@ -66,19 +92,20 @@ export const ImportQuestionsDialog = ({
             difficulty,
             options,
             correctAnswer,
-          ] = matches.map((m) => m.replace(/"/g, ""));
+          ] = fields;
 
           const question: Partial<Question> = {
             type: type as QuestionType,
             questionText,
             marks: Number(marks),
             difficulty: difficulty as QuestionDifficulty,
-            options: options ? options.split(",") : undefined,
-            correctAnswer,
+            options: options && options.trim() ? options.split(",") : undefined,
+            correctAnswer:
+              correctAnswer && correctAnswer.trim() ? correctAnswer : undefined,
           };
           return question;
         })
-        .filter((q) => q.questionText) as Omit<Question, 'id'>[]; // Cast here
+        .filter((q) => q && q.questionText) as Omit<Question, "id">[]; // Cast here
 
       try {
         await addQuestionToBank(bankId, questions); // Removed the extra array wrapper

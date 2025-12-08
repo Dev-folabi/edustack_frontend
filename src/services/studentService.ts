@@ -1,5 +1,5 @@
-import { apiClient, ApiResponse } from '@/utils/api';
-import { Student, StudentRegistrationPayload } from '@/types/student';
+import { apiClient, ApiResponse } from "@/utils/api";
+import { Student, StudentRegistrationPayload } from "@/types/student";
 
 export interface PaginatedStudents {
   totalItems: number;
@@ -18,7 +18,7 @@ export interface StudentFilters {
   admissionNumber?: string;
   email?: string;
   gender?: string;
-  admissionDate?: string;
+  admission_date?: string;
   status?: string; // enrolled, promoted, transferred, pending, rejected, graduated
   active?: boolean;
   page?: number;
@@ -43,8 +43,7 @@ export interface TransferPayload {
   transferReason?: string;
 }
 
-
-export const  studentService = {
+export const studentService = {
   registerStudent: (
     schoolId: string,
     data: StudentRegistrationPayload
@@ -56,7 +55,10 @@ export const  studentService = {
     schoolId: string,
     filters: StudentFilters = {}
   ): Promise<ApiResponse<PaginatedStudents>> => {
-    const params = new URLSearchParams(filters as Record<string, any>);
+    const cleanFilters = Object.fromEntries(
+      Object.entries(filters).filter(([, v]) => v != null && v !== "")
+    );
+    const params = new URLSearchParams(cleanFilters as Record<string, any>);
     return apiClient.get(`/students/${schoolId}/all?${params.toString()}`);
   },
 
@@ -64,11 +66,14 @@ export const  studentService = {
     schoolId: string,
     filters: StudentFilters = {}
   ): Promise<ApiResponse<PaginatedStudents>> => {
-    const params = new URLSearchParams(filters as Record<string, any>);
+    const cleanFilters = Object.fromEntries(
+      Object.entries(filters).filter(([, v]) => v != null && v !== "")
+    );
+    const params = new URLSearchParams(cleanFilters as Record<string, any>);
     return apiClient.get(`/students/${schoolId}/all?${params.toString()}`);
   },
 
-  getStudentById: (studentId: string): Promise<ApiResponse<{ student: Student }>> => {
+  getStudentById: (studentId: string): Promise<ApiResponse<Student>> => {
     return apiClient.get(`/students/${studentId}`);
   },
 
@@ -80,11 +85,11 @@ export const  studentService = {
   },
 
   promoteStudents: (data: PromotionPayload): Promise<ApiResponse<any>> => {
-    return apiClient.put('/students/promote', data);
+    return apiClient.put("/students/promote", data);
   },
 
   transferStudents: (data: TransferPayload): Promise<ApiResponse<any>> => {
-    return apiClient.put('/students/transfer', data);
+    return apiClient.put("/students/transfer", data);
   },
 
   getStudentTermReport: (
@@ -104,10 +109,19 @@ export const  studentService = {
     sessionId: string
   ): Promise<ApiResponse<Blob>> => {
     // This service function is a placeholder and returns a dummy PDF blob.
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       setTimeout(() => {
-        const dummyPdf = new Blob(['This is a dummy PDF for the whole section'], { type: 'application/pdf' });
-        resolve({ data: { success: true, message: 'Dummy report generated', data: dummyPdf } } as any);
+        const dummyPdf = new Blob(
+          ["This is a dummy PDF for the whole section"],
+          { type: "application/pdf" }
+        );
+        resolve({
+          data: {
+            success: true,
+            message: "Dummy report generated",
+            data: dummyPdf,
+          },
+        } as any);
       }, 1000);
     });
   },

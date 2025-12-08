@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { deleteExamPaper } from '@/services/examService';
 import { useExamStore } from '@/store/examStore';
-import { toast } from 'sonner';
+import { useToast } from "@/components/ui/Toast";
 
 interface ExamPapersTableProps {
   papers: ExamPaper[];
@@ -51,14 +51,24 @@ export const ExamPapersTable = ({ papers, examId }: ExamPapersTableProps) => {
     setDeleteDialogOpen(true);
   };
 
+  const { showToast } = useToast();
+
   const confirmDelete = async () => {
     if (paperToDelete) {
       try {
         await deleteExamPaper(examId, paperToDelete.id);
-        toast.success("Exam paper deleted successfully!");
+        showToast({
+          type: "success",
+          title: "Success",
+          message: "Exam paper deleted successfully!",
+        });
         fetchExamById(examId);
       } catch (error) {
-        toast.error("Failed to delete exam paper.");
+        showToast({
+          type: "error",
+          title: "Error",
+          message: "Failed to delete exam paper.",
+        });
       } finally {
         setDeleteDialogOpen(false);
         setPaperToDelete(null);

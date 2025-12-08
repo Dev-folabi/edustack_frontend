@@ -1,5 +1,5 @@
-import { apiClient, ApiResponse } from '@/utils/api';
-import { Staff, StaffRegistrationPayload } from '@/types/staff';
+import { apiClient, ApiResponse } from "@/utils/api";
+import { Staff, StaffRegistrationPayload } from "@/types/staff";
 
 export interface PaginatedStaff {
   totalItems: number;
@@ -21,9 +21,7 @@ export interface StaffFilters {
 }
 
 export const staffService = {
-  createStaff: (
-    data: StaffRegistrationPayload
-  ): Promise<ApiResponse<any>> => {
+  createStaff: (data: StaffRegistrationPayload): Promise<ApiResponse<any>> => {
     return apiClient.post(`/staff`, data);
   },
 
@@ -31,11 +29,16 @@ export const staffService = {
     schoolId: string,
     filters: StaffFilters = {}
   ): Promise<ApiResponse<PaginatedStaff>> => {
-    const params = new URLSearchParams(filters as unknown as Record<string, string>);
+    const params = new URLSearchParams(
+      filters as unknown as Record<string, string>
+    );
     return apiClient.get(`/staff/school/${schoolId}?${params.toString()}`);
   },
 
-  getStaffById: (schoolId: string, staffId: string): Promise<ApiResponse<{ staff: Staff }>> => {
+  getStaffById: (
+    schoolId: string,
+    staffId: string
+  ): Promise<ApiResponse<{ staff: Staff }>> => {
     return apiClient.get(`/staff/${schoolId}/${staffId}`);
   },
 
@@ -46,17 +49,27 @@ export const staffService = {
     return apiClient.put(`/staff/${staffId}`, data);
   },
 
-  deleteStaff: (schoolId: string, staffId: string): Promise<ApiResponse<any>> => {
+  deleteStaff: (
+    schoolId: string,
+    staffId: string
+  ): Promise<ApiResponse<any>> => {
     return apiClient.delete(`/staff/${schoolId}/${staffId}`);
   },
 
-  bulkRegisterStaff: (schoolId: string, file: File): Promise<ApiResponse<any>> => {
+  bulkRegisterStaff: (
+    schoolId: string,
+    file: File
+  ): Promise<ApiResponse<any>> => {
     const formData = new FormData();
-    formData.append('file', file);
-    return apiClient.post(`/staff/bulk-register?schoolId=${schoolId}`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-  }
+    formData.append("file", file);
+    return apiClient.post(
+      `/staff/bulk-register?schoolId=${schoolId}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+  },
 };

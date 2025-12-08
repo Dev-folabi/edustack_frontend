@@ -81,6 +81,8 @@ interface School {
   phone: string[];
   address: string;
   isActive: boolean;
+  adminId?: string;
+  userSchools?: UserSchool[];
   createdAt: string;
   updatedAt: string;
 }
@@ -125,11 +127,20 @@ interface ClassesResponse {
 
 // Types for the new login response structure
 interface UserSchool {
-  schoolId: string;
-  role: "super_admin" | "school_admin" | "teacher" | "staff";
-  school: {
+  schoolId?: string;
+  role?: "super_admin" | "admin" | "teacher" | "finance" | "student" | "parent";
+  school?: {
     name: string;
     isActive: boolean;
+  };
+  user?: {
+    id: string;
+    email: string;
+    staff?: {
+      id: string;
+      name: string;
+    } | null;
+    student?: unknown | null;
   };
 }
 
@@ -222,6 +233,19 @@ export const authService = {
     const payload = { id: id, type: "email_verification" };
     return apiClient.post("/auth/resend-otp", payload);
   },
+
+  // Request Password Reset
+  requestPasswordReset: (
+    email: string
+  ): Promise<ApiResponse<{ token: string }>> =>
+    apiClient.post("/auth/request-reset", { email }),
+
+  // Reset Password
+  resetPassword: (
+    otp: string,
+    newPassword: string
+  ): Promise<ApiResponse<void>> =>
+    apiClient.post("/auth/reset-password", { otp, newPassword }),
 };
 
 export type {

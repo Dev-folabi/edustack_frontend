@@ -22,7 +22,7 @@ import {
   publishResults,
   finalizeCbtResult,
 } from "@/services/examService";
-import { toast } from "sonner";
+import { useToast } from "@/components/ui/Toast";
 import { getPsychomotorSkills } from "@/services/examSettingsService";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -61,9 +61,14 @@ const ResultEntryPage = () => {
     error: studentsError,
   } = useStudentStore();
   const { selectedSchool } = useAuthStore();
+  const { showToast } = useToast();
 
   const [scores, setScores] = useState<{
     [studentId: string]: number;
+  }>({});
+
+  const [remarks, setRemarks] = useState<{
+    [studentId: string]: string;
   }>({});
 
   const [psychomotorSkills, setPsychomotorSkills] = useState<
@@ -76,7 +81,6 @@ const ResultEntryPage = () => {
   const [showPsychomotor, setShowPsychomotor] = useState(false);
   const [isSaving, setSaving] = useState(false);
   const [isPublishing, setPublishing] = useState(false);
-  // const [isImportDialogOpen, setImportDialogOpen] = useState(false);
 
   useEffect(() => {
     if (paperId) {
@@ -117,6 +121,10 @@ const ResultEntryPage = () => {
     setScores((prev) => ({ ...prev, [studentId]: value }));
   };
 
+  const handleRemarkChange = (studentId: string, value: string) => {
+    setRemarks((prev) => ({ ...prev, [studentId]: value }));
+  };
+
   const handlePsychomotorChange = (
     studentId: string,
     skillId: string,
@@ -133,7 +141,7 @@ const ResultEntryPage = () => {
   };
 
   const handleSaveResults = async () => {
-    if (!selectedPaper || selectedPaper.mode !== "PaperBased") return;
+    if (!selectedPaper) return;
 
     setSaving(true);
     try {
@@ -146,7 +154,17 @@ const ResultEntryPage = () => {
             marksObtained: scores[studentId] || 0,
           };
 
-          if (showPsychomotor && psychomotorScores[studentId]) {
+          // Add teacher remark if provided
+          if (remarks[studentId]) {
+            payload.teacherRemark = remarks[studentId];
+          }
+
+          // Add psychomotor assessments for PaperBased mode
+          if (
+            selectedPaper.mode === "PaperBased" &&
+            showPsychomotor &&
+            psychomotorScores[studentId]
+          ) {
             payload.psychomotorAssessments = Object.keys(
               psychomotorScores[studentId]
             )
@@ -161,7 +179,11 @@ const ResultEntryPage = () => {
         });
 
       if (studentMarks.length === 0) {
-        toast.warning("No marks to save.");
+        showToast({
+          type: "warning",
+          title: "Warning",
+          message: "No marks to save.",
+        });
         return;
       }
 
@@ -172,10 +194,18 @@ const ResultEntryPage = () => {
         studentMarks,
       });
 
-      toast.success("Results saved successfully!");
+      showToast({
+        type: "success",
+        title: "Success",
+        message: "Results saved successfully!",
+      });
       await fetchExamPaperById(paperId);
     } catch (error) {
-      toast.error("Failed to save results.");
+      showToast({
+        type: "error",
+        title: "Error",
+        message: "Failed to save results.",
+      });
       console.error(error);
     } finally {
       setSaving(false);
@@ -187,10 +217,18 @@ const ResultEntryPage = () => {
     setSaving(true);
     try {
       await finalizeCbtResult(selectedPaper?.id || "");
-      toast.success("CBT results finalized successfully!");
+      showToast({
+        type: "success",
+        title: "Success",
+        message: "CBT results finalized successfully!",
+      });
       await fetchExamPaperById(paperId);
     } catch (error) {
-      toast.error("Failed to finalize CBT results.");
+      showToast({
+        type: "error",
+        title: "Error",
+        message: "Failed to finalize CBT results.",
+      });
     } finally {
       setSaving(false);
     }
@@ -201,14 +239,20 @@ const ResultEntryPage = () => {
     setPublishing(true);
     try {
       await publishResults(paperId, !selectedPaper.isResultPublished);
-      toast.success(
-        `Results ${
+      showToast({
+        type: "success",
+        title: "Success",
+        message: `Results ${
           !selectedPaper.isResultPublished ? "published" : "unpublished"
-        } successfully!`
-      );
+        } successfully!`,
+      });
       await fetchExamPaperById(paperId);
     } catch (error) {
-      toast.error("Failed to update results status.");
+      showToast({
+        type: "error",
+        title: "Error",
+        message: "Failed to update results status.",
+      });
     } finally {
       setPublishing(false);
     }
@@ -276,31 +320,17 @@ const ResultEntryPage = () => {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              {/* {selectedPaper.mode === "PaperBased" && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setImportDialogOpen(true)}
-                >
-                  <Upload className="mr-2 h-4 w-4" />
-                  Import
-                </Button>
-              )} */}
+              <Button onClick={handleSaveResults} disabled={isSaving} size="sm">
+                <Save className="mr-2 h-4 w-4" />
+                {isSaving ? "Saving..." : "Save Results"}
+              </Button>
 
-              {selectedPaper.mode === "PaperBased" ? (
-                <Button
-                  onClick={handleSaveResults}
-                  disabled={isSaving}
-                  size="sm"
-                >
-                  <Save className="mr-2 h-4 w-4" />
-                  {isSaving ? "Saving..." : "Save Results"}
-                </Button>
-              ) : (
+              {selectedPaper.mode === "CBT" && (
                 <Button
                   onClick={handleCbtFinalize}
                   disabled={isSaving}
                   size="sm"
+                  variant="outline"
                 >
                   {isSaving ? "Finalizing..." : "Finalize Results"}
                 </Button>
@@ -345,7 +375,9 @@ const ResultEntryPage = () => {
             paper={selectedPaper}
             students={students}
             scores={scores}
+            remarks={remarks}
             onScoreChange={handleScoreChange}
+            onRemarkChange={handleRemarkChange}
           />
         </CardContent>
       </Card>
@@ -450,12 +482,6 @@ const ResultEntryPage = () => {
           )}
         </Card>
       )}
-
-      {/* <ImportResultsDialog
-        isOpen={isImportDialogOpen}
-        onClose={() => setImportDialogOpen(false)}
-        paperId={paperId}
-      /> */}
     </div>
   );
 };

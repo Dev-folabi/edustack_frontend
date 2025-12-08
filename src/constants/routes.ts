@@ -11,8 +11,7 @@ export const DASHBOARD_ROUTES = {
 
   // School View (Super Admin, Admin)
   SCHOOL_DASHBOARD: '/school-dashboard', // A school-specific dashboard
-  INQUIRIES: '/school-dashboard/inquiries',
-  RECENT_ADMISSIONS: '/school-dashboard/recent-admissions',
+  PROFILE: '/profile',
 
   // Academics
   ACADEMICS_OVERVIEW: '/academics',
@@ -53,14 +52,18 @@ export const DASHBOARD_ROUTES = {
   // Student & Parent Dashboard
   STUDENT_DASHBOARD: '/student/dashboard',
   STUDENT_PROFILE: '/student/profile',
+  STUDENT_TIMETABLE: '/student/academics/timetable',
+  STUDENT_SUBJECTS: '/student/academics/subjects',
+  STUDENT_ATTENDANCE: '/student/academics/attendance/student',
   STUDENT_EXAM_SCHEDULE: '/student/examinations',
   STUDENT_EXAMS_CBT: '/student/examinations/cbt',
   STUDENT_EXAM_RESULT: '/student/examinations/results',
+  STUDENT_FINANCE_INVOICES: '/student/finance/invoices',
+  STUDENT_FINANCE_PAYMENTS: '/student/finance/payments',
   STUDENT_FINANCE_MAKE_PAYMENT: '/student/finance/make-payment',
   STUDENT_NOTIFICATIONS: '/student/notifications',
 
   // Shared Routes
-  PROFILE: '/profile',
   SETTINGS: '/settings',
   NOT_AUTHORIZED: '/not-authorized',
 };

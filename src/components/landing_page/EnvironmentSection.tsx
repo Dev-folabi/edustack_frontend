@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { COLORS } from "@/constants/colors";
+import { COLORS } from "@/constants/config";
 
 export default function EnvironmentSection() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -106,13 +106,15 @@ export default function EnvironmentSection() {
                 <button
                   key={index}
                   className={`w-full text-left p-4 rounded-lg transition-all duration-200 ${
-                    index === currentSlide
-                      ? "border-l-4"
-                      : "hover:bg-gray-50"
+                    index === currentSlide ? "border-l-4" : "hover:bg-gray-50"
                   }`}
                   style={{
-                    backgroundColor: index === currentSlide ? `${COLORS.primary[50]}` : undefined,
-                    borderLeftColor: index === currentSlide ? COLORS.primary[500] : undefined
+                    backgroundColor:
+                      index === currentSlide
+                        ? `${COLORS.primary[50]}`
+                        : undefined,
+                    borderLeftColor:
+                      index === currentSlide ? COLORS.primary[500] : undefined,
                   }}
                   onClick={() => setCurrentSlide(index)}
                 >

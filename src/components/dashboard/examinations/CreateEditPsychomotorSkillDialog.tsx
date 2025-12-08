@@ -22,10 +22,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
+import { useToast } from "@/components/ui/Toast";
 import { PsychomotorSkill } from "@/types/examSettings";
 import { useExamSettingsStore } from "@/store/examSettingsStore";
-import { createPsychomotorSkill, updatePsychomotorSkill } from "@/services/examSettingsService";
+import {
+  createPsychomotorSkill,
+  updatePsychomotorSkill,
+} from "@/services/examSettingsService";
 
 const skillSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -40,8 +43,13 @@ interface CreateEditPsychomotorSkillDialogProps {
   skill?: PsychomotorSkill;
 }
 
-export const CreateEditPsychomotorSkillDialog = ({ isOpen, onClose, skill }: CreateEditPsychomotorSkillDialogProps) => {
+export const CreateEditPsychomotorSkillDialog = ({
+  isOpen,
+  onClose,
+  skill,
+}: CreateEditPsychomotorSkillDialogProps) => {
   const { fetchPsychomotorSkills } = useExamSettingsStore();
+  const { showToast } = useToast();
 
   const form = useForm<SkillFormValues>({
     resolver: zodResolver(skillSchema),
@@ -58,14 +66,28 @@ export const CreateEditPsychomotorSkillDialog = ({ isOpen, onClose, skill }: Cre
         : await createPsychomotorSkill(values);
 
       if (response.success) {
-        toast.success(`Psychomotor skill ${skill ? 'updated' : 'created'} successfully!`);
+        showToast({
+          type: "success",
+          title: "Success",
+          message: `Psychomotor skill ${
+            skill ? "updated" : "created"
+          } successfully!`,
+        });
         fetchPsychomotorSkills();
         onClose();
       } else {
-        toast.error(response.message || "Failed to save skill");
+        showToast({
+          type: "error",
+          title: "Error",
+          message: response.message || "Failed to save skill",
+        });
       }
     } catch (error) {
-      toast.error("An error occurred while saving the skill.");
+      showToast({
+        type: "error",
+        title: "Error",
+        message: "An error occurred while saving the skill.",
+      });
     }
   };
 
@@ -73,7 +95,9 @@ export const CreateEditPsychomotorSkillDialog = ({ isOpen, onClose, skill }: Cre
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{skill ? "Edit" : "Create"} Psychomotor Skill</DialogTitle>
+          <DialogTitle>
+            {skill ? "Edit" : "Create"} Psychomotor Skill
+          </DialogTitle>
           <DialogDescription>
             Fill in the details for the psychomotor skill.
           </DialogDescription>
@@ -100,14 +124,19 @@ export const CreateEditPsychomotorSkillDialog = ({ isOpen, onClose, skill }: Cre
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="A brief description of the skill" {...field} />
+                    <Textarea
+                      placeholder="A brief description of the skill"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <DialogFooter>
-              <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
+              <Button type="button" variant="ghost" onClick={onClose}>
+                Cancel
+              </Button>
               <Button type="submit" disabled={form.formState.isSubmitting}>
                 {form.formState.isSubmitting ? "Saving..." : "Save"}
               </Button>

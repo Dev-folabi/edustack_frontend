@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { COLORS, SCHOOL_INFO } from "@/constants/colors";
+import { COLORS, SCHOOL_INFO } from "@/constants/config";
 
 export default function HeroSection() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -86,14 +86,16 @@ export default function HeroSection() {
             <Link
               href="#about"
               className="px-8 py-4 border-2 border-white text-white rounded-full font-semibold text-lg hover:bg-white transition-all duration-300"
-              style={{
-                '--hover-text-color': COLORS.primary[600]
-              } as React.CSSProperties}
+              style={
+                {
+                  "--hover-text-color": COLORS.primary[600],
+                } as React.CSSProperties
+              }
               onMouseEnter={(e) => {
                 e.currentTarget.style.color = COLORS.primary[600];
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.color = 'white';
+                e.currentTarget.style.color = "white";
               }}
             >
               Learn More
