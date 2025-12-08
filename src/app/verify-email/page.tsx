@@ -21,14 +21,22 @@ const VerifyEmailContent: React.FC = () => {
     const id = searchParams.get("userId");
     if (id) {
       setUserId(id);
+      // Store in localStorage as backup
+      localStorage.setItem("pendingVerificationUserId", id);
     } else {
-      // Handle case where userId is missing
-      showToast({
-        type: "error",
-        title: "Missing Information",
-        message: "User ID is missing from the URL.",
-      });
-      router.push("/login");
+      // Try to get from localStorage as fallback
+      const storedUserId = localStorage.getItem("pendingVerificationUserId");
+      if (storedUserId) {
+        setUserId(storedUserId);
+      } else {
+        // Handle case where userId is missing
+        showToast({
+          type: "error",
+          title: "Missing Information",
+          message: "User ID is missing. Please try logging in again.",
+        });
+        router.push("/login");
+      }
     }
   }, [searchParams, router, showToast]);
 

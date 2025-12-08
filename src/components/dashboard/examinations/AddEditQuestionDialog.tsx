@@ -192,23 +192,21 @@ export function AddEditQuestionDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="flex max-h-[90vh] flex-col sm:max-w-2xl rounded-2xl border border-white/20 bg-white/05 backdrop-blur-lg shadow-xl">
+      <DialogContent className="flex max-h-[90vh] flex-col sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold text-gray-100">
-            {question ? "Edit" : "Add"} Question
-          </DialogTitle>
-          <DialogDescription className="text-gray-300">
+          <DialogTitle>{question ? "Edit" : "Add"} Question</DialogTitle>
+          <DialogDescription>
             Fill in the details for the question.
           </DialogDescription>
         </DialogHeader>
 
         {/* scrollable body */}
-        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto pr-2">
           <Form {...form}>
             <form
               id="question-form"
               onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-5 pb-4"
+              className="space-y-4"
             >
               {/* Type selector */}
               <FormField
@@ -216,17 +214,17 @@ export function AddEditQuestionDialog({
                 name="type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-200">Type</FormLabel>
+                    <FormLabel>Type</FormLabel>
                     <Select
                       onValueChange={handleTypeChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className="rounded-lg border-white/20 bg-white/10 text-gray-100">
+                        <SelectTrigger>
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="rounded-lg border-white/20 bg-white/10 backdrop-blur-md text-gray-100">
+                      <SelectContent>
                         <SelectItem value="MCQ">Multiple Choice</SelectItem>
                         <SelectItem value="TrueFalse">True/False</SelectItem>
                         <SelectItem value="FillInBlanks">
@@ -234,6 +232,7 @@ export function AddEditQuestionDialog({
                         </SelectItem>
                       </SelectContent>
                     </Select>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -244,70 +243,74 @@ export function AddEditQuestionDialog({
                 name="questionText"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-200">Question</FormLabel>
+                    <FormLabel>Question</FormLabel>
                     <FormControl>
                       <Textarea
-                        className="rounded-lg border-white/20 bg-white/10 text-gray-100 placeholder-gray-400"
                         placeholder="Enter the question text"
                         {...field}
                       />
                     </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
 
               {/* MCQ block */}
               {questionType === "MCQ" && (
-                <div className="rounded-xl border border-white/20 bg-white/5 p-4 space-y-3">
-                  <FormLabel className="text-gray-200">Options</FormLabel>
+                <div className="space-y-3">
+                  <FormLabel>Options</FormLabel>
                   <FormField
                     control={form.control}
                     name="correctAnswer"
                     render={({ field }) => (
-                      <RadioGroup
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        className="space-y-3"
-                      >
-                        {fields.map((item, i) => (
-                          <div
-                            key={item.id}
-                            className="flex items-center gap-3"
+                      <FormItem>
+                        <FormControl>
+                          <RadioGroup
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            className="space-y-3"
                           >
-                            <RadioGroupItem value={String(i)} />
-                            <FormField
-                              control={form.control}
-                              name={`options.${i}.value`}
-                              render={({ field: optionField }) => (
-                                <FormControl>
-                                  <Input
-                                    {...optionField}
-                                    placeholder={`Option ${i + 1}`}
-                                    className="rounded-lg border-white/20 bg-white/10 text-gray-100 placeholder-gray-400"
-                                  />
-                                </FormControl>
-                              )}
-                            />
-                            <Button
-                              type="button"
-                              size="icon"
-                              variant="ghost"
-                              className="text-red-400 hover:bg-red-500/20"
-                              onClick={() => remove(i)}
-                              disabled={fields.length <= 2}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
-                      </RadioGroup>
+                            {fields.map((item, i) => (
+                              <div
+                                key={item.id}
+                                className="flex items-center gap-3"
+                              >
+                                <RadioGroupItem value={String(i)} />
+                                <FormField
+                                  control={form.control}
+                                  name={`options.${i}.value`}
+                                  render={({ field: optionField }) => (
+                                    <FormControl>
+                                      <Input
+                                        {...optionField}
+                                        placeholder={`Option ${i + 1}`}
+                                        className="flex-1"
+                                      />
+                                    </FormControl>
+                                  )}
+                                />
+                                <Button
+                                  type="button"
+                                  size="icon"
+                                  variant="ghost"
+                                  className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                  onClick={() => remove(i)}
+                                  disabled={fields.length <= 2}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
                     )}
                   />
                   <Button
                     type="button"
                     size="sm"
                     variant="outline"
-                    className="rounded-lg border-white/20 bg-white/10 text-gray-100 hover:bg-white/20"
                     onClick={() => append({ value: "" })}
                   >
                     <PlusCircle className="mr-2 h-4 w-4" /> Add Option
@@ -322,17 +325,15 @@ export function AddEditQuestionDialog({
                   name="correctAnswer"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-200">
-                        Correct Answer
-                      </FormLabel>
+                      <FormLabel>Correct Answer</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="Enter correct answer"
                           {...field}
                           value={field.value || ""}
-                          className="rounded-lg border-white/20 bg-white/10 text-gray-100 placeholder-gray-400"
                         />
                       </FormControl>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -345,9 +346,7 @@ export function AddEditQuestionDialog({
                   name="correctAnswer"
                   render={({ field }) => (
                     <FormItem className="space-y-3">
-                      <FormLabel className="text-gray-200">
-                        Correct Answer
-                      </FormLabel>
+                      <FormLabel>Correct Answer</FormLabel>
                       <FormControl>
                         <RadioGroup
                           onValueChange={field.onChange}
@@ -358,17 +357,13 @@ export function AddEditQuestionDialog({
                             <FormControl>
                               <RadioGroupItem value="true" />
                             </FormControl>
-                            <FormLabel className="font-normal text-gray-200">
-                              True
-                            </FormLabel>
+                            <FormLabel className="font-normal">True</FormLabel>
                           </FormItem>
                           <FormItem className="flex items-center space-x-2">
                             <FormControl>
                               <RadioGroupItem value="false" />
                             </FormControl>
-                            <FormLabel className="font-normal text-gray-200">
-                              False
-                            </FormLabel>
+                            <FormLabel className="font-normal">False</FormLabel>
                           </FormItem>
                         </RadioGroup>
                       </FormControl>
@@ -379,20 +374,17 @@ export function AddEditQuestionDialog({
               )}
 
               {/* Marks + Difficulty */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="marks"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-200">Marks</FormLabel>
+                      <FormLabel>Marks</FormLabel>
                       <FormControl>
-                        <Input
-                          type="number"
-                          {...field}
-                          className="rounded-lg border-white/20 bg-white/10 text-gray-100 placeholder-gray-400"
-                        />
+                        <Input type="number" {...field} />
                       </FormControl>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -401,24 +393,23 @@ export function AddEditQuestionDialog({
                   name="difficulty"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-200">
-                        Difficulty
-                      </FormLabel>
+                      <FormLabel>Difficulty</FormLabel>
                       <Select
                         defaultValue={field.value}
                         onValueChange={field.onChange}
                       >
                         <FormControl>
-                          <SelectTrigger className="rounded-lg border-white/20 bg-white/10 text-gray-100">
+                          <SelectTrigger>
                             <SelectValue placeholder="Select" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent className="rounded-lg border-white/20 bg-white/10 backdrop-blur-md text-gray-100">
+                        <SelectContent>
                           <SelectItem value="Easy">Easy</SelectItem>
                           <SelectItem value="Medium">Medium</SelectItem>
                           <SelectItem value="Hard">Hard</SelectItem>
                         </SelectContent>
                       </Select>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -428,22 +419,16 @@ export function AddEditQuestionDialog({
         </div>
 
         {/* fixed footer */}
-        <DialogFooter className="mt-4 border-t border-white/10 pt-4">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={onClose}
-            className="rounded-lg border border-white/20 bg-white/5 text-gray-300 hover:bg-white/10"
-          >
+        <DialogFooter className="mt-4">
+          <Button type="button" variant="ghost" onClick={onClose}>
             Cancel
           </Button>
           <Button
             form="question-form"
             type="submit"
             disabled={form.formState.isSubmitting}
-            className="rounded-lg bg-blue-600 text-white hover:bg-blue-700"
           >
-            {form.formState.isSubmitting ? "Saving..." : "Save Question"}
+            {form.formState.isSubmitting ? "Saving..." : "Save"}
           </Button>
         </DialogFooter>
       </DialogContent>

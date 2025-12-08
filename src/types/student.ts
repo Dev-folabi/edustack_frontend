@@ -30,6 +30,8 @@ export interface Student {
     email: string;
     phone: string[];
   };
+  currentClass?: string;
+  currentSection?: string;
 }
 
 export interface StudentRegistrationPayload {

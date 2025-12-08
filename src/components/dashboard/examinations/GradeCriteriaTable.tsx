@@ -32,11 +32,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { deleteGradeCriterion } from "@/services/examSettingsService";
-import { toast } from "sonner";
+import { useToast } from "@/components/ui/Toast";
 
 export const GradeCriteriaTable = () => {
   const { gradeCriteria, loading, fetchGradeCriteria, error } =
     useExamSettingsStore();
+  const { showToast } = useToast();
   const [isEditDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedCriterion, setSelectedCriterion] =
     useState<GradeCriterion | null>(null);
@@ -62,10 +63,18 @@ export const GradeCriteriaTable = () => {
     if (criterionToDelete) {
       try {
         await deleteGradeCriterion(criterionToDelete.id);
-        toast.success("Grade criterion deleted successfully!");
+        showToast({
+          type: "success",
+          title: "Success",
+          message: "Grade criterion deleted successfully!",
+        });
         fetchGradeCriteria();
       } catch (error) {
-        toast.error("Failed to delete grade criterion.");
+        showToast({
+          type: "error",
+          title: "Error",
+          message: "Failed to delete grade criterion.",
+        });
       } finally {
         setDeleteDialogOpen(false);
         setCriterionToDelete(null);

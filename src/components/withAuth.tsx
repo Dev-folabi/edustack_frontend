@@ -1,19 +1,22 @@
 "use client";
 
-import { usePermissions } from '@/utils/permissions';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { UserRole } from '@/constants/roles';
-import { DASHBOARD_ROUTES } from '@/constants/routes';
+import { usePermissions } from "@/utils/permissions";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { UserRole } from "@/constants/roles";
+import { DASHBOARD_ROUTES } from "@/constants/routes";
 
-import React from 'react';
-const withAuth = (WrappedComponent: React.ComponentType, requiredRoles: UserRole[]) => {
-  const AuthComponent = (props: React.ComponentProps<typeof WrappedComponent>) => {
+import React from "react";
+const withAuth = <P extends object = object>(
+  WrappedComponent: React.ComponentType<P>,
+  requiredRoles: UserRole[]
+) => {
+  const AuthComponent = (props: P) => {
     const { isSuperAdmin, hasRole } = usePermissions();
     const router = useRouter();
 
     // User has access if they have any of the required roles.
-    const userHasAccess = requiredRoles.some(role => hasRole(role));
+    const userHasAccess = requiredRoles.some((role) => hasRole(role));
 
     useEffect(() => {
       // Super admin always has access.

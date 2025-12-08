@@ -20,6 +20,10 @@ interface DateTimePickerProps {
 }
 
 export function DateTimePicker({ date, setDate }: DateTimePickerProps) {
+  const isValidDate = (d: Date | undefined): d is Date => {
+    return d instanceof Date && !isNaN(d.getTime());
+  };
+
   const handleDateChange = (newDate: Date | undefined) => {
     if (!newDate) {
       setDate(undefined);
@@ -59,20 +63,24 @@ export function DateTimePicker({ date, setDate }: DateTimePickerProps) {
           )}
         >
           <FaCalendarAlt className="mr-2 h-4 w-4" />
-          {date ? format(date, "PPP p") : <span>Pick a date and time</span>}
+          {isValidDate(date) ? (
+            format(date, "PPP p")
+          ) : (
+            <span>Pick a date and time</span>
+          )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">
         <Calendar
           mode="single"
-          selected={date}
+          selected={isValidDate(date) ? date : undefined}
           onSelect={handleDateChange}
           initialFocus
         />
         <div className="p-2 border-t border-border">
           <Input
             type="time"
-            defaultValue={date ? format(date, "HH:mm") : ""}
+            defaultValue={isValidDate(date) ? format(date, "HH:mm") : ""}
             onChange={handleTimeChange}
           />
         </div>

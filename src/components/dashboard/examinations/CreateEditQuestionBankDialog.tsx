@@ -31,7 +31,8 @@ import {
 } from "@/components/ui/select";
 import { useAuthStore } from "@/store/authStore";
 import { useSubjectStore } from "@/store/subjectStore";
-import { useEffect } from "react";
+import { useClassStore } from "@/store/classStore";
+import { useEffect, useMemo } from "react";
 import { useQuestionBankStore } from "@/store/questionBankStore";
 import {
   createQuestionBank,
@@ -43,6 +44,8 @@ import { QuestionBank } from "@/types/questionBank";
 const questionBankSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
+  classId: z.string().min(1, "Class is required"),
+  sectionId: z.string().min(1, "Section is required"),
   subjectId: z.string().min(1, "Subject is required"),
 });
 
@@ -61,6 +64,7 @@ export const CreateEditQuestionBankDialog = ({
 }: CreateEditQuestionBankDialogProps) => {
   const { selectedSchool } = useAuthStore();
   const { subjects, fetchSubjects } = useSubjectStore();
+  const { classes, fetchClasses } = useClassStore();
   const { fetchAllQuestionBanks } = useQuestionBankStore();
   const { showToast } = useToast();
 
@@ -69,18 +73,47 @@ export const CreateEditQuestionBankDialog = ({
     defaultValues: bank || {
       name: "",
       description: "",
+      classId: "",
+      sectionId: "",
       subjectId: "",
     },
   });
 
+  const selectedClassId = form.watch("classId");
+  const selectedSectionId = form.watch("sectionId");
+
+  // Compute available sections based on selected class
+  const availableSections = useMemo(() => {
+    if (!selectedClassId) return [];
+    const selectedClass = classes.find((c) => c.id === selectedClassId);
+    return selectedClass?.sections || [];
+  }, [selectedClassId, classes]);
+
   useEffect(() => {
-    if (selectedSchool) {
-      fetchSubjects(selectedSchool.schoolId);
+    if (selectedSchool?.schoolId) {
+      fetchClasses(selectedSchool.schoolId);
     }
-  }, [selectedSchool, fetchSubjects]);
+  }, [selectedSchool, fetchClasses]);
+
+  useEffect(() => {
+    if (selectedSchool && selectedSectionId) {
+      fetchSubjects(selectedSchool.schoolId, selectedSectionId);
+    }
+  }, [selectedSchool, selectedSectionId, fetchSubjects]);
+
+  // Clear section and subject when class changes
+  useEffect(() => {
+    form.setValue("sectionId", "");
+    form.setValue("subjectId", "");
+  }, [selectedClassId, form]);
+
+  // Clear subject when section changes
+  useEffect(() => {
+    form.setValue("subjectId", "");
+  }, [selectedSectionId, form]);
 
   const onSubmit = async (values: QuestionBankFormValues) => {
-    if (!selectedSchool) return;
+    if (!selectedSchool?.schoolId) return;
 
     try {
       const data = { ...values, schoolId: selectedSchool.schoolId };
@@ -162,6 +195,73 @@ export const CreateEditQuestionBankDialog = ({
             />
             <FormField
               control={form.control}
+              name="classId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Class</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a class" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {classes.length > 0 ? (
+                        classes.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>
+                            {c.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-classes" disabled>
+                          No classes available
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="sectionId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Section</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    disabled={!selectedClassId}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a section" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {availableSections.length > 0 ? (
+                        availableSections.map((s) => (
+                          <SelectItem key={s.id} value={s.id}>
+                            {s.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-sections" disabled>
+                          No sections available
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name="subjectId"
               render={({ field }) => (
                 <FormItem>
@@ -169,6 +269,7 @@ export const CreateEditQuestionBankDialog = ({
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
+                    disabled={!selectedSectionId}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -176,11 +277,17 @@ export const CreateEditQuestionBankDialog = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {subjects.map((s) => (
-                        <SelectItem key={s.id} value={s.id}>
-                          {s.name}
+                      {subjects.length > 0 ? (
+                        subjects.map((s) => (
+                          <SelectItem key={s.id} value={s.id}>
+                            {s.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-subjects" disabled>
+                          No subjects available
                         </SelectItem>
-                      ))}
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />

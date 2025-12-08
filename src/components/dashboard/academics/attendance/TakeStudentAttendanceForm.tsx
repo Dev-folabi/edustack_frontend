@@ -64,7 +64,7 @@ const TakeStudentAttendanceForm = () => {
   const { showToast } = useToast();
 
   useEffect(() => {
-    if (selectedSchool) {
+    if (selectedSchool?.schoolId) {
       classService.getClasses(selectedSchool.schoolId).then((res) => {
         if (res.success) {
           setClasses(res?.data?.data || []);

@@ -44,7 +44,7 @@ const CreateSubjectPage = () => {
   });
 
   const fetchClassesAndSections = useCallback(async () => {
-    if (!selectedSchool) return;
+    if (!selectedSchool?.schoolId) return;
     try {
       setLoading(true);
       const response = await classService.getClasses(selectedSchool.schoolId);
@@ -66,7 +66,7 @@ const CreateSubjectPage = () => {
   }, [fetchClassesAndSections]);
 
   const onSubmit = async (data: SubjectFormValues) => {
-    if (!selectedSchool) {
+    if (!selectedSchool?.schoolId) {
       toast.error('No school selected');
       return;
     }

@@ -9,9 +9,28 @@ import { studentService } from "@/services/studentService";
 import { Student } from "@/types/student";
 import { sessionService, Session } from "@/services/sessionService";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -56,26 +75,30 @@ const PromoteStudentPage = () => {
 
   useEffect(() => {
     if (selectedSchool?.schoolId) {
-      classService.getClasses(selectedSchool.schoolId).then(res => setClasses(res.data.data));
-      sessionService.getSessions().then(res => setSessions(res.data.data));
+      classService
+        .getClasses(selectedSchool.schoolId)
+        .then((res) => setClasses(res.data.data));
+      sessionService
+        .getSessions(selectedSchool.schoolId)
+        .then((res) => setSessions(res.data.data));
     }
   }, [selectedSchool?.schoolId]);
 
   useEffect(() => {
-    const selectedClass = classes.find(c => c.id === fromClassId);
+    const selectedClass = classes.find((c) => c.id === fromClassId);
     setSections(selectedClass?.sections || []);
     setFromSectionId("");
   }, [fromClassId, classes]);
 
   useEffect(() => {
-    const selectedClass = classes.find(c => c.id === toClassId);
+    const selectedClass = classes.find((c) => c.id === toClassId);
     setToSections(selectedClass?.sections || []);
     setToSectionId("");
   }, [toClassId, classes]);
 
   useEffect(() => {
     if (toSessionId) {
-      const selectedSession = sessions.find(s => s.id === toSessionId);
+      const selectedSession = sessions.find((s) => s.id === toSessionId);
       setAvailableTerms(selectedSession?.terms || []);
       setPromoteTermId("");
     } else {
@@ -86,8 +109,10 @@ const PromoteStudentPage = () => {
   useEffect(() => {
     if (fromSectionId && selectedSchool?.schoolId) {
       studentService
-        .getStudentsBySection(selectedSchool.schoolId, { sectionId: fromSectionId })
-        .then(res => setStudents(res.data.data))
+        .getStudentsBySection(selectedSchool.schoolId, {
+          sectionId: fromSectionId,
+        })
+        .then((res) => setStudents(res.data.data))
         .catch(() => setStudents([]));
     } else {
       setStudents([]);
@@ -96,20 +121,29 @@ const PromoteStudentPage = () => {
   }, [fromSectionId, selectedSchool?.schoolId]);
 
   const handleSelectStudent = (studentId: string) => {
-    setSelectedStudents(prev =>
-      prev.includes(studentId) ? prev.filter(id => id !== studentId) : [...prev, studentId]
+    setSelectedStudents((prev) =>
+      prev.includes(studentId)
+        ? prev.filter((id) => id !== studentId)
+        : [...prev, studentId]
     );
   };
 
   const handlePromote = async () => {
     if (selectedStudents.length === 0) {
-      showToast({ type: "error", message: "Please select at least one student to promote." });
-      return;
-    }
-    if (!isGraduate && (!toClassId || !toSectionId || !toSessionId || !promoteTermId)) {
       showToast({
         type: "error",
-        message: "Please select a destination class, section, session, and term."
+        message: "Please select at least one student to promote.",
+      });
+      return;
+    }
+    if (
+      !isGraduate &&
+      (!toClassId || !toSectionId || !toSessionId || !promoteTermId)
+    ) {
+      showToast({
+        type: "error",
+        message:
+          "Please select a destination class, section, session, and term.",
       });
       return;
     }
@@ -123,13 +157,19 @@ const PromoteStudentPage = () => {
         sectionId: isGraduate ? "" : toSectionId,
         promoteSessionId: toSessionId,
         promoteTermId: promoteTermId,
-        isGraduate: isGraduate
+        isGraduate: isGraduate,
       });
-      showToast({ type: "success", message: "Students promoted successfully!" });
+      showToast({
+        type: "success",
+        message: "Students promoted successfully!",
+      });
       setStudents([]);
       setSelectedStudents([]);
     } catch (error: any) {
-      showToast({ type: "error", message: error.message || "Failed to promote students." });
+      showToast({
+        type: "error",
+        message: error.message || "Failed to promote students.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -151,7 +191,9 @@ const PromoteStudentPage = () => {
       <Card className="shadow-sm border rounded-lg">
         <CardHeader>
           <CardTitle className="text-lg font-medium">Filter Students</CardTitle>
-          <CardDescription>Select the class and section to filter students.</CardDescription>
+          <CardDescription>
+            Select the class and section to filter students.
+          </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Select onValueChange={setFromClassId} value={fromClassId}>
@@ -159,7 +201,7 @@ const PromoteStudentPage = () => {
               <SelectValue placeholder="Select Class" />
             </SelectTrigger>
             <SelectContent>
-              {classes.map(c => (
+              {classes.map((c) => (
                 <SelectItem key={c.id} value={c.id}>
                   {c.name}
                 </SelectItem>
@@ -167,12 +209,16 @@ const PromoteStudentPage = () => {
             </SelectContent>
           </Select>
 
-          <Select onValueChange={setFromSectionId} value={fromSectionId} disabled={!fromClassId}>
+          <Select
+            onValueChange={setFromSectionId}
+            value={fromSectionId}
+            disabled={!fromClassId}
+          >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select Section" />
             </SelectTrigger>
             <SelectContent>
-              {sections.map(s => (
+              {sections.map((s) => (
                 <SelectItem key={s.id} value={s.id}>
                   {s.name}
                 </SelectItem>
@@ -195,13 +241,14 @@ const PromoteStudentPage = () => {
                 <TableRow>
                   <TableHead className="w-12">
                     <Checkbox
-                      onCheckedChange={checked =>
+                      onCheckedChange={(checked) =>
                         checked
-                          ? setSelectedStudents(students.map(s => s.id))
+                          ? setSelectedStudents(students.map((s) => s.id))
                           : setSelectedStudents([])
                       }
                       checked={
-                        selectedStudents.length === students.length && students.length > 0
+                        selectedStudents.length === students.length &&
+                        students.length > 0
                       }
                     />
                   </TableHead>
@@ -210,7 +257,7 @@ const PromoteStudentPage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {students.map(student => (
+                {students.map((student) => (
                   <TableRow
                     key={student.id}
                     className="hover:bg-muted/20 transition-colors"
@@ -218,10 +265,14 @@ const PromoteStudentPage = () => {
                     <TableCell>
                       <Checkbox
                         checked={selectedStudents.includes(student.studentId)}
-                        onCheckedChange={() => handleSelectStudent(student.studentId)}
+                        onCheckedChange={() =>
+                          handleSelectStudent(student.studentId)
+                        }
                       />
                     </TableCell>
-                    <TableCell className="font-medium">{student.name}</TableCell>
+                    <TableCell className="font-medium">
+                      {student.name}
+                    </TableCell>
                     <TableCell>{student.admissionNumber}</TableCell>
                   </TableRow>
                 ))}
@@ -234,7 +285,9 @@ const PromoteStudentPage = () => {
       {/* Step 3: Destination */}
       <Card className="shadow-sm border rounded-lg">
         <CardHeader>
-          <CardTitle className="text-lg font-medium">Promotion Details</CardTitle>
+          <CardTitle className="text-lg font-medium">
+            Promotion Details
+          </CardTitle>
           <CardDescription>
             Choose the destination or mark as graduated.
           </CardDescription>
@@ -256,7 +309,7 @@ const PromoteStudentPage = () => {
                   <SelectValue placeholder="Select Session" />
                 </SelectTrigger>
                 <SelectContent>
-                  {sessions.map(s => (
+                  {sessions.map((s) => (
                     <SelectItem key={s.id} value={s.id}>
                       {s.name}
                     </SelectItem>
@@ -269,7 +322,7 @@ const PromoteStudentPage = () => {
                   <SelectValue placeholder="Select Class" />
                 </SelectTrigger>
                 <SelectContent>
-                  {classes.map(c => (
+                  {classes.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.name}
                     </SelectItem>
@@ -286,7 +339,7 @@ const PromoteStudentPage = () => {
                   <SelectValue placeholder="Select Section" />
                 </SelectTrigger>
                 <SelectContent>
-                  {toSections.map(s => (
+                  {toSections.map((s) => (
                     <SelectItem key={s.id} value={s.id}>
                       {s.name}
                     </SelectItem>
@@ -303,7 +356,7 @@ const PromoteStudentPage = () => {
                   <SelectValue placeholder="Select Term" />
                 </SelectTrigger>
                 <SelectContent>
-                  {availableTerms.map(term => (
+                  {availableTerms.map((term) => (
                     <SelectItem key={term.id} value={term.id}>
                       {term.name}
                     </SelectItem>

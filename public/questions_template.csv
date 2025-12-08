@@ -1,4 +1,4 @@
 type,questionText,marks,difficulty,options,correctAnswer
 MCQ,"What is the capital of France?",5,Easy,"Paris,London,Berlin,Madrid","Paris"
-Essay,"Explain the theory of relativity.",10,Hard,,
+TrueFalse,"Nigeria is a country in Africa.",10,Hard,,"True"
 FillInBlanks,"The chemical symbol for water is ____.",2,Easy,,"H2O"

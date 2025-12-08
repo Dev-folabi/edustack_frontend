@@ -84,7 +84,7 @@ export const CreateExamDialog = ({
 
   // Fetch school dependencies
   useEffect(() => {
-    if (selectedSchool) {
+    if (selectedSchool?.schoolId) {
       fetchClasses(selectedSchool.schoolId);
       fetchSessions();
     }

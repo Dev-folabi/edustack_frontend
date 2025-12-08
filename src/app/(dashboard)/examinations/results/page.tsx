@@ -37,7 +37,7 @@ const ResultsPage = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (selectedSchool) {
+    if (selectedSchool?.schoolId) {
       fetchClasses(selectedSchool.schoolId);
     }
   }, [selectedSchool, fetchClasses]);

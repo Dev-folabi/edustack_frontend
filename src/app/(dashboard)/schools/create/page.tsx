@@ -1,31 +1,43 @@
 "use client";
 
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
-import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
-import { useToast } from '@/components/ui/Toast';
-import { schoolService } from '@/services/schoolService';
-import { DASHBOARD_ROUTES } from '@/constants/routes';
-import withAuth from '@/components/withAuth';
-import { UserRole } from '@/constants/roles';
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/components/ui/Toast";
+import { schoolService } from "@/services/schoolService";
+import { DASHBOARD_ROUTES } from "@/constants/routes";
+import withAuth from "@/components/withAuth";
+import { UserRole } from "@/constants/roles";
 
 const phoneRegex = new RegExp(
   /^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/
 );
 
 const formSchema = z.object({
-  name: z.string().min(2, { message: "School name must be at least 2 characters." }),
+  name: z
+    .string()
+    .min(2, { message: "School name must be at least 2 characters." }),
   address: z.string().min(5, { message: "Address is required." }),
-  email: z.string().email({ message: "Please enter a valid email address." }),
-  phone: z.string().regex(phoneRegex, 'Invalid Number!'),
+  email: z
+    .string()
+    .trim()
+    .email({ message: "Please enter a valid email address." }),
+  phone: z.string().regex(phoneRegex, "Invalid Number!"),
   isActive: z.boolean().default(true),
 });
 
@@ -37,10 +49,10 @@ const CreateSchoolPage = () => {
   const form = useForm<SchoolFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
-      address: '',
-      email: '',
-      phone: '',
+      name: "",
+      address: "",
+      email: "",
+      phone: "",
       isActive: true,
     },
   });
@@ -54,18 +66,18 @@ const CreateSchoolPage = () => {
       };
       await schoolService.createSchool(dataToSubmit);
       showToast({
-        title: 'Success',
-        message: 'School created successfully!',
-        type: 'success',
+        title: "Success",
+        message: "School created successfully!",
+        type: "success",
       });
       router.push(DASHBOARD_ROUTES.SCHOOL_MANAGEMENT);
-    } catch (error : any) {
+    } catch (error: any) {
       showToast({
-        title: 'Error',
+        title: "Error",
         message: error.message,
-        type: 'error',
+        type: "error",
       });
-      console.error('Create school error:', error);
+      console.error("Create school error:", error);
     }
   };
 
@@ -78,7 +90,10 @@ const CreateSchoolPage = () => {
         </Link>
       </div>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-2xl">
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-8 max-w-2xl"
+        >
           <FormField
             control={form.control}
             name="name"
@@ -149,7 +164,7 @@ const CreateSchoolPage = () => {
             )}
           />
           <Button type="submit" disabled={form.formState.isSubmitting}>
-            {form.formState.isSubmitting ? 'Saving...' : 'Save School'}
+            {form.formState.isSubmitting ? "Saving..." : "Save School"}
           </Button>
         </form>
       </Form>

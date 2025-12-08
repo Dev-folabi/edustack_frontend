@@ -59,7 +59,7 @@ export const CreateEditClassModal = ({
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!selectedSchool) return;
+    if (!selectedSchool?.schoolId) return;
 
     const sectionString = values.sections && values.sections.length > 0 
       ? values.sections.map(s => s.name).filter(name => name.trim() !== "").join(",")

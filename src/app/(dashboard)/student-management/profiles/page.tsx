@@ -4,7 +4,7 @@ import withAuth from "@/components/withAuth";
 import { UserRole } from "@/constants/roles";
 import { StudentTable } from "@/components/dashboard/student-management/StudentTable";
 import { Button } from "@/components/ui/button";
-import { Download, Printer, Plus, User } from "lucide-react";
+import { Plus, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useClassStore } from "@/store/classStore";
 import { useAuthStore } from "@/store/authStore";
@@ -22,7 +22,7 @@ const StudentProfilesPage = () => {
   }, [selectedSchool?.schoolId]);
 
   const handleAddNewStudent = () => {
-    router.push("/student-management/add-student");
+    router.push("/student-management/admission");
   };
 
   return (
@@ -39,25 +39,11 @@ const StudentProfilesPage = () => {
               Manage and view all students in your school system
             </p>
           </div>
-          
+
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <Button 
-              variant="outline" 
-              className="bg-white shadow-sm hover:shadow-md transition-shadow"
-            >
-              <Download className="mr-2 h-4 w-4" />
-              Export Data
-            </Button>
-            <Button 
-              variant="outline"
-              className="bg-white shadow-sm hover:shadow-md transition-shadow"
-            >
-              <Printer className="mr-2 h-4 w-4" />
-              Print List
-            </Button>
-            <Button 
+            <Button
               onClick={handleAddNewStudent}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg"
+              className="bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 shadow-lg"
             >
               <Plus className="mr-2 h-4 w-4" />
               Add New Student

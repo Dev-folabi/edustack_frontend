@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useState } from "react";
-import { COLORS } from "@/constants/colors";
+import { COLORS } from "@/constants/config";
 
 export default function GallerySection() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);

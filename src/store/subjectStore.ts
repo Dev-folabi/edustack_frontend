@@ -6,7 +6,7 @@ interface SubjectState {
   subjects: Subject[];
   loading: boolean;
   error: string | null;
-  fetchSubjects: (schoolId: string) => Promise<void>;
+  fetchSubjects: (schoolId: string, sectionId?: string) => Promise<void>;
 }
 
 export const useSubjectStore = create<SubjectState>((set) => ({

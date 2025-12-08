@@ -53,7 +53,7 @@ const TakeStaffAttendanceForm = () => {
   const { showToast } = useToast();
 
   const fetchStaff = async () => {
-    if (!selectedSchool) return;
+    if (!selectedSchool?.schoolId) return;
     
     setLoading(true);
     try {

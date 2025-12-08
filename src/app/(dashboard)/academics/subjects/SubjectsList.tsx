@@ -60,7 +60,7 @@ const SubjectsList = () => {
     userRole === UserRole.SUPER_ADMIN || userRole === UserRole.ADMIN;
 
   const fetchSections = useCallback(async () => {
-    if (!selectedSchool) return;
+    if (!selectedSchool?.schoolId) return;
     try {
       const response = await classService.getClasses(selectedSchool.schoolId);
       if (response.success) {
@@ -78,7 +78,7 @@ const SubjectsList = () => {
   }, [selectedSchool]);
 
   const fetchSubjects = useCallback(async () => {
-    if (!selectedSchool) return;
+    if (!selectedSchool?.schoolId) return;
     try {
       setLoading(true);
       const filters: any = { schoolId: selectedSchool.schoolId };
@@ -100,7 +100,7 @@ const SubjectsList = () => {
   }, [selectedSchool]); // Remove sectionFilter dependency
 
   const fetchTeachers = useCallback(async () => {
-    if (!selectedSchool) return;
+    if (!selectedSchool?.schoolId) return;
     try {
       const response = await staffService.getStaffBySchool(
         selectedSchool.schoolId,

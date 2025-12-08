@@ -30,9 +30,6 @@ import {
   GraduationCap,
   Users,
   Shield,
-  FileText,
-  Upload,
-  Download,
   UserPlus,
   School,
   Calendar,
@@ -94,7 +91,8 @@ const formSchema = z
   .refine(
     (data) => {
       if (data.exist_guardian) {
-        return data.guardian_emailOrUsername && data.guardian_password;
+        // When using an existing guardian, require the guardian's username and password
+        return data.guardian_username && data.guardian_password;
       } else {
         return (
           data.guardian_name &&
@@ -116,8 +114,8 @@ const AdmissionForm = () => {
   const [classes, setClasses] = useState<Class[]>([]);
   const [sections, setSections] = useState<ClassSection[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [csvFile, setCsvFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
+  // const [csvFile, setCsvFile] = useState<File | null>(null);
+  // const [isUploading, setIsUploading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -136,6 +134,7 @@ const AdmissionForm = () => {
       father_occupation: "",
       mother_occupation: "",
       exist_guardian: false,
+      guardian_username: "",
     },
   });
 
@@ -161,7 +160,7 @@ const AdmissionForm = () => {
           console.error("Error loading classes:", error);
         });
     }
-  }, [selectedSchool?.schoolId]);
+  }, [selectedSchool?.schoolId, showToast]);
 
   useEffect(() => {
     if (selectedClassId) {
@@ -193,8 +192,9 @@ const AdmissionForm = () => {
       guardian_phone: values.exist_guardian ? undefined : values.guardian_phone,
       guardian_name: values.exist_guardian ? undefined : values.guardian_name,
       guardian_email: values.exist_guardian ? undefined : values.guardian_email,
+      // When linking to an existing guardian, send the guardian username
       guardian_emailOrUsername: values.exist_guardian
-        ? values.guardian_emailOrUsername
+        ? values.guardian_username
         : undefined,
     };
 
@@ -229,47 +229,47 @@ const AdmissionForm = () => {
     }
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      setCsvFile(event.target.files[0]);
-    }
-  };
+  // const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (event.target.files) {
+  //     setCsvFile(event.target.files[0]);
+  //   }
+  // };
 
-  const handleBulkUpload = async () => {
-    if (!csvFile) {
-      showToast({
-        type: "error",
-        title: "Please select a CSV file to upload",
-        message: "Please select a CSV file to upload.",
-      });
-      return;
-    }
-    setIsUploading(true);
+  // const handleBulkUpload = async () => {
+  //   if (!csvFile) {
+  //     showToast({
+  //       type: "error",
+  //       title: "Please select a CSV file to upload",
+  //       message: "Please select a CSV file to upload.",
+  //     });
+  //     return;
+  //   }
+  //   setIsUploading(true);
 
-    try {
-      // Simulate API call - replace with actual implementation
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      showToast({
-        type: "success",
-        title: "Bulk upload completed successfully",
-        message: "You can now log in with your credentials.",
-      });
-      setCsvFile(null);
-      // Reset file input
-      const fileInput = document.querySelector(
-        'input[type="file"]'
-      ) as HTMLInputElement;
-      if (fileInput) fileInput.value = "";
-    } catch (error: any) {
-      showToast({
-        type: "error",
-        title: "Bulk upload failed",
-        message: error.message || "Bulk upload failed. Please try again.",
-      });
-    } finally {
-      setIsUploading(false);
-    }
-  };
+  //   try {
+  //     // Simulate API call - replace with actual implementation
+  //     await new Promise((resolve) => setTimeout(resolve, 2000));
+  //     showToast({
+  //       type: "success",
+  //       title: "Bulk upload completed successfully",
+  //       message: "You can now log in with your credentials.",
+  //     });
+  //     setCsvFile(null);
+  //     // Reset file input
+  //     const fileInput = document.querySelector(
+  //       'input[type="file"]'
+  //     ) as HTMLInputElement;
+  //     if (fileInput) fileInput.value = "";
+  //   } catch (error: any) {
+  //     showToast({
+  //       type: "error",
+  //       title: "Bulk upload failed",
+  //       message: error.message || "Bulk upload failed. Please try again.",
+  //     });
+  //   } finally {
+  //     setIsUploading(false);
+  //   }
+  // };
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -277,13 +277,13 @@ const AdmissionForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-blue-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-2 rounded-xl">
+              <div className="bg-gradient-to-r from-blue-600 to-blue-600 p-2 rounded-xl">
                 <UserPlus className="h-6 w-6 text-white" />
               </div>
               <div>
@@ -295,7 +295,7 @@ const AdmissionForm = () => {
             </div>
             <div className="flex items-center space-x-2 text-sm text-gray-500">
               <School className="h-4 w-4" />
-              <span>{selectedSchool?.name || "No school selected"}</span>
+              <span>{selectedSchool?.school.name || "No school selected"}</span>
             </div>
           </div>
         </div>
@@ -303,7 +303,7 @@ const AdmissionForm = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs defaultValue="single" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
+          {/* <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
             <TabsTrigger value="single" className="flex items-center gap-2">
               <User className="w-4 h-4" />
               Individual Registration
@@ -312,14 +312,14 @@ const AdmissionForm = () => {
               <Upload className="w-4 h-4" />
               Bulk Upload
             </TabsTrigger>
-          </TabsList>
+          </TabsList> */}
 
           <TabsContent value="single">
             <Form {...form}>
               <div onSubmit={handleFormSubmit} className="space-y-8">
                 {/* Student Information */}
                 <Card className="shadow-sm">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-50 border-b">
                     <CardTitle className="flex items-center gap-2 text-gray-900">
                       <User className="w-5 h-5 text-blue-600" />
                       Student Information
@@ -679,9 +679,9 @@ const AdmissionForm = () => {
 
                 {/* Parent Information */}
                 <Card className="shadow-sm">
-                  <CardHeader className="bg-gradient-to-r from-purple-50 to-violet-50 border-b">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-violet-50 border-b">
                     <CardTitle className="flex items-center gap-2 text-gray-900">
-                      <Users className="w-5 h-5 text-purple-600" />
+                      <Users className="w-5 h-5 text-blue-600" />
                       Parent Information
                     </CardTitle>
                   </CardHeader>
@@ -796,15 +796,13 @@ const AdmissionForm = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <FormField
                           control={form.control}
-                          name="guardian_emailOrUsername"
+                          name="guardian_username"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>
-                                Guardian's Email or Username
-                              </FormLabel>
+                              <FormLabel>Guardian's Username</FormLabel>
                               <FormControl>
                                 <Input
-                                  placeholder="Enter guardian's email or username"
+                                  placeholder="Enter guardian's username"
                                   {...field}
                                   className="h-11"
                                 />
@@ -941,7 +939,7 @@ const AdmissionForm = () => {
                     onClick={() => form.handleSubmit(onSubmit)()}
                     disabled={isLoading}
                     size="lg"
-                    className="min-w-[200px] h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                    className="min-w-[200px] h-12 bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700"
                   >
                     {isLoading ? "Registering..." : "Register Student"}
                   </Button>
@@ -950,7 +948,7 @@ const AdmissionForm = () => {
             </Form>
           </TabsContent>
 
-          <TabsContent value="bulk">
+          {/* <TabsContent value="bulk">
             <Card className="shadow-sm">
               <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50 border-b">
                 <CardTitle className="flex items-center gap-2 text-gray-900">
@@ -1007,7 +1005,7 @@ const AdmissionForm = () => {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </TabsContent> */}
         </Tabs>
       </div>
     </div>

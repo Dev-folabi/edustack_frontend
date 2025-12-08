@@ -122,7 +122,7 @@ export const AddEditPaperDialog = ({
 
   /* Fetch Data */
   useEffect(() => {
-    if (selectedSchool) fetchSubjects(selectedSchool.schoolId, sectionId);
+    if (selectedSchool?.schoolId) fetchSubjects(selectedSchool.schoolId, sectionId);
   }, [selectedSchool, fetchSubjects]);
 
   useEffect(() => {

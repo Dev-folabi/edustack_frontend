@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ToastProvider } from "@/components/ui/Toast";
 import "./globals.css";
-import AuthSync from '@/components/AuthSync';
+import AuthSync from "@/components/AuthSync";
 import { AuthProvider } from "@/components/AuthProvider";
+import ReactQueryProvider from "@/components/QueryProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,7 +18,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "EduStack - Educational Platform",
-  description: "A comprehensive educational platform for students and educators",
+  description:
+    "A comprehensive educational platform for students and educators",
 };
 
 export default function RootLayout({
@@ -27,11 +29,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
         <AuthSync />
         <ToastProvider>
           <AuthProvider>
-            {children}
+            <ReactQueryProvider>{children}</ReactQueryProvider>
           </AuthProvider>
         </ToastProvider>
       </body>

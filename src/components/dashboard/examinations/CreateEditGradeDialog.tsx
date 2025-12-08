@@ -21,7 +21,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
+import { useToast } from "@/components/ui/Toast";
 import { GradeCriterion } from "@/types/examSettings";
 import { useExamSettingsStore } from "@/store/examSettingsStore";
 import {
@@ -50,6 +50,7 @@ export const CreateEditGradeDialog = ({
   criterion,
 }: CreateEditGradeDialogProps) => {
   const { fetchGradeCriteria } = useExamSettingsStore();
+  const { showToast } = useToast();
 
   const form = useForm<GradeFormValues>({
     resolver: zodResolver(gradeSchema),
@@ -68,16 +69,29 @@ export const CreateEditGradeDialog = ({
         : await createGradeCriterion(values);
 
       if (response.success) {
-        toast.success(
-          `Grade criterion ${criterion ? "updated" : "created"} successfully!`
-        );
+        showToast({
+          type: "success",
+          title: "Success",
+          message: `Grade criterion ${
+            criterion ? "updated" : "created"
+          } successfully!`,
+        });
         fetchGradeCriteria();
         onClose();
       } else {
-        toast.error(response.message || "Failed to save grade criterion");
+        showToast({
+          type: "error",
+          title: "Error",
+          message: response.message || "Failed to save grade criterion",
+        });
       }
     } catch (error) {
-      toast.error("An error occurred while saving the grade criterion.");
+      console.error("Error:", error);
+      showToast({
+        type: "error",
+        title: "Error",
+        message: error instanceof Error ? error.message : "An error occurred while saving the grade criterion.",
+      });
     }
   };
 

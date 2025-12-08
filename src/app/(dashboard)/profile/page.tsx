@@ -1,10 +1,11 @@
-const PlaceholderPage = () => {
+import { ProfilePage } from "@/components/profile/profile";
+
+const Profile = () => {
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold">Page under construction</h1>
-      <p>This page is currently under construction. Please check back later.</p>
+      <ProfilePage />
     </div>
   );
 };
 
-export default PlaceholderPage;
+export default Profile;

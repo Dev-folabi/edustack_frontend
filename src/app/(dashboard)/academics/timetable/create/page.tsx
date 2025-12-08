@@ -72,7 +72,7 @@ const CreateTimetablePage = () => {
   });
 
   useEffect(() => {
-    if (selectedSchool) {
+    if (selectedSchool?.schoolId) {
       fetchSessions();
       fetchClasses(selectedSchool.schoolId);
       subjectService
@@ -96,9 +96,26 @@ const CreateTimetablePage = () => {
   }, [selectedSession]);
 
   const convertTimeToISO = (timeString: string): string => {
-    const [hours, minutes] = timeString.split(':');
-    const date = new Date();
-    date.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+    // If it's already an ISO string, return it as-is
+    if (timeString.includes("T") || timeString.includes("Z")) {
+      return timeString;
+    }
+
+    // Use a fixed base date to avoid timezone conversion issues
+    const baseDate = "1970-01-01";
+    // Ensure time string has seconds (HH:mm:ss format)
+    const timeWithSeconds =
+      timeString.includes(":") && timeString.split(":").length === 2
+        ? `${timeString}:00`
+        : timeString;
+
+    // Validate the date before converting
+    const date = new Date(`${baseDate}T${timeWithSeconds}`);
+    if (isNaN(date.getTime())) {
+      console.error("Invalid time string:", timeString);
+      return new Date(`${baseDate}T00:00:00`).toISOString(); // Return a default valid time
+    }
+
     return date.toISOString();
   };
 
@@ -108,7 +125,7 @@ const CreateTimetablePage = () => {
       id: `temp-${Date.now()}`, // Temporary ID for list key
       startTime: convertTimeToISO(data.startTime),
       endTime: convertTimeToISO(data.endTime),
-      timetableId: '', // Will be set when creating the actual timetable
+      timetableId: "",
     };
     setEntries([...entries, newEntry]);
   };
@@ -116,13 +133,13 @@ const CreateTimetablePage = () => {
   const handleEditEntry = (data: EntryFormData) => {
     setEntries(
       entries.map((entry) =>
-        entry.id === editingEntry?.id 
-          ? { 
-              ...entry, 
+        entry.id === editingEntry?.id
+          ? {
+              ...entry,
               ...data,
               startTime: convertTimeToISO(data.startTime),
               endTime: convertTimeToISO(data.endTime),
-            } 
+            }
           : entry
       )
     );
@@ -158,7 +175,17 @@ const CreateTimetablePage = () => {
       ...values,
       schoolId: selectedSchool.schoolId,
       sessionId: selectedSession.id,
-      entries: entries.map(({ id, ...entry }) => entry), // Remove temporary ID
+      entries: entries.map(({ id: _id, ...entry }) => {
+        // Remove temporary ID and filter out empty subjectId and teacherId
+        const cleanedEntry: Partial<TimetableEntry> = { ...entry };
+        if (!cleanedEntry.subjectId || cleanedEntry.subjectId === "") {
+          delete cleanedEntry.subjectId;
+        }
+        if (!cleanedEntry.teacherId || cleanedEntry.teacherId === "") {
+          delete cleanedEntry.teacherId;
+        }
+        return cleanedEntry;
+      }),
     };
 
     const result = await createTimetable(timetableData);
@@ -350,6 +377,7 @@ const CreateTimetablePage = () => {
         onClose={() => setIsModalOpen(false)}
         onSubmit={editingEntry ? handleEditEntry : handleAddEntry}
         initialData={editingEntry}
+        sectionId={form.watch("sectionId")}
       />
     </div>
   );

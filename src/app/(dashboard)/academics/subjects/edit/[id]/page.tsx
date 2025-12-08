@@ -72,7 +72,7 @@ const EditSubjectPage = () => {
   }, [id, form, router]);
 
   const onSubmit = async (data: SubjectFormValues) => {
-    if (!selectedSchool) {
+    if (!selectedSchool?.schoolId) {
       toast.error("No school selected");
       return;
     }

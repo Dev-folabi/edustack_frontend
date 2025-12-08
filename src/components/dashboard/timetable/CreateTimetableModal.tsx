@@ -77,7 +77,7 @@ const CreateTimetableModal = ({
   }, [selectedSchool, isOpen, fetchSessions]);
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!selectedSchool) return;
+    if (!selectedSchool?.schoolId) return;
 
     setIsSubmitting(true);
     try {
