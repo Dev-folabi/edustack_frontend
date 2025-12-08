@@ -129,7 +129,7 @@ export const publishResults = async (
   return response as ApiResponse<unknown>;
 };
 
-export const saveManualResults = async (payload: {
+export const saveManualResults = async (paperId: string, results: { studentId: string; marks: number; }[], payload: {
   examPaperId: string;
   termId: string;
   sessionId: string;

@@ -59,12 +59,12 @@ const formSchema = z
     sectionId: z.string().nonempty({ message: "Section is required." }),
     name: z.string().nonempty({ message: "Name is required." }),
     gender: z.enum(["male", "female"], {
-      required_error: "Gender is required.",
+      error: "Gender is required.",
     }),
-    dob: z.date({ required_error: "Date of birth is required." }),
+    dob: z.date({ error: "Date of birth is required." }),
     phone: z.string().nonempty({ message: "Phone number is required." }),
     address: z.string().nonempty({ message: "Address is required." }),
-    admission_date: z.date({ required_error: "Admission date is required." }),
+    admission_date: z.date({ error: "Admission date is required." }),
     religion: z.string().nonempty({ message: "Religion is required." }),
     blood_group: z
       .enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const)

@@ -38,16 +38,16 @@ import { addExamPaper, updateExamPaper } from "@/services/examService";
 import { useToast } from "@/components/ui/Toast";
 import { ExamPaper } from "@/types/exam";
 
-/* ------------------ Validation Schema ------------------ */
+
 const paperSchema = z
   .object({
     subjectId: z.string().min(1, "Subject is required"),
     maxMarks: z.coerce.number().min(1, "Max marks must be at least 1"),
-    paperDate: z.date({ required_error: "Paper date is required" }),
-    startTime: z.date({ required_error: "Start time is required" }),
-    endTime: z.date({ required_error: "End time is required" }),
+    paperDate: z.date({ error: "Paper date is required" }),
+    startTime: z.date({ error: "Start time is required" }),
+    endTime: z.date({ error: "End time is required" }),
     mode: z.enum(["PaperBased", "CBT"], {
-      required_error: "Exam mode is required",
+      error: "Exam mode is required",
     }),
     questionBankId: z.string().optional().nullable(),
     totalQuestions: z.coerce

@@ -59,7 +59,7 @@ export const ImportResultsDialog = ({
         .map((line) => {
           const [admissionNumber, marks] = line.split(",");
           const student = students.find(
-            (s) => s.admissionNumber === Number(admissionNumber)
+            (s) => String(s.admissionNumber) === admissionNumber
           );
           if (student) {
             return { studentId: student.id, marks: Number(marks) };
@@ -69,7 +69,7 @@ export const ImportResultsDialog = ({
         .filter((r) => r !== null) as { studentId: string; marks: number }[];
 
       try {
-        await saveManualResults(paperId, results);
+        await saveManualResults(paperId, results,);
         showToast({
           type: "success",
           title: "Success",

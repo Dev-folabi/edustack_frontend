@@ -26,15 +26,15 @@ import { useAuthStore } from "@/store/authStore";
 
 const termSchema = z.object({
   name: z.string().min(1, "Term name is required."),
-  start_date: z.date({ required_error: "Start date is required." }),
-  end_date: z.date({ required_error: "End date is required." }),
+  start_date: z.date({ error: "Start date is required." }),
+  end_date: z.date({ error: "End date is required." }),
 });
 
 const sessionFormSchema = z
   .object({
     name: z.string().min(4, "Session name must be at least 4 characters."),
-    start_date: z.date({ required_error: "Session start date is required." }),
-    end_date: z.date({ required_error: "Session end date is required." }),
+    start_date: z.date({ error: "Session start date is required." }),
+    end_date: z.date({ error: "Session end date is required." }),
     isActive: z.boolean().default(false),
     terms: z.array(termSchema).min(2, "You must add at least two terms."),
   })
