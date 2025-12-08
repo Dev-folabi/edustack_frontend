@@ -1,13 +1,25 @@
 "use client";
 
-import React, { useEffect } from 'react';
-import { useSessionStore } from '@/store/sessionStore';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useAuthStore } from '@/store/authStore';
+import React, { useEffect } from "react";
+import { useSessionStore } from "@/store/sessionStore";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAuthStore } from "@/store/authStore";
 
 const SessionSelector = () => {
-  const { sessions, selectedSession, fetchSessions, setSelectedSession, isLoading } = useSessionStore();
+  const {
+    sessions,
+    selectedSession,
+    fetchSessions,
+    setSelectedSession,
+    isLoading,
+  } = useSessionStore();
   const { selectedSchool } = useAuthStore();
   useEffect(() => {
     fetchSessions(selectedSchool?.schoolId ?? "");
@@ -18,14 +30,14 @@ const SessionSelector = () => {
   }
 
   if (!selectedSession) {
-      return null;
+    return null;
   }
 
   return (
     <Select
       value={selectedSession.id}
       onValueChange={(sessionId) => {
-        const session = sessions.find(s => s.id === sessionId);
+        const session = sessions.find((s) => s.id === sessionId);
         if (session) {
           setSelectedSession(session);
         }

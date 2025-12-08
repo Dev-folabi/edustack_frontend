@@ -51,7 +51,7 @@ const StudentAttendanceView = () => {
   const [loading, setLoading] = useState(false);
 
   const { student } = useAuthStore();
-  const sectionId = student?.student_enrolled?.[0]?.sectionId || "";
+  const sectionId = (student as any)?.student_enrolled?.[0]?.sectionId || "";
 
   useEffect(() => {
     if (sectionId) {

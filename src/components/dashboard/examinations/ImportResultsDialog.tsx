@@ -69,7 +69,13 @@ export const ImportResultsDialog = ({
         .filter((r) => r !== null) as { studentId: string; marks: number }[];
 
       try {
-        await saveManualResults(paperId, results,);
+        await saveManualResults({
+          examPaperId: paperId,
+          studentMarks: results.map((r) => ({
+            studentId: r.studentId,
+            marksObtained: r.marks,
+          })),
+        });
         showToast({
           type: "success",
           title: "Success",

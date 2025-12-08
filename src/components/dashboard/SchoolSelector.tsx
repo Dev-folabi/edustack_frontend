@@ -42,7 +42,10 @@ const SchoolSelector = () => {
       ) {
         router.push(DASHBOARD_ROUTES.PROFILE);
       }
-      if (role && [UserRole.STUDENT, UserRole.PARENT].includes(role as UserRole)) {
+      if (
+        role &&
+        [UserRole.STUDENT, UserRole.PARENT].includes(role as UserRole)
+      ) {
         router.push(DASHBOARD_ROUTES.STUDENT_PROFILE);
       }
     }

@@ -26,14 +26,34 @@ export const useSchoolStore = create<SchoolState>((set, get) => ({
     try {
       set({ isLoading: true });
       const response = await schoolService.getSchools();
-      if (response.success && response.data && response.data.data) {
+      if (
+        typeof response === "object" &&
+        response !== null &&
+        "success" in response &&
+        response.success === true &&
+        "data" in response &&
+        response.data &&
+        typeof response.data === "object" &&
+        response.data !== null &&
+        "data" in response.data &&
+        Array.isArray(response.data.data)
+      ) {
         const schools = response.data.data;
         set({
           schools,
           isLoading: false,
         });
       } else {
-        throw new Error(response.message || "Failed to fetch schools");
+        let message = "Failed to fetch schools";
+        if (
+          typeof response === "object" &&
+          response !== null &&
+          "message" in response &&
+          typeof (response as any).message === "string"
+        ) {
+          message = (response as any).message;
+        }
+        throw new Error(message);
       }
     } catch (error) {
       console.error("Error fetching schools:", error);

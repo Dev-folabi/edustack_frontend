@@ -43,7 +43,7 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({
   isSubmitting,
 }) => {
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       ...initialValues,
       expenseDate: initialValues?.expenseDate

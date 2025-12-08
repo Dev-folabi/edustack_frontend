@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { COLORS } from "@/constants/config";
+import Image from "next/image";
 
 export default function TestimonialsSection() {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
@@ -69,9 +70,11 @@ export default function TestimonialsSection() {
               </p>
 
               <div className="flex items-center justify-center space-x-4">
-                <img
+                <Image
                   src={testimonials[currentTestimonial].image}
                   alt={testimonials[currentTestimonial].name}
+                  width={64}
+                  height={64}
                   className="w-16 h-16 rounded-full object-cover"
                 />
                 <div className="text-left">

@@ -100,7 +100,7 @@ export const EditSessionForm: React.FC<EditSessionFormProps> = ({
   const { selectedSchool } = useAuthStore();
 
   const form = useForm<SessionFormValues>({
-    resolver: zodResolver(sessionFormSchema),
+    resolver: zodResolver(sessionFormSchema) as any,
     defaultValues: {
       ...initialData,
       start_date: new Date(initialData.start_date),
@@ -183,7 +183,6 @@ export const EditSessionForm: React.FC<EditSessionFormProps> = ({
         message: "Academic session updated successfully!",
         type: "success",
       });
-      router.push(DASHBOARD_ROUTES.SESSIONS_TERMS);
       router.refresh();
     } catch (error) {
       showToast({
@@ -328,7 +327,7 @@ export const EditSessionForm: React.FC<EditSessionFormProps> = ({
             variant="outline"
             size="sm"
             onClick={() =>
-              append({ name: "", start_date: undefined, end_date: undefined })
+              append({ name: "", start_date: new Date(), end_date: new Date() })
             }
             className="mt-4"
           >

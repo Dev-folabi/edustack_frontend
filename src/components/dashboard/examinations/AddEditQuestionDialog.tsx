@@ -43,7 +43,7 @@ const questionSchema = z
   .object({
     type: z.enum(["MCQ", "TrueFalse", "FillInBlanks"]),
     questionText: z.string().min(1, "Question text is required"),
-    marks: z.coerce.number().min(1, "Marks are required"),
+    marks: z.number().min(1, "Marks are required"),
     difficulty: z.enum(["Easy", "Medium", "Hard"]),
     options: z.array(z.object({ value: z.string().min(1) })).optional(),
     correctAnswer: z.string().optional(),
@@ -99,10 +99,7 @@ export function AddEditQuestionDialog({
             question.type === "MCQ"
               ? question.options?.map((opt) => ({ value: opt }))
               : undefined,
-          correctAnswer:
-            question.type === "TrueFalse"
-              ? question.correctAnswer
-              : String(question.correctAnswer || ""),
+          correctAnswer: String(question.correctAnswer || ""),
         }
       : {
           type: "MCQ",
@@ -382,7 +379,14 @@ export function AddEditQuestionDialog({
                     <FormItem>
                       <FormLabel>Marks</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} />
+                        <Input
+                          type="number"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
+                          value={field.value || ""}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

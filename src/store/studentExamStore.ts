@@ -19,6 +19,7 @@ interface StudentExamState {
 export const useStudentExamStore = create<StudentExamState>((set) => ({
   exams: [],
   currentAttempt: null,
+  currentResult: null,
   loading: false,
   error: null,
 
@@ -27,7 +28,26 @@ export const useStudentExamStore = create<StudentExamState>((set) => ({
     try {
       const response = await getStudentExams(studentId, sessionId);
       if (response.success) {
-        set({ exams: response.data, loading: false });
+        const examData = response.data;
+        let normalizedData: StudentExam[] = [];
+        if (Array.isArray(examData)) {
+          if (examData.length > 0 && "StudentExam" in examData[0]) {
+            normalizedData = examData.map((item: any) =>
+              item.StudentExam ? item.StudentExam : item
+            );
+          } else {
+            normalizedData = examData;
+          }
+        } else if (
+          examData &&
+          typeof examData === "object" &&
+          "StudentExam" in examData
+        ) {
+          normalizedData = [examData.StudentExam];
+        } else if (examData) {
+          normalizedData = [examData];
+        }
+        set({ exams: normalizedData, loading: false });
       } else {
         set({ loading: false, error: "Failed to fetch student exams" });
       }
@@ -51,4 +71,12 @@ export const useStudentExamStore = create<StudentExamState>((set) => ({
     }
   },
 
+  fetchStudentResult: async (paperId: string) => {
+    set({ loading: true, error: null });
+    try {
+      set({ loading: false });
+    } catch (error) {
+      set({ loading: false, error: String(error) });
+    }
+  },
 }));

@@ -38,38 +38,18 @@ import { addExamPaper, updateExamPaper } from "@/services/examService";
 import { useToast } from "@/components/ui/Toast";
 import { ExamPaper } from "@/types/exam";
 
-
 const paperSchema = z
   .object({
     subjectId: z.string().min(1, "Subject is required"),
-    maxMarks: z.coerce.number().min(1, "Max marks must be at least 1"),
-    paperDate: z.date({ error: "Paper date is required" }),
-    startTime: z.date({ error: "Start time is required" }),
-    endTime: z.date({ error: "End time is required" }),
-    mode: z.enum(["PaperBased", "CBT"], {
-      error: "Exam mode is required",
-    }),
+    maxMarks: z.number().min(1, "Max marks must be at least 1"),
+    paperDate: z.date(),
+    startTime: z.date(),
+    endTime: z.date(),
+    mode: z.enum(["PaperBased", "CBT"]),
     questionBankId: z.string().optional().nullable(),
-    totalQuestions: z.coerce
-      .number()
-      .positive("Total questions must be positive")
-      .optional()
-      .nullable(),
+    totalQuestions: z.number().optional().nullable(),
     instructions: z.string().optional().nullable(),
-  })
-  .refine((data) => data.endTime > data.startTime, {
-    message: "End time must be after start time",
-    path: ["endTime"],
-  })
-  .refine(
-    (data) =>
-      data.mode === "PaperBased" ||
-      (!!data.questionBankId && !!data.totalQuestions),
-    {
-      message: "Question bank and total questions are required for CBT mode",
-      path: ["questionBankId"],
-    }
-  );
+  });
 
 type PaperFormValues = z.infer<typeof paperSchema>;
 
@@ -256,6 +236,7 @@ export const AddEditPaperDialog = ({
                       placeholder="e.g., 100"
                       {...field}
                       onChange={(e) => field.onChange(Number(e.target.value))}
+                      value={field.value || ""}
                     />
                   </FormControl>
                   <FormMessage />

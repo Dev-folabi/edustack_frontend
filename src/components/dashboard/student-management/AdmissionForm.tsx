@@ -118,7 +118,7 @@ const AdmissionForm = () => {
   // const [isUploading, setIsUploading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       email: "",
       password: "",
@@ -295,7 +295,9 @@ const AdmissionForm = () => {
             </div>
             <div className="flex items-center space-x-2 text-sm text-gray-500">
               <School className="h-4 w-4" />
-              <span>{selectedSchool?.school.name || "No school selected"}</span>
+              <span>
+                {selectedSchool?.school?.name || "No school selected"}
+              </span>
             </div>
           </div>
         </div>
@@ -459,8 +461,10 @@ const AdmissionForm = () => {
                             <DatePicker
                               value={field.value}
                               onChange={field.onChange}
-                              placeholder="Select date of birth"
                             />
+                            <div className="text-muted-foreground text-sm">
+                              Select date of birth
+                            </div>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -609,8 +613,10 @@ const AdmissionForm = () => {
                             <DatePicker
                               value={field.value}
                               onChange={field.onChange}
-                              placeholder="Select admission date"
                             />
+                            <div className="text-muted-foreground text-sm">
+                              Select admission date
+                            </div>
                             <FormMessage />
                           </FormItem>
                         )}
