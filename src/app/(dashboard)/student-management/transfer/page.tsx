@@ -44,7 +44,7 @@ const TransferStudentPage = () => {
   useEffect(() => {
     if (selectedSchool?.schoolId) {
       classService.getClasses(selectedSchool.schoolId).then(res => setClasses(res.data?.data || []));
-      schoolService.getSchools().then(res => setSchools(res.data?.data || []));
+      schoolService.getSchools().then((res: any) => setSchools(res?.data?.data ?? []));
     }
   }, [selectedSchool?.schoolId]);
 

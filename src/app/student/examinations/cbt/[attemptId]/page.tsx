@@ -505,7 +505,6 @@ const CBTPage = () => {
               className="w-full"
               onClick={handleSubmit}
               disabled={isSubmitting}
-              size="lg"
             >
               {isSubmitting ? "Submitting..." : "Submit Exam"}
             </CustomButton>

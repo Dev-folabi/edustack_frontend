@@ -7,7 +7,7 @@ export interface Staff {
   address: string;
   role: "admin" | "teacher" | "finance" | "librarian";
   designation: string;
-  dob: string;
+  dob?: string;
   salary: number;
   joining_date: string;
   gender: "male" | "female";

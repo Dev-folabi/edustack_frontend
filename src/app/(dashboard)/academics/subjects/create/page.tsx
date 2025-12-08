@@ -14,12 +14,12 @@ import { subjectService } from '@/services/subjectService';
 import { classService } from '@/services/classService';
 import { toast } from 'react-hot-toast';
 import { useAuthStore } from '@/store/authStore';
-import { Loader } from '@/components/ui/Loader';
+import { Loader, ButtonLoader } from '@/components/ui/Loader';
 
 const subjectFormSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   code: z.string().min(1, 'Code is required'),
-  isActive: z.boolean().default(true),
+  isActive: z.boolean(),
   sectionIds: z.array(z.string()).min(1, 'At least one section is required'),
 });
 
@@ -49,7 +49,8 @@ const CreateSubjectPage = () => {
       setLoading(true);
       const response = await classService.getClasses(selectedSchool.schoolId);
       if (response.success) {
-        const allSections = response.data.data.flatMap((c: any) =>
+        const classes = response.data?.data || [];
+        const allSections = classes.flatMap((c: any) =>
           c.sections.map((s: any) => ({ value: s.id, label: `${c.name} - ${s.name}` }))
         );
         setSections(allSections);
@@ -103,7 +104,7 @@ const CreateSubjectPage = () => {
     <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8">
         <div className="mb-8">
             <h1 className="text-gray-900 text-3xl font-bold tracking-tight">Create Subject</h1>
-            <p className="text-gray-500 mt-2 text-base">Add a new subject for {selectedSchool?.name || 'the selected school'}.</p>
+            <p className="text-gray-500 mt-2 text-base">Add a new subject for {selectedSchool?.school?.name || 'the selected school'}.</p>
         </div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -183,7 +184,7 @@ const CreateSubjectPage = () => {
                 >
                     {isSubmitting ? (
                       <>
-                        <Loader className="mr-2 h-4 w-4 animate-spin" />
+                        <ButtonLoader />
                         Creating...
                       </>
                     ) : (

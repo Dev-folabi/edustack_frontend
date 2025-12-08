@@ -4,13 +4,14 @@ import React, { useEffect } from 'react';
 import { useSessionStore } from '@/store/sessionStore';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuthStore } from '@/store/authStore';
 
 const SessionSelector = () => {
   const { sessions, selectedSession, fetchSessions, setSelectedSession, isLoading } = useSessionStore();
-
+  const { selectedSchool } = useAuthStore();
   useEffect(() => {
-    fetchSessions();
-  }, [fetchSessions]);
+    fetchSessions(selectedSchool?.schoolId ?? "");
+  }, [fetchSessions, selectedSchool?.schoolId]);
 
   if (isLoading) {
     return <Skeleton className="h-10 w-[180px]" />;

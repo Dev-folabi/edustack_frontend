@@ -49,6 +49,7 @@ import {
   Edit3,
   Save,
   X,
+  LucideIcon,
 } from "lucide-react";
 
 const formSchema = z.object({
@@ -115,7 +116,7 @@ const StudentProfilePage = () => {
         .getStudentById(studentId)
         .then((res) => {
           const studentData = res.data;
-          setStudent(studentData || null);
+          setStudent((studentData as Student) || null);
           setIsUpdated(false);
           setIsEditing(false);
 
@@ -280,7 +281,7 @@ const StudentProfilePage = () => {
         ? values.admission_date.toISOString().split("T")[0]
         : undefined,
     };
-
+    if (!student.id) return;
     try {
       await studentService.updateStudent(student.id, payload);
       setIsUpdated(true);
@@ -436,8 +437,8 @@ const StudentProfilePage = () => {
                       </div>
                       <div className="flex items-center gap-1">
                         <GraduationCap className="w-4 h-4" />
-                        {student.enrollment.class} -{" "}
-                        {student.enrollment.section}
+                        {student.enrollment?.class?.name} -{" "}
+                        {student.enrollment?.section.name}
                       </div>
                       <div
                         className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -610,7 +611,9 @@ const StudentProfilePage = () => {
                     <InfoItem
                       icon={Calendar}
                       label="Created At"
-                      value={new Date(student.createdAt).toLocaleDateString()}
+                      value={new Date(
+                        student.enrollment?.createdAt || ""
+                      ).toLocaleDateString()}
                     />
                   </div>
                 </CardContent>
@@ -799,19 +802,19 @@ const StudentProfilePage = () => {
                         <InfoItem
                           icon={GraduationCap}
                           label="Class"
-                          value={student.enrollment.class}
+                          value={student.enrollment?.class?.name || "N/A"}
                         />
                         <InfoItem
                           icon={GraduationCap}
                           label="Section"
-                          value={student.enrollment.section}
+                          value={student.enrollment?.section?.name || "N/A"}
                         />
                       </>
                     )}
                     <InfoItem
                       icon={GraduationCap}
                       label="Session"
-                      value={student.enrollment.session}
+                      value={student.enrollment?.session?.name || "N/A"}
                     />
                   </div>
                 </CardContent>
@@ -911,12 +914,12 @@ const StudentProfilePage = () => {
                     <InfoItem
                       icon={User}
                       label="Parent Contact Name"
-                      value={student.parentDetails?.name || "N/A"}
+                      value={student.parentDetails?.name ?? "N/A"}
                     />
                     <InfoItem
                       icon={Phone}
                       label="Parent Phone"
-                      value={student.parentDetails?.phone || "N/A"}
+                      value={student.parentDetails?.phone?.join(", ") || "N/A"}
                     />
                     <InfoItem
                       icon={Mail}
@@ -1002,7 +1005,15 @@ const StudentProfilePage = () => {
 };
 
 // Helper component for consistent info display
-const InfoItem = ({ icon: Icon, label, value }) => (
+const InfoItem = ({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+}) => (
   <div className="flex items-start gap-3">
     <Icon className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
     <div className="min-w-0 flex-1">
@@ -1015,7 +1026,15 @@ const InfoItem = ({ icon: Icon, label, value }) => (
 );
 
 // Helper component for editable fields
-const EditableField = ({ icon: Icon, label, children }) => (
+const EditableField = ({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: LucideIcon;
+  label: string;
+  children: React.ReactNode;
+}) => (
   <FormItem className="flex flex-col">
     <FormLabel className="flex items-center gap-2 text-xs font-medium text-gray-500 uppercase tracking-wider">
       <Icon className="w-4 h-4 text-gray-400" />

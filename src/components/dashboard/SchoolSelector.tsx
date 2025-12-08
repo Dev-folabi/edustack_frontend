@@ -38,11 +38,11 @@ const SchoolSelector = () => {
           UserRole.TEACHER,
           UserRole.FINANCE,
           UserRole.SUPER_ADMIN,
-        ].includes(role)
+        ].includes(role as UserRole)
       ) {
         router.push(DASHBOARD_ROUTES.PROFILE);
       }
-      if (role && [UserRole.STUDENT, UserRole.PARENT].includes(role)) {
+      if (role && [UserRole.STUDENT, UserRole.PARENT].includes(role as UserRole)) {
         router.push(DASHBOARD_ROUTES.STUDENT_PROFILE);
       }
     }
@@ -58,8 +58,8 @@ const SchoolSelector = () => {
       </SelectTrigger>
       <SelectContent>
         {userSchools.map((school) => (
-          <SelectItem key={school.schoolId} value={school.schoolId}>
-            {school.school.name}
+          <SelectItem key={school.schoolId || ""} value={school.schoolId || ""}>
+            {school.school?.name || ""}
           </SelectItem>
         ))}
       </SelectContent>

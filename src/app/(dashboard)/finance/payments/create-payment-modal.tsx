@@ -274,8 +274,8 @@ const CreatePaymentModal: React.FC<CreatePaymentModalProps> = ({
                           Loading classes...
                         </div>
                       </SelectItem>
-                    ) : classes?.data?.data?.length > 0 ? (
-                      classes.data.data.map((c: any) => (
+                    ) : (classes?.data?.data || []).length > 0 ? (
+                      (classes?.data?.data || []).map((c: any) => (
                         <SelectItem key={c.id} value={c.id}>
                           {c.name}
                         </SelectItem>
@@ -365,8 +365,8 @@ const CreatePaymentModal: React.FC<CreatePaymentModalProps> = ({
                         Loading students...
                       </div>
                     </SelectItem>
-                  ) : students?.data?.data?.length > 0 ? (
-                    students.data.data.map((student: any) => (
+                  ) : (students?.data?.data || []).length > 0 ? (
+                    (students?.data?.data || []).map((student: any) => (
                       <SelectItem
                         key={student.studentId || student.id}
                         value={student.studentId || student.id}
@@ -436,8 +436,8 @@ const CreatePaymentModal: React.FC<CreatePaymentModalProps> = ({
                             Loading invoices...
                           </div>
                         </SelectItem>
-                      ) : invoices?.data?.data?.length > 0 ? (
-                        invoices.data.data.map((invoice: any) => (
+                      ) : (invoices?.data?.data || []).length > 0 ? (
+                        (invoices?.data?.data || []).map((invoice: any) => (
                           <SelectItem key={invoice.id} value={invoice.id}>
                             <div className="flex items-center justify-between w-full gap-4">
                               <div className="flex flex-col">

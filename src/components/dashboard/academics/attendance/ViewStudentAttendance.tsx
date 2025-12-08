@@ -75,7 +75,7 @@ const ViewStudentAttendance = () => {
     if (selectedSection && selectedSchool) {
       setLoadingStudents(true);
       studentService
-        .getStudentsBySchool(selectedSchool.schoolId, {
+        .getStudentsBySchool(selectedSchool?.schoolId ?? "", {
           sectionId: selectedSection,
         })
         .then((res) => {
@@ -88,7 +88,7 @@ const ViewStudentAttendance = () => {
     if (selectedSection) {
       subjectService.getSubjects({ sectionId: selectedSection }).then((res) => {
         if (res.success) {
-          setSubjects(res.data.data);
+          setSubjects(res?.data?.data ?? []);
         }
       });
     }
@@ -303,7 +303,7 @@ const ViewStudentAttendance = () => {
                     <SelectItem value="all">All Students</SelectItem>
                     {students.length > 0 ? (
                       students.map((s) => (
-                        <SelectItem key={s.studentId} value={s.studentId}>
+                        <SelectItem key={s.studentId ?? ""} value={s.studentId ?? ""}>
                           {s.name}
                         </SelectItem>
                       ))

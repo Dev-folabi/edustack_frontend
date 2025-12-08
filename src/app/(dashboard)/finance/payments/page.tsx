@@ -544,74 +544,77 @@ const PaymentsPage = () => {
                 </div>
 
                 {/* Pagination */}
-                {data?.data?.totalPages > 1 && (
-                  <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 pt-6 border-t">
-                    <p className="text-sm text-gray-600">
-                      Page {page} of {data.data.totalPages} (
-                      {data.data.totalItems} total payments)
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        disabled={page === 1}
-                      >
-                        <ChevronLeft className="w-4 h-4 mr-1" />
-                        Previous
-                      </Button>
-                      <div className="flex items-center gap-1">
-                        {Array.from(
-                          { length: Math.min(5, data.data.totalPages) },
-                          (_, i) => {
-                            const pageNum = i + 1;
-                            return (
+                {data?.data?.totalPages !== undefined &&
+                  data?.data?.totalPages > 1 && (
+                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 pt-6 border-t">
+                      <p className="text-sm text-gray-600">
+                        Page {page} of {data.data.totalPages} (
+                        {data.data.totalItems} total payments)
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setPage((p) => Math.max(1, p - 1))}
+                          disabled={page === 1}
+                        >
+                          <ChevronLeft className="w-4 h-4 mr-1" />
+                          Previous
+                        </Button>
+                        <div className="flex items-center gap-1">
+                          {Array.from(
+                            { length: Math.min(5, data.data.totalPages) },
+                            (_, i) => {
+                              const pageNum = i + 1;
+                              return (
+                                <Button
+                                  key={pageNum}
+                                  variant={
+                                    page === pageNum ? "default" : "outline"
+                                  }
+                                  size="sm"
+                                  onClick={() => setPage(pageNum)}
+                                  className="w-10"
+                                >
+                                  {pageNum}
+                                </Button>
+                              );
+                            }
+                          )}
+                          {data.data.totalPages > 5 && (
+                            <>
+                              <span className="px-2 text-gray-500">...</span>
                               <Button
-                                key={pageNum}
                                 variant={
-                                  page === pageNum ? "default" : "outline"
+                                  page === data.data.totalPages
+                                    ? "default"
+                                    : "outline"
                                 }
                                 size="sm"
-                                onClick={() => setPage(pageNum)}
+                                onClick={() => setPage(data.data?.totalPages ?? 0)}
                                 className="w-10"
                               >
-                                {pageNum}
+                                {data.data.totalPages}
                               </Button>
-                            );
+                            </>
+                          )}
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            setPage((p) =>
+                              Math.min(data.data?.totalPages ?? 0, p + 1)
+                            )
                           }
-                        )}
-                        {data.data.totalPages > 5 && (
-                          <>
-                            <span className="px-2 text-gray-500">...</span>
-                            <Button
-                              variant={
-                                page === data.data.totalPages
-                                  ? "default"
-                                  : "outline"
-                              }
-                              size="sm"
-                              onClick={() => setPage(data.data.totalPages)}
-                              className="w-10"
-                            >
-                              {data.data.totalPages}
-                            </Button>
-                          </>
-                        )}
+                          disabled={page === data.data?.totalPages}
+                        >
+                          Next
+                          <ChevronRight className="w-4 h-4 ml-1" />
+                        </Button>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          setPage((p) => Math.min(data.data.totalPages, p + 1))
-                        }
-                        disabled={page === data.data.totalPages}
-                      >
-                        Next
-                        <ChevronRight className="w-4 h-4 ml-1" />
-                      </Button>
                     </div>
-                  </div>
-                )}
+                  )}
               </>
             ) : (
               <div className="text-center py-12">

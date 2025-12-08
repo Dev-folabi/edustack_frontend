@@ -42,8 +42,8 @@ export interface Entry {
   subject?: { id: string; name: string };
   teacher?: { id: string; name: string };
 
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // Interface for a timetable

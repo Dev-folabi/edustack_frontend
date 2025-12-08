@@ -54,6 +54,7 @@ import {
 import { useToast } from "@/components/ui/Toast";
 import { format } from "date-fns";
 import { ExamPaper } from "@/types/exam";
+import { Student } from "@/types/student";
 
 const StudentResultsPage = () => {
   const { student } = useAuthStore();
@@ -74,16 +75,16 @@ const StudentResultsPage = () => {
 
   useEffect(() => {
     const fetchInitialData = async () => {
-      if (selectedSession?.id && student?.id) {
+      if (selectedSession?.id && (student as Student)?.id) {
         setLoadingPapers(true);
         try {
           const paperRes = await getStudentExams(
-            student?.id,
+            (student as Student)?.id ?? "",
             selectedSession.id
           );
           // Flatten the papers array from all exams
           const allPapers =
-            paperRes.data?.flatMap((exam: any) =>
+            (paperRes.data as any)?.flatMap((exam: any) =>
               exam.papers.map((paper: any) => ({
                 ...paper,
                 exam: {
@@ -160,7 +161,7 @@ const StudentResultsPage = () => {
     try {
       // Check if there are attempts for this paper
       const studentAttempt = paper.attempts?.find(
-        (attempt: any) => attempt.studentId === student?.id
+        (attempt: any) => attempt.studentId === (student as Student)?.id
       );
 
       if (studentAttempt) {
@@ -194,7 +195,7 @@ const StudentResultsPage = () => {
       setLoading(true);
       try {
         const data = await getStudentTermReport(
-          student?.id || "",
+          (student as Student)?.id ?? "",
           selectedTerm,
           selectedSession.id
         );
@@ -468,7 +469,6 @@ const StudentResultsPage = () => {
                     onClick={handleGenerateReport}
                     disabled={!selectedTerm || loading}
                     className="w-full"
-                    size="lg"
                   >
                     {loading ? (
                       <>
@@ -594,7 +594,7 @@ const StudentResultsPage = () => {
           setReportData(null);
         }}
         reportData={reportData}
-        studentName={student?.name || ""}
+        studentName={(student as Student)?.name || ""}
       />
     </div>
   );

@@ -41,7 +41,6 @@ const ViewPaymentModal: React.FC<ViewPaymentModalProps> = ({
   onClose,
   paymentId,
 }) => {
-  const { selectedSchool } = useAuthStore();
 
   const { data, isLoading } = useQuery({
     queryKey: ["payment", paymentId],
@@ -312,7 +311,7 @@ const ViewPaymentModal: React.FC<ViewPaymentModalProps> = ({
                       <Calendar className="w-4 h-4" />
                       <span>
                         Due Date:{" "}
-                        {formatDate(payment.studentInvoice?.invoice?.dueDate)}
+                        {formatDate(payment.studentInvoice?.invoice?.dueDate || "")}
                       </span>
                     </div>
                   </div>
@@ -372,20 +371,6 @@ const ViewPaymentModal: React.FC<ViewPaymentModalProps> = ({
                         </div>
                       </div>
                     </div>
-
-                    {payment.gatewayResponse && (
-                      <>
-                        <Separator />
-                        <div>
-                          <p className="text-sm text-gray-600 mb-2">
-                            Gateway Response
-                          </p>
-                          <pre className="text-xs bg-gray-50 p-3 rounded-lg overflow-x-auto">
-                            {JSON.stringify(payment.gatewayResponse, null, 2)}
-                          </pre>
-                        </div>
-                      </>
-                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -467,12 +452,6 @@ const ViewPaymentModal: React.FC<ViewPaymentModalProps> = ({
                         {formatDateTime(payment.updatedAt)}
                       </p>
                     </div>
-                    {payment.updatedBy && (
-                      <div>
-                        <p className="text-gray-600 mb-1">Updated By</p>
-                        <p className="font-medium">{payment.updatedBy}</p>
-                      </div>
-                    )}
                   </div>
                 </CardContent>
               </Card>

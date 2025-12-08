@@ -21,11 +21,29 @@ export interface Expense {
 }
 
 export interface FinancialOverview {
-  totalRevenue: number;
-  totalExpenses: number;
-  netProfit: number;
-  revenueByFeeCategory: RevenueByFeeCategory[];
-  expensesByCategory: ExpensesByCategory[];
+  // Legacy top-level fields (keep optional for safety)
+  totalRevenue?: number;
+  totalExpenses?: number;
+  netProfit?: number;
+  revenueByFeeCategory?: RevenueByFeeCategory[];
+  expensesByCategory?: ExpensesByCategory[];
+
+  // Current API shape fields
+  summary?: {
+    totalRevenue: number;
+    totalExpenses: number;
+    netProfit: number;
+    totalPayments?: number;
+    expenseCount?: number;
+    netIncome?: number;
+    totalInvoices?: number;
+    totalInvoiceAmount?: number;
+    totalAmountPaid?: number;
+    totalAmountDue?: number;
+  };
+  invoiceStatusBreakdown?: any[];
+  expenseCategoryBreakdown?: any[];
+  recentTransactions?: any[];
 }
 
 export interface RevenueByFeeCategory {
@@ -155,6 +173,8 @@ export interface StudentInvoice {
     id: string;
     name: string;
     admission_number: number;
+    email: string;
+    phone: string;
   };
   payments?: Payment[];
 }
