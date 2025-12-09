@@ -51,7 +51,7 @@ export const ExamTable = () => {
 
   useEffect(() => {
     if (selectedSchool?.schoolId) {
-      fetchExams(selectedSchool.schoolId, selectedSession?.id);
+      fetchExams(selectedSchool.schoolId, selectedSession?.id || "");
     }
   }, [selectedSchool?.schoolId, selectedSession?.id, fetchExams]);
 
@@ -78,7 +78,7 @@ export const ExamTable = () => {
           message: "Exam deleted successfully!",
           type: "success",
         });
-        fetchExams(selectedSchool.schoolId, selectedSession?.id || "");
+        fetchExams(selectedSchool.schoolId || "", selectedSession?.id || "");
       } catch (error) {
         showToast({
           title: "Error",
@@ -151,9 +151,9 @@ export const ExamTable = () => {
                 <TableRow key={exam.id}>
                   <TableCell className="font-medium">{exam.title}</TableCell>
                   <TableCell>
-                    {exam.class.name} - {exam.section.name}
+                    {exam?.class?.name} - {exam?.section?.name}
                   </TableCell>
-                  <TableCell>{exam.term.name}</TableCell>
+                  <TableCell>{exam?.term?.name}</TableCell>
                   <TableCell>
                     {new Date(exam.startDate).toLocaleDateString()}
                   </TableCell>

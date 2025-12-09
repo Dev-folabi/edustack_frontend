@@ -70,7 +70,7 @@ const EntryFormModal = ({
   const isEditing = !!initialData;
 
   const form = useForm<EntryFormData>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       day: [],
       startTime: "",
@@ -143,8 +143,11 @@ const EntryFormModal = ({
           if (subjectsRes.success && subjectsRes.data) {
             setSubjects(subjectsRes.data.data);
           }
-          if (teachersRes.success && teachersRes.data) {
-            // Extract staff data from the nested structure
+          if (
+            teachersRes.success &&
+            teachersRes.data &&
+            Array.isArray(teachersRes.data.data)
+          ) {
             const teacherStaff = teachersRes.data.data.map(
               (item: { user: { staff: Staff } }) => item.user.staff
             );

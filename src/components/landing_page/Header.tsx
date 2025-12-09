@@ -32,13 +32,13 @@ export default function Header() {
       [
         UserRole.ADMIN,
         UserRole.TEACHER,
-        UserRole.FINANCE,
-        UserRole.SUPER_ADMIN,
-      ].includes(role)
+        UserRole.FINANCE as UserRole,
+        UserRole.SUPER_ADMIN as UserRole,
+      ].includes(role as UserRole)
     ) {
       return DASHBOARD_ROUTES.PROFILE;
     }
-    if (role && [UserRole.STUDENT, UserRole.PARENT].includes(role)) {
+    if (role && [UserRole.STUDENT as UserRole, UserRole.PARENT as UserRole].includes(role as UserRole)) {
       return DASHBOARD_ROUTES.STUDENT_PROFILE;
     }
     return DASHBOARD_ROUTES.NOT_AUTHORIZED;

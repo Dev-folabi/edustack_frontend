@@ -47,7 +47,7 @@ const CreateSchoolPage = () => {
   const router = useRouter();
   const { showToast } = useToast();
   const form = useForm<SchoolFormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       name: "",
       address: "",

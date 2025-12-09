@@ -63,7 +63,10 @@ export const CreateEditPsychomotorSkillDialog = ({
     try {
       const response = skill
         ? await updatePsychomotorSkill(skill.id, values)
-        : await createPsychomotorSkill(values);
+        : await createPsychomotorSkill({
+            ...values,
+            description: values.description || "",
+          });
 
       if (response.success) {
         showToast({

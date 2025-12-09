@@ -203,7 +203,7 @@ export const InvoicesTable = () => {
                                 {invoice.session?.name || "N/A"}
                               </p>
                               <p className="text-gray-500">
-                                {invoice.term?.name || "N/A"}
+                                {invoice.term?.name ?? "N/A"}
                               </p>
                             </div>
                           </TableCell>
@@ -211,7 +211,7 @@ export const InvoicesTable = () => {
                             <div className="flex items-center gap-2 whitespace-nowrap">
                               <Calendar className="w-4 h-4 text-gray-400" />
                               <span className="text-sm">
-                                {new Date(invoice.dueDate).toLocaleDateString(
+                                {new Date(invoice.dueDate ?? "").toLocaleDateString(
                                   "en-NG",
                                   {
                                     day: "numeric",
@@ -226,21 +226,21 @@ export const InvoicesTable = () => {
                               style: "currency",
                               currency: "NGN",
                               minimumFractionDigits: 0,
-                            }).format(invoice.totalAmount)}
+                            }).format(invoice.totalAmount ?? 0)}
                           </TableCell>
                           <TableCell className="text-right font-semibold text-green-600 whitespace-nowrap">
                             {new Intl.NumberFormat("en-NG", {
                               style: "currency",
                               currency: "NGN",
                               minimumFractionDigits: 0,
-                            }).format(invoice.amountPaid)}
+                            }).format(invoice.amountPaid ?? 0)}
                           </TableCell>
                           <TableCell className="text-right font-semibold text-red-600 whitespace-nowrap">
                             {new Intl.NumberFormat("en-NG", {
                               style: "currency",
                               currency: "NGN",
                               minimumFractionDigits: 0,
-                            }).format(invoice.amountDue)}
+                            }).format(invoice.amountDue ?? 0)}
                           </TableCell>
                           <TableCell className="text-center">
                             <div className="flex items-center justify-center gap-2">
@@ -317,11 +317,11 @@ export const InvoicesTable = () => {
                           {/* Session/Term */}
                           <div className="flex items-center gap-2 text-sm">
                             <span className="font-medium">
-                              {invoice.session?.name || "N/A"}
+                              {invoice.session?.name ?? "N/A"}
                             </span>
                             <span className="text-gray-400">•</span>
                             <span className="text-gray-600">
-                              {invoice.term?.name || "N/A"}
+                              {invoice.term?.name ?? "N/A"}
                             </span>
                           </div>
 
@@ -330,7 +330,7 @@ export const InvoicesTable = () => {
                             <Calendar className="w-4 h-4" />
                             <span>
                               Due:{" "}
-                              {new Date(invoice.dueDate).toLocaleDateString(
+                              {new Date(invoice.dueDate ?? "").toLocaleDateString(
                                 "en-NG",
                                 {
                                   day: "numeric",
@@ -349,7 +349,7 @@ export const InvoicesTable = () => {
                                   style: "currency",
                                   currency: "NGN",
                                   minimumFractionDigits: 0,
-                                }).format(invoice.totalAmount)}
+                                }).format(invoice.totalAmount ?? 0)}
                               </p>
                             </div>
                             <div>
@@ -359,7 +359,7 @@ export const InvoicesTable = () => {
                                   style: "currency",
                                   currency: "NGN",
                                   minimumFractionDigits: 0,
-                                }).format(invoice.amountPaid)}
+                                }).format(invoice.amountPaid ?? 0)}
                               </p>
                             </div>
                             <div>
@@ -369,7 +369,7 @@ export const InvoicesTable = () => {
                                   style: "currency",
                                   currency: "NGN",
                                   minimumFractionDigits: 0,
-                                }).format(invoice.amountDue)}
+                                }).format(invoice.amountDue ?? 0)}
                               </p>
                             </div>
                           </div>

@@ -119,12 +119,12 @@ export const StudentTable = ({ classes = [] }: StudentTableProps) => {
       setSelectedClassId(newValue);
       setFilters((prev) => ({
         ...prev,
-        [key]: newValue,
-        sectionId: null,
+        [key]: newValue ?? undefined,
+        sectionId: undefined,
         page: 1,
       }));
     } else {
-      setFilters((prev) => ({ ...prev, [key]: newValue, page: 1 }));
+      setFilters((prev) => ({ ...prev, [key]: newValue ?? undefined, page: 1 }));
     }
   };
 
@@ -135,6 +135,14 @@ export const StudentTable = ({ classes = [] }: StudentTableProps) => {
   };
 
   const handleStudentStatus = async (student: Student, isActive: boolean) => {
+    if (!student.studentId) {
+      showToast({
+        type: "error",
+        title: "Error",
+        message: "Invalid student id. Could not update status.",
+      });
+      return;
+    }
     try {
       await studentService.updateStudent(student.studentId, { isActive });
       showToast({
@@ -289,9 +297,9 @@ export const StudentTable = ({ classes = [] }: StudentTableProps) => {
           <div className="px-6 py-4 bg-gray-50 border-b border-gray-100">
             <div className="flex items-center justify-between text-sm text-gray-600 pl-2 pr-2">
               <span>
-                Showing {(students.currentPage - 1) * filters?.limit + 1} to{" "}
+                Showing {(students.currentPage - 1) * (filters?.limit ?? 0) + 1} to{" "}
                 {Math.min(
-                  students.currentPage * filters.limit,
+                  students.currentPage * (filters?.limit ?? 0),
                   students.totalItems
                 )}{" "}
                 of {students.totalItems} students

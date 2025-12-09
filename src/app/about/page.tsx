@@ -16,8 +16,6 @@ import {
 } from "react-icons/fa";
 
 export default function AboutPage() {
-  const { isLoggedIn } = useAuthStore();
-
   const stats = [
     { number: "25+", label: "Years of Excellence", icon: FaTrophy },
     { number: "2000+", label: "Students Graduated", icon: FaGraduationCap },
@@ -92,7 +90,7 @@ export default function AboutPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header isLoggedIn={isLoggedIn} />
+      <Header />
 
       <main className="pt-16">
         {/* Hero Section */}

@@ -53,6 +53,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import router from "next/router";
+import { UserData } from "@/services/authService";
 
 const roles = ["admin", "teacher", "finance", "librarian"];
 const genders = ["male", "female"];
@@ -87,7 +88,7 @@ const StaffProfilePage = () => {
   const [isUpdated, setIsUpdated] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
   });
 
   useEffect(() => {
@@ -101,19 +102,21 @@ const StaffProfilePage = () => {
         );
         const s = res.data;
 
-        const primaryRole = s?.user?.userSchools?.[0]?.role || "";
+        const primaryRole = s?.staff?.role || "";
         const formData = {
           ...s,
-          email: s?.user?.email || "",
-          username: s?.user?.username || "",
+          email: s?.staff.email || "",
+          username: s?.staff.username || "",
           role: primaryRole as any,
-          dob: s?.dob ? new Date(s?.dob) : undefined,
-          joining_date: s?.joining_date ? new Date(s?.joining_date) : undefined,
+          dob: s?.staff?.dob ? new Date(s?.staff?.dob) : undefined,
+          joining_date: s?.staff?.joining_date
+            ? new Date(s?.staff?.joining_date)
+            : undefined,
         };
 
         form.reset(formData);
         setOriginalValues(formData);
-        setStaff(s);
+        setStaff(s as unknown as Staff);
         setIsUpdated(false);
         setIsEditing(false);
       } catch (error: any) {
@@ -190,7 +193,7 @@ const StaffProfilePage = () => {
     try {
       const response = await staffService.updateStaff(staff.id, payload);
       if (response.success) {
-        setStaff(response.data);
+        setStaff(response.data as unknown as Staff);
         setIsUpdated(true);
 
         showToast({
@@ -247,9 +250,7 @@ const StaffProfilePage = () => {
         <div className="flex justify-between items-center mb-2">
           <Button
             variant="outline"
-            onClick={() =>
-              (window.location.href = `/staff-management/list`)
-            }
+            onClick={() => (window.location.href = `/staff-management/list`)}
             className="flex items-center gap-2 bg-white shadow-sm hover:shadow-md transition-shadow"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -303,8 +304,7 @@ const StaffProfilePage = () => {
               </h2>
               <p className="text-gray-600 mb-2">Staff ID: {staff.id}</p>
               <p className="text-sm text-gray-500 mb-4">
-                Department:{" "}
-                {staff.designation || staff.user?.userSchools?.[0]?.role}
+                Department: {staff.designation || staff.role}
               </p>
               {isEditing && (
                 <div className="flex gap-2 justify-center">
@@ -350,7 +350,7 @@ const StaffProfilePage = () => {
                 <div className="flex justify-between">
                   <span className="text-gray-600">Role:</span>
                   <span className="font-medium capitalize">
-                    {staff.user?.userSchools?.[0]?.role}
+                    {staff.role}
                   </span>
                 </div>
               </div>

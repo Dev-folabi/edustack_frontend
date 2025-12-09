@@ -86,20 +86,20 @@ export const CreateExamDialog = ({
   useEffect(() => {
     if (selectedSchool?.schoolId) {
       fetchClasses(selectedSchool.schoolId);
-      fetchSessions();
+      fetchSessions(selectedSchool.schoolId);
     }
   }, [selectedSchool, fetchClasses, fetchSessions]);
 
   // Always keep sessionId in sync with selectedSession
   useEffect(() => {
-    if (selectedSession?.id) {
+    if (selectedSchool?.schoolId && selectedSession?.id) {
       form.setValue("sessionId", selectedSession.id);
-      fetchTerms(selectedSession.id);
+      fetchTerms(selectedSchool.schoolId, selectedSession.id);
     }
-  }, [selectedSession, form, fetchTerms]);
+  }, [selectedSchool, selectedSession, form, fetchTerms]);
 
   const onSubmit = async (values: ExamFormValues) => {
-    if (!selectedSchool || !selectedSession) return;
+    if (!selectedSchool?.schoolId || !selectedSession) return;
 
     try {
       const response = await createExam(selectedSchool.schoolId, {

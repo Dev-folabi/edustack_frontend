@@ -178,7 +178,7 @@ export const ExamPaperList = ({ papers }: ExamPaperListProps) => {
                     <Clock className="w-3 h-3" />
                     <span>
                       Created{" "}
-                      {format(new Date(paper.createdAt), "MMM dd, yyyy")}
+                      {format(new Date(paper?.createdAt || ""), "MMM dd, yyyy")}
                     </span>
                   </div>
                 </div>

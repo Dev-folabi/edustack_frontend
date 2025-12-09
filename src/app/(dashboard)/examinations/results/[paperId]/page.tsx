@@ -90,7 +90,7 @@ const ResultEntryPage = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (selectedPaper && selectedSchool && selectedPaper?.exam?.section?.id) {
+      if (selectedPaper && selectedSchool?.schoolId && selectedPaper?.exam?.section?.id) {
         await fetchStudentsBySection(
           selectedSchool.schoolId,
           selectedPaper?.exam?.section?.id

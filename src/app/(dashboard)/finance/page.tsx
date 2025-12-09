@@ -5,6 +5,7 @@ import withAuth from "@/components/withAuth";
 import { UserRole } from "@/constants/roles";
 import { useQuery } from "@tanstack/react-query";
 import { financeService } from "@/services/financeService";
+import { FinancialOverview } from "@/types/finance";
 import { useAuthStore } from "@/store/authStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -53,10 +54,37 @@ const FinanceDashboardPage = () => {
     enabled: !!selectedSchool?.schoolId,
   });
 
-  const summary = data?.data?.summary;
-  const invoiceBreakdown = data?.data?.invoiceStatusBreakdown || [];
-  const expenseBreakdown = data?.data?.expenseCategoryBreakdown || [];
-  const recentTransactions = data?.data?.recentTransactions || [];
+  const overview = data?.data as FinancialOverview | undefined;
+  type Summary = {
+    totalRevenue: number;
+    totalExpenses: number;
+    netProfit: number;
+    totalPayments: number;
+    expenseCount: number;
+    netIncome: number;
+    totalInvoices: number;
+    totalInvoiceAmount: number;
+    totalAmountPaid: number;
+    totalAmountDue: number;
+  };
+
+  const summary: Summary = {
+    totalRevenue:
+      overview?.summary?.totalRevenue ?? overview?.totalRevenue ?? 0,
+    totalExpenses:
+      overview?.summary?.totalExpenses ?? overview?.totalExpenses ?? 0,
+    netProfit: overview?.summary?.netProfit ?? overview?.netProfit ?? 0,
+    totalPayments: overview?.summary?.totalPayments ?? 0,
+    expenseCount: overview?.summary?.expenseCount ?? 0,
+    netIncome: overview?.summary?.netIncome ?? 0,
+    totalInvoices: overview?.summary?.totalInvoices ?? 0,
+    totalInvoiceAmount: overview?.summary?.totalInvoiceAmount ?? 0,
+    totalAmountPaid: overview?.summary?.totalAmountPaid ?? 0,
+    totalAmountDue: overview?.summary?.totalAmountDue ?? 0,
+  };
+  const invoiceBreakdown = overview?.invoiceStatusBreakdown || [];
+  const expenseBreakdown = overview?.expenseCategoryBreakdown || [];
+  const recentTransactions = overview?.recentTransactions || [];
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-NG", {

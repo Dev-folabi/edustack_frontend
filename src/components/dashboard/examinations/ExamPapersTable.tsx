@@ -140,7 +140,7 @@ export const ExamPapersTable = ({ papers, examId }: ExamPapersTableProps) => {
                 setSelectedPaper(null);
             }}
             examId={examId}
-            paper={selectedPaper}
+            paper={selectedPaper ?? undefined}
         />
       )}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

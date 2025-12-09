@@ -85,8 +85,8 @@ export const EditSchoolModal = ({ school, children }: EditSchoolModalProps) => {
       const fetchStaff = async () => {
         try {
           const response = await schoolService.getStaffBySchool(school.id);
-          if (response.success && response.data && response.data.data) {
-            setStaff(response.data.data);
+          if (response.success && response.data) {
+            setStaff(response.data as unknown as Staff[]);
           }
         } catch (error) {
           console.error("Failed to fetch staff", error);
@@ -198,7 +198,8 @@ export const EditSchoolModal = ({ school, children }: EditSchoolModalProps) => {
                             const staffData = s.user?.staff;
                             if (!staffData) return null;
 
-                            const displayName = staffData.name || "Unknown Staff";
+                            const displayName =
+                              staffData.name || "Unknown Staff";
                             const username = s.user?.username || "";
                             const staffId = staffData.id;
                             const role = s.role || "";

@@ -54,14 +54,20 @@ export const useClassStore = create<ClassState>((set, get) => ({
         true
       );
 
-      if (response.success && response.data) {
-        const staffData = response.data.data || [];
-        const teachers = staffData
-          .filter((staff: any) => staff.role === "teacher")
-          .map((staff: any) => ({
-            id: staff.user.staff.id,
-            name: staff.user.staff.name,
-            email: staff.user.staff.email,
+      if (
+        response.success &&
+        response.data &&
+        typeof response.data === "object" &&
+        response.data !== null &&
+        Array.isArray((response.data as any).data)
+      ) {
+        const staffData = (response.data as { data: unknown }).data || [];
+        const teachers = (staffData as any[])
+          .filter((staff) => staff && staff.role === "teacher")
+          .map((staff) => ({
+            id: staff?.user?.staff?.id,
+            name: staff?.user?.staff?.name,
+            email: staff?.user?.staff?.email,
             user: staff.user,
           }));
 

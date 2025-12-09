@@ -31,8 +31,8 @@ import {
 
 const gradeSchema = z.object({
   name: z.string().min(1, "Grade is required"),
-  minScore: z.coerce.number().min(0, "Min score must be 0 or greater"),
-  maxScore: z.coerce.number().min(0, "Max score must be 0 or greater"),
+  minScore: z.number().min(0, "Min score must be 0 or greater"),
+  maxScore: z.number().min(0, "Max score must be 0 or greater"),
   remark: z.string().min(1, { message: "Remark is required" }),
 });
 
@@ -90,7 +90,10 @@ export const CreateEditGradeDialog = ({
       showToast({
         type: "error",
         title: "Error",
-        message: error instanceof Error ? error.message : "An error occurred while saving the grade criterion.",
+        message:
+          error instanceof Error
+            ? error.message
+            : "An error occurred while saving the grade criterion.",
       });
     }
   };
@@ -129,7 +132,12 @@ export const CreateEditGradeDialog = ({
                   <FormItem>
                     <FormLabel>Min Score</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <Input
+                        type="number"
+                        {...field}
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                        value={field.value || ""}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -142,7 +150,12 @@ export const CreateEditGradeDialog = ({
                   <FormItem>
                     <FormLabel>Max Score</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <Input
+                        type="number"
+                        {...field}
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                        value={field.value || ""}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

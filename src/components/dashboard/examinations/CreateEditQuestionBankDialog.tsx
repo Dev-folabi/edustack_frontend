@@ -96,8 +96,8 @@ export const CreateEditQuestionBankDialog = ({
   }, [selectedSchool, fetchClasses]);
 
   useEffect(() => {
-    if (selectedSchool && selectedSectionId) {
-      fetchSubjects(selectedSchool.schoolId, selectedSectionId);
+    if (selectedSchool?.schoolId && selectedSectionId) {
+      fetchSubjects(selectedSchool?.schoolId, selectedSectionId);
     }
   }, [selectedSchool, selectedSectionId, fetchSubjects]);
 

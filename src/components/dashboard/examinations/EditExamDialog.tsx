@@ -87,10 +87,10 @@ export const EditExamDialog = ({
 
   // Fetch data when dialog opens
   useEffect(() => {
-    if (isOpen && selectedSchool) {
+    if (isOpen && selectedSchool?.schoolId) {
       fetchClasses(selectedSchool.schoolId);
       if (selectedSession?.id) {
-        fetchTerms(selectedSession.id);
+        fetchTerms(selectedSession.id, selectedSchool?.schoolId);
       }
     }
   }, [isOpen, selectedSchool, selectedSession, fetchClasses, fetchTerms]);
@@ -129,7 +129,7 @@ export const EditExamDialog = ({
           type: "success",
           message: "Exam updated successfully!",
         });
-        fetchExams(selectedSchool.schoolId, selectedSession.id);
+        fetchExams(selectedSchool?.schoolId || "", selectedSession.id);
         onClose();
       } else {
         showToast({

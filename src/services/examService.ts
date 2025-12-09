@@ -129,20 +129,22 @@ export const publishResults = async (
   return response as ApiResponse<unknown>;
 };
 
-export const saveManualResults = async (payload: {
-  examPaperId: string;
-  termId: string;
-  sessionId: string;
-  studentMarks: {
-    studentId: string;
-    marksObtained: number;
-    teacherRemark?: string;
-    psychomotorAssessments?: {
-      skillId: string;
-      rating: number;
+export const saveManualResults = async (
+  payload: {
+    examPaperId: string;
+    termId?: string;
+    sessionId?: string;
+    studentMarks: {
+      studentId: string;
+      marksObtained: number;
+      teacherRemark?: string;
+      psychomotorAssessments?: {
+        skillId: string;
+        rating: number;
+      }[];
     }[];
-  }[];
-}): Promise<ApiResponse<unknown>> => {
+  }
+): Promise<ApiResponse<unknown>> => {
   const response = await apiClient.post(
     `${EXAM_BASE_URL}/results/manual-entry`,
     payload

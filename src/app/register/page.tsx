@@ -109,11 +109,13 @@ const RegisterPage: React.FC = () => {
   const loadSchools = async () => {
     try {
       const response = await schoolService.getSchools();
-      if (response.success && response.data && response.data.data) {
-        setSchools(response.data.data);
-      } else {
-        setSchools([]);
-      }
+      if (
+        !(response as any).success ||
+        !(response as any).data ||
+        !(response as any).data.data
+      )
+        return;
+      setSchools((response as any).data?.data ?? []);
     } catch (error) {
       console.error("Error loading schools:", error);
       showToast({

@@ -22,7 +22,7 @@ const StudentTimetable = () => {
   const [selectedDay, setSelectedDay] = useState<string>("ALL");
 
   const { student, selectedSchool } = useAuthStore();
-  const studentEnrollment = student?.student_enrolled?.[0];
+  const studentEnrollment = (student as any)?.student_enrolled?.[0];
 
   const fetchTimetable = useCallback(async () => {
     if (!studentEnrollment || !selectedSchool) return;
