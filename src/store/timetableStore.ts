@@ -57,7 +57,9 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
   isModalOpen: false,
   editingEntry: null,
 
-  fetchSchoolTimetables: async (schoolId: string) => {
+  fetchSchoolTimetables: async (
+    schoolId: string
+  ): Promise<ApiResponse<TimetablesResponse>> => {
     set({ isLoading: true, error: null });
     try {
       const response = await timetableService.getSchoolTimetables(schoolId);
@@ -73,28 +75,35 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
       return response;
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
-      return { success: false, message: err.message, data: null };
+      return { success: false, message: err.message, data: undefined };
     }
   },
 
-  fetchClassTimetable: async (sectionId: string) => {
+  fetchClassTimetable: async (
+    sectionId: string
+  ): Promise<ApiResponse<TimetableResponse>> => {
     set({ isLoading: true, error: null });
     try {
       const response = await timetableService.getClassTimetable(sectionId);
-      if (response.success && response.data) {
-        // Fix: The class timetable endpoint returns { data: Timetable }, so access response.data.data
-        set({ selectedTimetable: response.data, isLoading: false });
+      if (response.success && response.data && response.data.data) {
+        set({ selectedTimetable: response.data.data, isLoading: false });
       } else {
-        set({ selectedTimetable: null, isLoading: false, error: response.message });
+        set({
+          selectedTimetable: null,
+          isLoading: false,
+          error: response.message,
+        });
       }
       return response;
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
-      return { success: false, message: err.message, data: null };
+      return { success: false, message: err.message, data: undefined };
     }
   },
 
-  createTimetable: async (data: CreateTimetableData) => {
+  createTimetable: async (
+    data: CreateTimetableData
+  ): Promise<ApiResponse<TimetableResponse>> => {
     set({ isLoading: true, error: null });
     try {
       const response = await timetableService.createTimetable(data);
@@ -105,15 +114,21 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
       return response;
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
-      return { success: false, message: err.message, data: null };
+      return { success: false, message: err.message, data: undefined };
     }
   },
 
-  updateTimetable: async (timetableId: string, data: UpdateTimetableData) => {
+  updateTimetable: async (
+    timetableId: string,
+    data: Partial<CreateTimetableData>
+  ): Promise<ApiResponse<TimetableResponse>> => {
     set({ isLoading: true, error: null });
     try {
-      const response = await timetableService.updateTimetable(timetableId, data);
-       set({ isLoading: false });
+      const response = await timetableService.updateTimetable(
+        timetableId,
+        data
+      );
+      set({ isLoading: false });
       if (response.success && data.schoolId) {
         await get().fetchSchoolTimetables(data.schoolId);
         // Also refresh the selected timetable if it matches
@@ -125,19 +140,21 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
       return response;
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
-      return { success: false, message: err.message, data: null };
+      return { success: false, message: err.message, data: undefined };
     }
   },
 
-  deleteTimetable: async (timetableId: string) => {
+  deleteTimetable: async (timetableId: string): Promise<ApiResponse<void>> => {
     set({ isLoading: true, error: null });
     try {
       const response = await timetableService.deleteTimetable(timetableId);
-       set({ isLoading: false });
+      set({ isLoading: false });
       if (response.success) {
         set((state) => ({
           timetables: state.timetables.filter((t) => t.id !== timetableId),
-           schoolTimetables: state.schoolTimetables.filter((t) => t.id !== timetableId),
+          schoolTimetables: state.schoolTimetables.filter(
+            (t) => t.id !== timetableId
+          ),
           selectedTimetable:
             state.selectedTimetable?.id === timetableId
               ? null
@@ -147,11 +164,13 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
       return response;
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
-      return { success: false, message: err.message, data: null };
+      return { success: false, message: err.message, data: undefined };
     }
   },
 
-  createEntry: async (data: CreateEntryData) => {
+  createEntry: async (
+    data: CreateEntryData
+  ): Promise<ApiResponse<EntryResponse>> => {
     set({ isLoading: true, error: null });
     try {
       const response = await timetableService.createEntry(data);
@@ -164,11 +183,14 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
       return response;
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
-      return { success: false, message: err.message, data: null };
+      return { success: false, message: err.message, data: undefined };
     }
   },
 
-  updateEntry: async (entryId: string, data: UpdateEntryData) => {
+  updateEntry: async (
+    entryId: string,
+    data: Partial<CreateEntryData>
+  ): Promise<ApiResponse<EntryResponse>> => {
     set({ isLoading: true, error: null });
     try {
       const response = await timetableService.updateEntry(entryId, data);
@@ -181,11 +203,11 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
       return response;
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
-      return { success: false, message: error.message, data: null };
+      return { success: false, message: error.message, data: undefined };
     }
   },
 
-  deleteEntry: async (entryId: string) => {
+  deleteEntry: async (entryId: string): Promise<ApiResponse<void>> => {
     set({ isLoading: true, error: null });
     try {
       const response = await timetableService.deleteEntry(entryId);
@@ -198,7 +220,7 @@ export const useTimetableStore = create<TimetableState>((set, get) => ({
       return response;
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
-      return { success: false, message: err.message, data: null };
+      return { success: false, message: err.message, data: undefined };
     }
   },
 

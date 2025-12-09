@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
@@ -43,10 +44,11 @@ import { useToast } from "@/components/ui/Toast";
 import { Loader } from "lucide-react";
 
 const formSchema = z.object({
+  name: z.string().min(1, "Name is required"),
   classId: z.string().min(1, "Class is required"),
   sectionId: z.string().min(1, "Section is required"),
   termId: z.string().min(1, "Term is required"),
-  status: z.nativeEnum(TimetableStatus).default(TimetableStatus.DRAFT),
+  status: z.nativeEnum(TimetableStatus),
 });
 
 const CreateTimetablePage = () => {
@@ -69,11 +71,15 @@ const CreateTimetablePage = () => {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      status: TimetableStatus.DRAFT,
+    },
   });
 
   useEffect(() => {
     if (selectedSchool?.schoolId) {
-      fetchSessions();
+      fetchSessions(selectedSchool.schoolId);
       fetchClasses(selectedSchool.schoolId);
       subjectService
         .getSubjects({ schoolId: selectedSchool.schoolId })
@@ -126,6 +132,8 @@ const CreateTimetablePage = () => {
       startTime: convertTimeToISO(data.startTime),
       endTime: convertTimeToISO(data.endTime),
       timetableId: "",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     setEntries([...entries, newEntry]);
   };
@@ -160,7 +168,8 @@ const CreateTimetablePage = () => {
   };
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!selectedSchool || !selectedSession) return;
+    if (!selectedSchool?.schoolId || !selectedSession) return;
+    const schoolId = selectedSchool.schoolId;
 
     if (entries.length === 0) {
       showToast({
@@ -173,17 +182,24 @@ const CreateTimetablePage = () => {
 
     const timetableData = {
       ...values,
-      schoolId: selectedSchool.schoolId,
+      schoolId,
+      name: values.name,
       sessionId: selectedSession.id,
       entries: entries.map(({ id: _id, ...entry }) => {
         // Remove temporary ID and filter out empty subjectId and teacherId
-        const cleanedEntry: Partial<TimetableEntry> = { ...entry };
+        const cleanedEntry: Omit<
+          TimetableEntry,
+          "id" | "timetableId" | "subject" | "teacher"
+        > = { ...(entry as TimetableEntry) };
         if (!cleanedEntry.subjectId || cleanedEntry.subjectId === "") {
-          delete cleanedEntry.subjectId;
+          delete (cleanedEntry as any).subjectId;
         }
         if (!cleanedEntry.teacherId || cleanedEntry.teacherId === "") {
-          delete cleanedEntry.teacherId;
+          delete (cleanedEntry as any).teacherId;
         }
+        delete (cleanedEntry as any).createdAt;
+        delete (cleanedEntry as any).updatedAt;
+        delete (cleanedEntry as any).timetableId;
         return cleanedEntry;
       }),
     };
@@ -205,15 +221,6 @@ const CreateTimetablePage = () => {
     }
   };
 
-  const subjectMap = subjects.reduce(
-    (acc, subject) => ({ ...acc, [subject.id]: subject.name }),
-    {}
-  );
-  const teacherMap = teachers.reduce(
-    (acc, teacher) => ({ ...acc, [teacher.id]: teacher.name }),
-    {}
-  );
-
   return (
     <div className="container mx-auto p-4 space-y-6">
       <h1 className="text-3xl font-bold">Create New Timetable</h1>
@@ -229,6 +236,19 @@ const CreateTimetablePage = () => {
               className="space-y-4"
             >
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Timetable name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name="classId"
@@ -356,8 +376,6 @@ const CreateTimetablePage = () => {
             entries={entries}
             onEdit={openEditModal}
             onDelete={handleDeleteEntry}
-            subjects={subjectMap}
-            teachers={teacherMap}
           />
         </CardContent>
       </Card>

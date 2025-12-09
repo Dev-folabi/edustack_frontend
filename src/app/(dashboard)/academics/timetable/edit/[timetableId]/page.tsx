@@ -97,26 +97,29 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
     if (selectedSchool?.schoolId) {
       fetchClasses(selectedSchool.schoolId);
     }
-  }, [selectedSchool?.schoolId]);
+  }, [selectedSchool?.schoolId, fetchClasses]);
 
   useEffect(() => {
     if (selectedSchool?.schoolId) {
       subjectService.getSubjects({ schoolId: selectedSchool.schoolId }).then(res => {
         if (res.success && res.data) setSubjects(res.data.data.data || []);
       });
-      schoolService.getStaffBySchool(selectedSchool.schoolId, "teacher", true).then(res => {
-        if (res.success && res.data) {
-            const teacherStaff = res.data.data.map((item: any) => item.user.staff);
+      schoolService
+        .getStaffBySchool(selectedSchool.schoolId, "teacher", true)
+        .then((res) => {
+          if (res.success) {
+            const staffList = res.data?.data?.data || [];
+            const teacherStaff = staffList.map((item: any) => item.user.staff);
             setTeachers(teacherStaff);
-        }
-      });
+          }
+        });
     }
   }, [selectedSchool?.schoolId]);
 
    useEffect(() => {
      if (!selectedSchool?.schoolId) return;
  fetchSchoolTimetables(selectedSchool.schoolId);
-  }, [selectedSchool?.schoolId]);
+  }, [selectedSchool?.schoolId, fetchSchoolTimetables]);
 
      useEffect(() => {
      if (!selectedSchool?.schoolId || !timetableId) return;
@@ -138,7 +141,7 @@ const EditTimetablePage = ({ params }: EditTimetablePageProps) => {
     };
 
     findAndFetchTimetable();
-  }, [selectedSchool?.schoolId, timetableId]);
+  }, [selectedSchool?.schoolId, timetableId, fetchClassTimetable, schoolTimetables]);
   
   
   useEffect(() => {

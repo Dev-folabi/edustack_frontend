@@ -96,7 +96,7 @@ const TakeStudentAttendanceForm = () => {
     setLoadingStudents(true);
     try {
       const res = await studentService.getStudentsBySchool(
-        selectedSchool.schoolId,
+        selectedSchool?.schoolId ?? "",
         { sectionId: selectedSection }
       );
       if (res.success) {

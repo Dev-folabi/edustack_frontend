@@ -81,7 +81,7 @@ export const QuestionBankTable = () => {
           title: "Success",
           message: "Question bank deleted successfully!",
         });
-        fetchAllQuestionBanks(selectedSchool.schoolId);
+        fetchAllQuestionBanks(selectedSchool?.schoolId || "");
       } catch (error) {
         showToast({
           type: "error",

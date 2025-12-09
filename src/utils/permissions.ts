@@ -1,5 +1,5 @@
-import { useAuthStore } from '@/store/authStore';
-import { UserRole, STAFF_ROLES } from '@/constants/roles';
+import { useAuthStore } from "@/store/authStore";
+import { UserRole, STAFF_ROLES } from "@/constants/roles";
 
 /**
  * Checks if the current user is a Super Admin.
@@ -19,7 +19,9 @@ export const getCurrentSchoolRole = (): UserRole | null => {
   if (!selectedSchool || !userSchools) {
     return null;
   }
-  const schoolRole = userSchools.find(us => us.schoolId === selectedSchool.schoolId);
+  const schoolRole = userSchools.find(
+    (us) => us.schoolId === selectedSchool.schoolId
+  );
   return schoolRole ? (schoolRole.role as UserRole) : null;
 };
 
@@ -59,9 +61,11 @@ export const usePermissions = () => {
 
   const superAdmin = user?.isSuperAdmin === true;
 
-  const currentRole = selectedSchool && userSchools
-    ? (userSchools.find(us => us.schoolId === selectedSchool.schoolId)?.role as UserRole | null)
-    : null;
+  const currentRole =
+    selectedSchool && userSchools
+      ? (userSchools.find((us) => us.schoolId === selectedSchool.schoolId)
+          ?.role as UserRole | null)
+      : null;
 
   const checkRole = (role: UserRole): boolean => {
     if (superAdmin) return true;

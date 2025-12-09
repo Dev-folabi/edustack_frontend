@@ -77,6 +77,7 @@ interface DatePickerProps
   value: Date | undefined;
   onChange: (date: Date | undefined) => void;
   maxDate?: Date;
+  disabled?: boolean;
 }
 
 export function DatePicker({
@@ -84,6 +85,7 @@ export function DatePicker({
   value,
   onChange,
   maxDate,
+  disabled,
 }: DatePickerProps) {
   return (
     <div className={cn("grid gap-2", className)}>
@@ -110,7 +112,7 @@ export function DatePicker({
             toYear={2100}
             selected={value}
             onSelect={(d: Date | undefined) => onChange(d)}
-            disabled={maxDate ? (day) => day > maxDate : undefined}
+            disabled={disabled ? (day) => day > (maxDate ?? new Date()) : undefined}
           />
         </PopoverContent>
       </Popover>

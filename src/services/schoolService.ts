@@ -36,6 +36,7 @@ export interface Staff {
 // Interface for the API response for a list of staff
 interface StaffResponse {
   data: {
+    filter(arg0: (staff: any) => boolean): unknown;
     data: Staff[];
   };
 }

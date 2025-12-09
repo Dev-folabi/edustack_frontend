@@ -44,16 +44,16 @@ const formSchema = z.object({
   phone: z.array(z.string()).nonempty({ message: "Phone number is required." }),
   address: z.string().nonempty({ message: "Address is required." }),
   role: z.enum(["admin", "teacher", "finance", "librarian"], {
-    required_error: "Role is required.",
+    error: "Role is required.",
   }),
   designation: z.string().nonempty({ message: "Designation is required." }),
-  dob: z.date({ required_error: "Date of birth is required." }),
+  dob: z.date({ error: "Date of birth is required." }),
   salary: z.coerce
     .number()
     .min(0, { message: "Salary must be a positive number." }),
-  joining_date: z.date({ required_error: "Joining date is required." }),
+  joining_date: z.date({ error: "Joining date is required." }),
   gender: z.enum(["male", "female"], {
-    required_error: "Gender is required.",
+    error: "Gender is required.",
   }),
   isActive: z.boolean().default(true),
   qualification: z.string().nonempty({ message: "Qualification is required." }),
@@ -67,7 +67,7 @@ const StaffRegistrationForm = () => {
   const { showToast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       email: "",
       password: "",
@@ -95,7 +95,7 @@ const StaffRegistrationForm = () => {
 
     setIsLoading(true);
     const payload: StaffRegistrationPayload = {
-      schoolId: selectedSchool.schoolId,
+      schoolId: selectedSchool?.schoolId,
       ...values,
       dob: values.dob.toISOString().split("T")[0],
       joining_date: values.joining_date.toISOString().split("T")[0],
@@ -150,7 +150,7 @@ const StaffRegistrationForm = () => {
             <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-500">
               <School className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="truncate max-w-[200px] sm:max-w-none">
-                {selectedSchool?.school.name || "No school selected"}
+                {selectedSchool?.school?.name || "No school selected"}
               </span>
             </div>
           </div>
@@ -300,8 +300,10 @@ const StaffRegistrationForm = () => {
                         <DatePicker
                           value={field.value}
                           onChange={field.onChange}
-                          placeholder="Select date of birth"
                         />
+                        <div className="text-muted-foreground text-sm mt-1">
+                          Select date of birth
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -389,8 +391,10 @@ const StaffRegistrationForm = () => {
                         <DatePicker
                           value={field.value}
                           onChange={field.onChange}
-                          placeholder="Select joining date"
                         />
+                        <div className="text-muted-foreground text-xs mt-1">
+                          Select joining date
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}

@@ -77,10 +77,12 @@ const PromoteStudentPage = () => {
     if (selectedSchool?.schoolId) {
       classService
         .getClasses(selectedSchool.schoolId)
-        .then((res) => setClasses(res.data.data));
+        .then((res) => setClasses(res.data?.data ?? []));
       sessionService
         .getSessions(selectedSchool.schoolId)
-        .then((res) => setSessions(res.data.data));
+        .then((res) =>
+          setSessions((res?.data?.data ?? []) as SessionWithTerms[])
+        );
     }
   }, [selectedSchool?.schoolId]);
 
@@ -112,7 +114,7 @@ const PromoteStudentPage = () => {
         .getStudentsBySection(selectedSchool.schoolId, {
           sectionId: fromSectionId,
         })
-        .then((res) => setStudents(res.data.data))
+        .then((res) => setStudents(res.data?.data ?? []))
         .catch(() => setStudents([]));
     } else {
       setStudents([]);
@@ -132,6 +134,7 @@ const PromoteStudentPage = () => {
     if (selectedStudents.length === 0) {
       showToast({
         type: "error",
+        title: "Error",
         message: "Please select at least one student to promote.",
       });
       return;
@@ -144,6 +147,7 @@ const PromoteStudentPage = () => {
         type: "error",
         message:
           "Please select a destination class, section, session, and term.",
+        title: "Error",
       });
       return;
     }
@@ -161,6 +165,7 @@ const PromoteStudentPage = () => {
       });
       showToast({
         type: "success",
+        title: "Success",
         message: "Students promoted successfully!",
       });
       setStudents([]);
@@ -168,6 +173,7 @@ const PromoteStudentPage = () => {
     } catch (error: any) {
       showToast({
         type: "error",
+        title: "Error",
         message: error.message || "Failed to promote students.",
       });
     } finally {
@@ -243,7 +249,7 @@ const PromoteStudentPage = () => {
                     <Checkbox
                       onCheckedChange={(checked) =>
                         checked
-                          ? setSelectedStudents(students.map((s) => s.id))
+                          ? setSelectedStudents(students.map((s) => s.id ?? ""))
                           : setSelectedStudents([])
                       }
                       checked={
@@ -264,9 +270,11 @@ const PromoteStudentPage = () => {
                   >
                     <TableCell>
                       <Checkbox
-                        checked={selectedStudents.includes(student.studentId)}
+                        checked={selectedStudents.includes(
+                          student.studentId ?? ""
+                        )}
                         onCheckedChange={() =>
-                          handleSelectStudent(student.studentId)
+                          handleSelectStudent(student.studentId ?? "")
                         }
                       />
                     </TableCell>

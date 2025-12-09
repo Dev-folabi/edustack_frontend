@@ -24,11 +24,23 @@ export interface Student {
   country?: string;
   class: { id: string; name: string };
   section: { id: string; name: string };
-  parent?: {
+  parentDetails?: {
     id: string;
     name: string;
     email: string;
     phone: string[];
+  };
+  enrollment?: {
+    id: string;
+    schoolId: string;
+    classId: string;
+    sectionId: string;
+    studentId: string;
+    class: { id: string; name: string };
+    section: { id: string; name: string };
+    session: { id: string; name: string };
+    createdAt: string;
+    updatedAt: string;
   };
   currentClass?: string;
   currentSection?: string;

@@ -52,8 +52,8 @@ const ViewStaffAttendance = () => {
   const { selectedSchool, staff } = useAuthStore();
 
   const canViewAll =
-    selectedSchool?.role.includes(UserRole.ADMIN) ||
-    selectedSchool?.role.includes(UserRole.SUPER_ADMIN);
+    selectedSchool?.role?.includes(UserRole.ADMIN) ||
+    selectedSchool?.role?.includes(UserRole.SUPER_ADMIN);
 
   const handleFetchAttendance = useCallback(() => {
     const params: any = {};
@@ -100,7 +100,7 @@ const ViewStaffAttendance = () => {
     if (canViewAll && selectedSchool) {
       setLoadingStaff(true);
       staffService
-        .getStaffBySchool(selectedSchool.schoolId, { isActive: true })
+        .getStaffBySchool(selectedSchool?.schoolId ?? "", { isActive: true })
         .then((res) => {
           if (res.success) {
             setStaffList(res.data?.data || []);
@@ -192,10 +192,10 @@ const ViewStaffAttendance = () => {
                       <SelectItem value="all">All Staff</SelectItem>
                       {staffList.length > 0 ? (
                         staffList.map((s) => (
-                          <SelectItem key={s.user.staff.id} value={s.user.staff.id}>
-                            {s.user.staff.name}
+                          <SelectItem key={s.id} value={s.id}>
+                            {s.name}
                           </SelectItem>
-                        ))
+                        ))  
                       ) : (
                         <SelectItem value="placeholder" disabled>
                           {loadingStaff
@@ -469,7 +469,7 @@ const ViewStaffAttendance = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {attendanceRecords.map((record, index) => (
+                  {attendanceRecords.map((record: Attendance, index: number) => (
                     <TableRow key={record.id} className="hover:bg-muted/30">
                       <TableCell className="font-medium text-muted-foreground">
                         {index + 1}
@@ -491,7 +491,7 @@ const ViewStaffAttendance = () => {
                           </TableCell>
                           <TableCell>
                             <Badge variant="outline" className="capitalize">
-                              {record.staff?.role || "Staff"}
+                              {(record.staff as Staff)?.role || "Staff"}
                             </Badge>
                           </TableCell>
                         </>

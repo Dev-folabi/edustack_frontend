@@ -16,7 +16,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
-import { Loader } from "@/components/ui/Loader";
+import { Loader, ButtonLoader } from "@/components/ui/Loader";
 import { subjectService } from "@/services/subjectService";
 import { toast } from "react-hot-toast";
 import { useAuthStore } from "@/store/authStore";
@@ -121,8 +121,8 @@ const EditSubjectPage = () => {
         </h1>
         <p className="text-gray-500 mt-2 text-base">
           Update the details of the subject for{" "}
-          {selectedSchool?.name || "the selected school"}. All fields are
-          optional - only update what you need to change.
+          {selectedSchool?.school?.name || "the selected school"}. All fields
+          are optional - only update what you need to change.
         </p>
       </div>
       <Form {...form}>
@@ -191,18 +191,18 @@ const EditSubjectPage = () => {
             >
               Cancel
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="px-6 py-3 text-sm font-semibold"
               disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <>
-                  <Loader className="mr-2 h-4 w-4 animate-spin" />
+                  <ButtonLoader />
                   Saving...
                 </>
               ) : (
-                'Save Changes'
+                "Save Changes"
               )}
             </Button>
           </div>

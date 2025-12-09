@@ -42,8 +42,8 @@ const StudentInvoicesList = () => {
     try {
       setLoading(true);
       const response = await financeService.getInvoicesByStudent(
-        studentId,
-        selectedSchool.schoolId
+        studentId as string,
+        selectedSchool.schoolId as string
       );
       if (response.success) {
         setInvoices(response?.data?.data || []);

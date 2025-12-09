@@ -26,15 +26,15 @@ import { useAuthStore } from "@/store/authStore";
 
 const termSchema = z.object({
   name: z.string().min(1, "Term name is required."),
-  start_date: z.date({ required_error: "Start date is required." }),
-  end_date: z.date({ required_error: "End date is required." }),
+  start_date: z.date({ error: "Start date is required." }),
+  end_date: z.date({ error: "End date is required." }),
 });
 
 const sessionFormSchema = z
   .object({
     name: z.string().min(4, "Session name must be at least 4 characters."),
-    start_date: z.date({ required_error: "Session start date is required." }),
-    end_date: z.date({ required_error: "Session end date is required." }),
+    start_date: z.date({ error: "Session start date is required." }),
+    end_date: z.date({ error: "Session end date is required." }),
     isActive: z.boolean().default(false),
     terms: z.array(termSchema).min(2, "You must add at least two terms."),
   })
@@ -93,7 +93,7 @@ export const CreateSessionForm = () => {
   const { showToast } = useToast();
   const { selectedSchool } = useAuthStore();
   const form = useForm<SessionFormValues>({
-    resolver: zodResolver(sessionFormSchema),
+    resolver: zodResolver(sessionFormSchema) as any,
     mode: "onChange",
     defaultValues: {
       name: "",
@@ -121,13 +121,23 @@ export const CreateSessionForm = () => {
     }
 
     try {
-      await sessionService.createSession(values, selectedSchool.schoolId);
+      // Convert Date fields to ISO strings as required by the backend (CreateSessionData)
+      const payload = {
+        ...values,
+        terms: values.terms.map((term) => ({
+          ...term,
+          start_date: term.start_date ? term.start_date.toISOString() : "",
+          end_date: term.end_date ? term.end_date.toISOString() : "",
+        })),
+        start_date: values.start_date ? values.start_date.toISOString() : "",
+        end_date: values.end_date ? values.end_date.toISOString() : "",
+      };
+      await sessionService.createSession(payload, selectedSchool.schoolId);
       showToast({
         title: "Success",
         message: "Academic session created successfully!",
         type: "success",
       });
-      router.push(DASHBOARD_ROUTES.SESSIONS_TERMS);
     } catch (error) {
       showToast({
         title: "Error",
@@ -273,8 +283,8 @@ export const CreateSessionForm = () => {
             onClick={() =>
               append({
                 name: "Third Term",
-                start_date: undefined,
-                end_date: undefined,
+                start_date: new Date(),
+                end_date: new Date(),
               })
             }
             className="mt-4"

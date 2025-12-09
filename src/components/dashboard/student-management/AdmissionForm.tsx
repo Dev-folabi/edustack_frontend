@@ -59,12 +59,12 @@ const formSchema = z
     sectionId: z.string().nonempty({ message: "Section is required." }),
     name: z.string().nonempty({ message: "Name is required." }),
     gender: z.enum(["male", "female"], {
-      required_error: "Gender is required.",
+      error: "Gender is required.",
     }),
-    dob: z.date({ required_error: "Date of birth is required." }),
+    dob: z.date({ error: "Date of birth is required." }),
     phone: z.string().nonempty({ message: "Phone number is required." }),
     address: z.string().nonempty({ message: "Address is required." }),
-    admission_date: z.date({ required_error: "Admission date is required." }),
+    admission_date: z.date({ error: "Admission date is required." }),
     religion: z.string().nonempty({ message: "Religion is required." }),
     blood_group: z
       .enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const)
@@ -118,7 +118,7 @@ const AdmissionForm = () => {
   // const [isUploading, setIsUploading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       email: "",
       password: "",
@@ -295,7 +295,9 @@ const AdmissionForm = () => {
             </div>
             <div className="flex items-center space-x-2 text-sm text-gray-500">
               <School className="h-4 w-4" />
-              <span>{selectedSchool?.school.name || "No school selected"}</span>
+              <span>
+                {selectedSchool?.school?.name || "No school selected"}
+              </span>
             </div>
           </div>
         </div>
@@ -459,8 +461,10 @@ const AdmissionForm = () => {
                             <DatePicker
                               value={field.value}
                               onChange={field.onChange}
-                              placeholder="Select date of birth"
                             />
+                            <div className="text-muted-foreground text-sm">
+                              Select date of birth
+                            </div>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -609,8 +613,10 @@ const AdmissionForm = () => {
                             <DatePicker
                               value={field.value}
                               onChange={field.onChange}
-                              placeholder="Select admission date"
                             />
+                            <div className="text-muted-foreground text-sm">
+                              Select admission date
+                            </div>
                             <FormMessage />
                           </FormItem>
                         )}

@@ -27,14 +27,14 @@ const ViewTimetablePage = () => {
     if (sectionId) {
       fetchClassTimetable(sectionId);
     }
-    console.log({selectedTimetable})
-  }, [sectionId]);
+    console.log({ selectedTimetable });
+  }, [sectionId, fetchClassTimetable, selectedTimetable]);
 
   useEffect(() => {
     if (schoolId) {
       fetchClasses(schoolId);
     }
-  }, [schoolId]);
+  }, [schoolId, fetchClasses]);
 
   const getClassName = (classId: string) => {
     const classInfo = classes.find((c) => c.id === classId);
@@ -97,7 +97,7 @@ const ViewTimetablePage = () => {
       </div>
 
       <div className="bg-white rounded-lg shadow-sm p-4">
-        <TimetableGrid sectionId={sectionId} />
+        <TimetableGrid />
       </div>
     </div>
   );

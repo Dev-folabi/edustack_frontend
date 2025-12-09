@@ -33,15 +33,15 @@ const termSchema = z.object({
   id: z.string().optional(),
   databaseId: z.string().optional(),
   name: z.string().min(1, "Term name is required."),
-  start_date: z.date({ required_error: "Start date is required." }),
-  end_date: z.date({ required_error: "End date is required." }),
+  start_date: z.date({ error: "Start date is required." }),
+  end_date: z.date({ error: "End date is required." }),
 });
 
 const sessionFormSchema = z
   .object({
     name: z.string().min(4, "Session name must be at least 4 characters."),
-    start_date: z.date({ required_error: "Session start date is required." }),
-    end_date: z.date({ required_error: "Session end date is required." }),
+    start_date: z.date({ error: "Session start date is required." }),
+    end_date: z.date({ error: "Session end date is required." }),
     isActive: z.boolean().default(false),
     terms: z.array(termSchema).min(1, "You must have at least one term."),
   })
@@ -100,7 +100,7 @@ export const EditSessionForm: React.FC<EditSessionFormProps> = ({
   const { selectedSchool } = useAuthStore();
 
   const form = useForm<SessionFormValues>({
-    resolver: zodResolver(sessionFormSchema),
+    resolver: zodResolver(sessionFormSchema) as any,
     defaultValues: {
       ...initialData,
       start_date: new Date(initialData.start_date),
@@ -183,7 +183,6 @@ export const EditSessionForm: React.FC<EditSessionFormProps> = ({
         message: "Academic session updated successfully!",
         type: "success",
       });
-      router.push(DASHBOARD_ROUTES.SESSIONS_TERMS);
       router.refresh();
     } catch (error) {
       showToast({
@@ -328,7 +327,7 @@ export const EditSessionForm: React.FC<EditSessionFormProps> = ({
             variant="outline"
             size="sm"
             onClick={() =>
-              append({ name: "", start_date: undefined, end_date: undefined })
+              append({ name: "", start_date: new Date(), end_date: new Date() })
             }
             className="mt-4"
           >

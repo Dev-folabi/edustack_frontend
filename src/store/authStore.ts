@@ -8,14 +8,16 @@ import {
   type UserData,
   type UserSchool,
 } from "@/services/authService";
+import { Staff } from "@/types/staff";
+import { Student } from "@/types/student";
 
 interface AuthState {
   user: UserData | null;
   token: string | null;
   userSchools: UserSchool[] | null;
   selectedSchool: UserSchool | null;
-  staff: unknown | null;
-  student: unknown | null;
+  staff: Staff | null;
+  student: Student | null;
   parent: unknown | null;
   isLoading: boolean;
   isOnboarded: boolean;
@@ -121,8 +123,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           token,
           userSchools,
           selectedSchool,
-          staff,
-          student,
+          staff: staff ? (JSON.parse(staff as string) as Staff) : null,
+          student: student ? (JSON.parse(student as string) as Student) : null,
           parent,
           isLoggedIn: true,
           isLoading: false,

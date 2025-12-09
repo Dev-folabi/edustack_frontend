@@ -1,4 +1,5 @@
 export interface Staff {
+  user?: any;
   id: string;
   email: string;
   username: string;
@@ -7,7 +8,7 @@ export interface Staff {
   address: string;
   role: "admin" | "teacher" | "finance" | "librarian";
   designation: string;
-  dob: string;
+  dob?: string;
   salary: number;
   joining_date: string;
   gender: "male" | "female";
@@ -27,5 +28,6 @@ export type StaffRegistrationPayload = Omit<
   Staff,
   "id" | "schoolId" | "userId"
 > & {
+  schoolId?: string;
   password?: string;
 };

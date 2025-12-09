@@ -61,7 +61,7 @@ const CreateTimetableModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       name: "",
       sessionId: "",
@@ -71,8 +71,8 @@ const CreateTimetableModal = ({
   });
 
   useEffect(() => {
-    if (selectedSchool && isOpen) {
-      fetchSessions();
+    if (selectedSchool?.schoolId && isOpen) {
+      fetchSessions(selectedSchool?.schoolId);
     }
   }, [selectedSchool, isOpen, fetchSessions]);
 

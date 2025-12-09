@@ -78,7 +78,7 @@ export const EditInvoiceModal = ({
         message: "Invoice updated successfully",
       });
       onOpenChange(false);
-      onUpdated && onUpdated();
+      onUpdated?.();
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to update invoice";

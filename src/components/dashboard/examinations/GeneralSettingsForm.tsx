@@ -21,7 +21,7 @@ import { updateGeneralSettings } from "@/services/examSettingsService";
 import { useEffect } from "react";
 
 const settingsSchema = z.object({
-  passMark: z.coerce.number().min(0).max(100),
+  passMark: z.number().min(0).max(100),
   showSchoolRemarks: z.boolean(),
   showTeacherRemarks: z.boolean(),
   enablePsychomotor: z.boolean(),
@@ -91,7 +91,12 @@ export const GeneralSettingsForm = () => {
             <FormItem>
               <FormLabel>Default Pass Mark (%)</FormLabel>
               <FormControl>
-                <Input type="number" {...field} />
+                <Input
+                  type="number"
+                  {...field}
+                  onChange={(e) => field.onChange(Number(e.target.value))}
+                  value={field.value || ""}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

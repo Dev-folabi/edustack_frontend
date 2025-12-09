@@ -64,7 +64,8 @@ const SubjectsList = () => {
     try {
       const response = await classService.getClasses(selectedSchool.schoolId);
       if (response.success) {
-        const allSections = response.data.data.flatMap((c: any) =>
+        const classes = response.data?.data || [];
+        const allSections = classes.flatMap((c: any) =>
           c.sections.map((s: any) => ({
             value: s.id,
             label: `${c.name} - ${s.name}`,
@@ -107,7 +108,8 @@ const SubjectsList = () => {
         { role: "teacher", isActive: true }
       );
       if (response.success) {
-        const teacherList = response.data.data
+        const staffData = response.data?.data || [];
+        const teacherList = staffData
           .filter((staff: any) => staff.role === "teacher")
           .map((staff: any) => ({
             id: staff.user.staff.id,
@@ -181,28 +183,32 @@ const SubjectsList = () => {
   };
 
   const filteredSubjects = subjects.filter((subject) => {
+    const sections = (subject as any).sections as any[] | undefined;
+    const sectionIds = (subject as any).sectionIds as string[] | undefined;
+
     // Fix the filtering logic
     if (!sectionFilter || sectionFilter === "all" || sectionFilter === "") {
       return true; // Show all subjects
     }
 
     // Check if subject has sections and if any section matches the filter
-    if (subject.sections && subject.sections.length > 0) {
-      return subject.sections.some((s: any) => s.section?.id === sectionFilter);
+    if (sections && sections.length > 0) {
+      return sections.some((s: any) => s.section?.id === sectionFilter);
     }
 
     // Fallback: check sectionIds if available
-    if (subject.sectionIds && subject.sectionIds.length > 0) {
-      return subject.sectionIds.includes(sectionFilter);
+    if (sectionIds && sectionIds.length > 0) {
+      return sectionIds.includes(sectionFilter);
     }
 
     return false;
   });
 
   const getSectionNames = (subject: any) => {
-    if (!subject.sections || subject.sections.length === 0)
+    const sections = (subject as any)?.sections as any[] | undefined;
+    if (!sections || sections.length === 0)
       return "No sections";
-    return subject.sections
+    return sections
       .map((s: any) => s.section?.name || "Unknown")
       .join(", ");
   };

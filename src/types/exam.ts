@@ -44,6 +44,7 @@ export interface Attempt {
 }
 
 export interface ExamPaper {
+  createdAt: string;
   id: string;
   subject: {
     id: string;

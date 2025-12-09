@@ -23,8 +23,8 @@ const QuestionRenderer = ({ question, answer, onAnswerChange }: Props) => {
         >
           {question.options?.map((option, index) => {
             const optionValue =
-              typeof option === "object" && option !== null
-                ? option.value
+              typeof option === "object" && option !== null && "value" in option
+                ? (option as { value: string | number }).value
                 : option;
 
             return (
@@ -38,7 +38,7 @@ const QuestionRenderer = ({ question, answer, onAnswerChange }: Props) => {
                 }`}
               >
                 <RadioGroupItem
-                  value={optionValue}
+                  value={String(optionValue)}
                   id={`option-${index}`}
                   className="mr-2"
                 />
@@ -71,17 +71,6 @@ const QuestionRenderer = ({ question, answer, onAnswerChange }: Props) => {
             </Label>
           ))}
         </RadioGroup>
-      );
-
-    case "Essay":
-      return (
-        <Textarea
-          rows={8}
-          value={answer || ""}
-          placeholder="Write your essay answer here..."
-          onChange={(e) => onAnswerChange(question.id, e.target.value)}
-          className="w-full border border-gray-300 rounded-lg p-3 resize-none focus:ring-2 focus:ring-blue-500"
-        />
       );
 
     case "FillInBlanks":

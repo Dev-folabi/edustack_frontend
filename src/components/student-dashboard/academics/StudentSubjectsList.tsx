@@ -19,15 +19,15 @@ const StudentSubjectsList = () => {
   const [error, setError] = useState<string | null>(null);
 
   const { student, selectedSchool } = useAuthStore();
-  const studentEnrollment = student?.student_enrolled?.[0];
+  const studentEnrollment = (student as any)?.student_enrolled?.[0];
 
   const fetchSubjects = useCallback(async () => {
     if (!studentEnrollment || !selectedSchool) return;
     try {
       setLoading(true);
       const response = await subjectService.getSubjects({
-        schoolId: selectedSchool.schoolId,
-        sectionId: studentEnrollment.sectionId,
+        schoolId: selectedSchool.schoolId as string | number,
+        sectionId: studentEnrollment.sectionId as string | number,
       });
       if (response.success) {
         setSubjects(response.data.data);

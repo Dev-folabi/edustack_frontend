@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Search, Calendar, FileText } from "lucide-react";
 import PaymentReceiptModal from "./PaymentReceiptModal";
+import { Student } from "@/types/student";
 
 const StudentPaymentsList = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -37,7 +38,7 @@ const StudentPaymentsList = () => {
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
 
   const { student, selectedSchool } = useAuthStore();
-  const studentId = student?.id;
+  const studentId = (student as unknown as Student)?.id ?? "";
 const schoolId = selectedSchool?.schoolId;
   const fetchPayments = useCallback(async () => {
     if (!studentId || !schoolId) return;

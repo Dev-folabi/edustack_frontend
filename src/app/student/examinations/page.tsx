@@ -9,6 +9,7 @@ import { useStudentExamStore } from "@/store/studentExamStore";
 import { ExamCard } from "@/components/student-dashboard/ExamCard";
 import { useAuthStore } from "@/store/authStore";
 import { useSessionStore } from "@/store/sessionStore";
+import { Student } from "@/types/student";
 
 const ExamList = ({ exams, status }: { exams: any[]; status: string }) => (
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
@@ -35,8 +36,8 @@ const StudentExaminationsPage = () => {
   const { selectedSession } = useSessionStore();
 
   useEffect(() => {
-    if (student && selectedSession) {
-      fetchStudentExams(student.id, selectedSession.id);
+    if ((student as Student)?.id && selectedSession) {
+      fetchStudentExams((student as Student)?.id ?? "", selectedSession.id);
     }
   }, [fetchStudentExams, student, selectedSession]);
 
