@@ -919,7 +919,11 @@ const StudentProfilePage = () => {
                     <InfoItem
                       icon={Phone}
                       label="Parent Phone"
-                      value={student.parentDetails?.phone?.join(", ") || "N/A"}
+                      value={
+                        Array.isArray(student.parentDetails?.phone)
+                          ? student.parentDetails.phone.join(", ")
+                          : student.parentDetails?.phone || "N/A"
+                      }
                     />
                     <InfoItem
                       icon={Mail}
