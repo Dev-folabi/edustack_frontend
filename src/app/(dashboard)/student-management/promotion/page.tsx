@@ -395,4 +395,4 @@ const PromoteStudentPage = () => {
   );
 };
 
-export default withAuth(PromoteStudentPage, [UserRole.ADMIN]);
+export default withAuth(PromoteStudentPage, [UserRole.ADMIN, UserRole.TEACHER]);
