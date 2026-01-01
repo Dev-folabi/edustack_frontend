@@ -87,17 +87,16 @@ export const sidebarConfig: SidebarCategory[] = [
         icon: FaUsers,
         roles: [UserRole.ADMIN],
       },
-      {
-        href: DASHBOARD_ROUTES.ACADEMICS_OVERVIEW,
-        label: "Overview",
-        icon: FaBook,
-        roles: [UserRole.ADMIN],
-      },
+      // {
+      //   href: DASHBOARD_ROUTES.ACADEMICS_OVERVIEW,
+      //   label: "Overview",
+      //   icon: FaBook,
+      //   roles: [UserRole.ADMIN],
+      // },
       {
         href: DASHBOARD_ROUTES.CLASS_SECTIONS,
         label: "Class Sections",
         icon: FaUsers,
-        isStaff: true,
         roles: [UserRole.ADMIN],
       },
       {
