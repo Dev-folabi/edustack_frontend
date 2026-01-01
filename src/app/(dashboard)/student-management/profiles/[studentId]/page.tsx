@@ -1048,4 +1048,8 @@ const EditableField = ({
   </FormItem>
 );
 
-export default withAuth(StudentProfilePage, [UserRole.ADMIN, UserRole.TEACHER]);
+export default withAuth(StudentProfilePage, [
+  UserRole.ADMIN,
+  UserRole.TEACHER,
+  UserRole.FINANCE,
+]);

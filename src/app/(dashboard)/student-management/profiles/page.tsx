@@ -61,4 +61,5 @@ const StudentProfilesPage = () => {
 export default withAuth(StudentProfilesPage, [
   UserRole.ADMIN,
   UserRole.TEACHER,
+  UserRole.FINANCE,
 ]);

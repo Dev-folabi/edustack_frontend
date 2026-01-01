@@ -18,4 +18,4 @@ const AdmissionPage = () => {
   );
 };
 
-export default withAuth(AdmissionPage, [UserRole.ADMIN]);
+export default withAuth(AdmissionPage, [UserRole.ADMIN, UserRole.FINANCE]);
