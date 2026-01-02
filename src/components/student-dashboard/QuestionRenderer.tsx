@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo } from "react";
+
 import { Question } from "@/types/exam";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -13,6 +15,21 @@ interface Props {
 }
 
 const QuestionRenderer = ({ question, answer, onAnswerChange }: Props) => {
+  const options = useMemo(() => {
+    if (!question.options) return [];
+    if (Array.isArray(question.options)) return question.options;
+    if (typeof question.options === "string") {
+      try {
+        const parsed = JSON.parse(question.options);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        console.error("Failed to parse options:", e);
+        return [];
+      }
+    }
+    return [];
+  }, [question.options]);
+
   switch (question.type) {
     case "MCQ":
       return (
@@ -21,7 +38,7 @@ const QuestionRenderer = ({ question, answer, onAnswerChange }: Props) => {
           onValueChange={(value) => onAnswerChange(question.id, value)}
           value={answer}
         >
-          {question.options?.map((option, index) => {
+          {options.map((option, index) => {
             const optionValue =
               typeof option === "object" && option !== null && "value" in option
                 ? (option as { value: string | number }).value
