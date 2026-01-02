@@ -74,7 +74,7 @@ export interface Question {
   id: string;
   type: "MCQ" | "TrueFalse" | "FillInBlanks";
   questionText: string;
-  options: string[];
+  options: string | string[] | null;
   marks: number;
 }
 
